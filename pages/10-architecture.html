@@ -40,6 +40,12 @@ flowchart LR
     Z --> C --> D
     Z --> D
     D -->|"receipt, state root"| up
+    classDef secret stroke:#f2b880,stroke-width:2px
+    classDef mech stroke:#9bb0ff,stroke-width:2px
+    classDef ok stroke:#5ee0c1,stroke-width:2px
+    class Q,O,A,X secret
+    class Z,K,C mech
+    class D,L ok
 </pre>
 
 <p>Three properties follow from that shape and are worth holding onto while reading the rest of the site.</p>
@@ -146,4 +152,4 @@ flowchart TB
 <p>The deployed path is a dedicated non-EVM Avalanche L1. AvalancheGo is an external consensus host that launches the Rust VM over RPCChainVM protocol 45. The VM has native transitions for asset registration, account opening, pre-authorised reserves and atomic multi-leg settlement. No Solidity, no EVM bytecode, no precompile is in the acceptance path.</p>
 <p>The reasons EVM and Solana were rejected are recorded rather than assumed: one ed25519 scalar multiplication in EVM bytecode measured 302,401 gas, and on Solana the Groth–Kohlweiss verifier's scalar-field polynomial evaluation exceeds the compute ceiling at a crowd of 64 because the runtime has curve syscalls but no field syscalls. The <a href="zkpi.html#where">zkPI page</a> has the table.</p>
 
-<div class="next"><a href="index.html">← Docs home</a><a href="zkpi.html">zkPI: the instruction →</a></div>
+<div class="next"><a href="index.html">← Docs home</a><a href="principles.html">How this project works →</a></div>

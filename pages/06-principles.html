@@ -1,0 +1,41 @@
+---
+title: How this project works
+description: The working rules behind zkFMI. Numbers come from artifacts, predictions are written before runs and misses are kept, claims are retracted in public, review findings stay on the record, plaintext fallback is forbidden, TEEs are out of the trust boundary, and every document ends with what it does not do.
+path: docs/principles.html
+section: docs
+---
+<h1>How this project works</h1>
+<p class="lede">The stack is a composition of standard gadgets. What is distinctive is less the cryptography than the discipline the repositories hold themselves to, and a reader evaluating the claims should know those rules, because they are what makes the numbers on this site worth reading.</p>
+
+<h2 id="artifacts">No number is typed by hand</h2>
+<p>Every reported figure has an artifact under <code>artifacts/</code> and a Rust binary that produced it. Documents like the DeFMI paper and the audit paper are generated from that JSON by <code>make</code>, so a number in prose cannot drift from the measurement behind it. Where a measurement needs something not shipped (MP-SPDZ, a second host, a market data feed) the binary says so and fails rather than substituting a default. Hosts are labelled <code>host-a</code>, <code>host-b</code>, <code>host-c</code> and their calibration (one scalar multiplication, one range proof) is stated beside their figures, because the same machine has been half again slower at another time.</p>
+
+<h2 id="predictions">Predictions are written before runs, and the misses are kept</h2>
+<p>Each measurement document ends with a table of what was predicted, what was measured, and which direction the miss went. A document that shows only the predictions that landed is advertising a discipline rather than reporting one. The misses are where most of the design changes came from: net-net netting was predicted at an eighth of gross and measured at 1.62×, which is why cycle-level attestation exists; vetting verification was predicted to double per crowd doubling and grew 1.4×, which is why the default crowd is 128 and not 16; robust reconstruction was predicted at 1.4× cost and measured as a 1.4× to 6.4× saving.</p>
+<p>The worst miss is kept as the first lesson. A seven-times cost for matching the MPC field was published to three repositories and a slide deck and used as the premise of four decisions, while the tool printed the reason (a compile flag) on every run. When arithmetic and measurement disagree, the disagreement is the finding, and resolving it in favour of the measurement without asking why cost four sections.</p>
+
+<h2 id="retract">Claims are retracted in public</h2>
+<p>Three claims from earlier drafts are listed as retracted with the paper each one belongs to: that this makes MPC publicly auditable (Baum–Damgård–Orlandi 2014), that VOLE-in-the-Head commitments are a new route to post-quantum auditable MPC (Baum–Zok 2026), and that this is the first secure computation deployed in finance (Prime Match 2023). Two of the five nearest papers were found through a third paper's related-work section rather than a search of our own, and that is written down because it has happened twice.</p>
+
+<h2 id="review">Review findings stay on the record</h2>
+<p>Two rounds of review are documented finding by finding, including what was checked and found sound and what was not accepted. The soundness bugs review found are described in enough detail to reproduce: a product proof that accepted 2 × 3 = 8 because a verifier passed weight 1 and summed two equations; a one-of-many proof whose challenge did not cover the set it was about, so mass could move between members; a range proof over a published band [1, 200] that accepted 256 because the width rounded to a power of two; a circuit flag that dropped the active gate so a withdrawn maker could win. Each is fixed and each fix is described. A reader who wants to know whether the code can be trusted should read the review before the mechanisms.</p>
+
+<h2 id="not">Every document ends with what it does not do</h2>
+<p>The settlement paper ends with what is still missing. The regulation map ends with what may and may not be claimed. The threat model lists what is not defended. The status document distinguishes built from accepted from production. On this site those lists are reproduced, not softened, because a claim about what a system does is only meaningful next to a claim about what it does not.</p>
+
+<h2 id="failclosed">Fail closed, no plaintext fallback</h2>
+<p>When the MPC engine is absent or a party fails, the venue stops. It does not fall back to a plaintext computation, and a request waits in an encrypted durable queue with idempotent resend rather than being recomputed somewhere convenient. A verifier that cannot verify says it parsed, not that it accepted. A one-of-many decoder past its capacity refuses rather than guessing, because naming somebody beyond capacity is worse than silence. A commitment scheme that cannot soundly reopen raises an error rather than documenting the restriction.</p>
+
+<h2 id="tee">Trusted hardware is outside the trust boundary</h2>
+<p>No design here rests on a trusted execution environment. The CPU manufacturer's attestation key, the enclave implementation and microarchitectural side channels are not added to the boundary. Where a TEE-based competitor is faster, the comparison says so and states the trust it buys that speed with.</p>
+
+<h2 id="counts">Counts are counts and timings are timings</h2>
+<p>Round counts and byte counts reproduce to four decimal places across hosts, so they are compared directly. Timings are compared only on one host, and cross-host ratios are labelled as including host differences. A timing from a run that computed the wrong thing is not a timing: every arm is verified against the cleartext reference before its clock is read.</p>
+
+<h2 id="phase">Name the phase</h2>
+<p>Three predictions in the project missed because they named a quantity without naming its phase: preprocessing measured in a single-phase harness came out two orders of magnitude wrong; the compile flag conflated compile-time and run-time field selection; the robustness prediction was right against the online figure and wrong against the total. Every per-multiplication cost on this site now says which phase it is.</p>
+
+<h2 id="prose">Prose does not hold; code does</h2>
+<p>The per-venue handle property was written down as prose before it was code, the library offered no way to derive handles, and the obvious integration lost the property entirely while believing it had it. It is code now, enforced where it is used rather than assumed of the caller, with a test that runs the scheme that suggests itself first and shows it is linkable. The same rule turned "admission, pledge, limit and payment should be one event" into a written requirement flagged as not built, rather than a sentence that implied it was.</p>
+
+<div class="next"><a href="architecture.html">← Architecture</a><a href="faq.html">FAQ →</a></div>

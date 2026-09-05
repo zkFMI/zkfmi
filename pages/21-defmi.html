@@ -26,6 +26,8 @@ section: docs
 <p>The linear-backend proof is a bit decomposition of the ledger's balance range, so it should be linear in width. It is: <strong>0.98 ms/bit</strong> to build, <strong>0.80 ms/bit</strong> to settle, <strong>896 B/bit</strong> on the wire. The settlement intercept, <strong>2.1 ms</strong>, is the verification of the zkPI instruction itself. At 40 bits settlement costs 34.0 ms, of which about 6% is the instruction and the rest is the ledger's range proofs.</p>
 <p>The consequence is a listing decision, not a cryptographic one: if settlement needs to be faster, reconsider the balance width. A quantity of securities and an amount of cash are orders of magnitude apart, so give each rail its own width. Securities at 24 bits and cash at 48 settles 24% faster than both at 48 and sends 10,752 B less, with no change to the cryptography.</p>
 
+{{chart:settle_width}}
+{{chart:package_width}}
 <h3>The Bulletproof backend</h3>
 <p>The optimised backend uses the audited <code>bulletproofs</code> crate, changing proof size from linear to logarithmic. It loses fine-grained widths (power-of-two only), so the honest cross-width comparison is the 40-bit linear backend against the 64-bit Bulletproof one.</p>
 <div class="table-wrap"><table>
@@ -54,6 +56,7 @@ section: docs
 <tr><td>64</td><td>8</td><td>net-net</td><td class="num">3.54 ms</td><td class="num">20.7 ms</td><td class="num">247.5 ms</td><td class="num">1.62×</td></tr>
 <tr><td>64</td><td>8</td><td>net-net + attested</td><td class="num">0.00 ms</td><td class="num">20.5 ms</td><td class="num">20.6 ms</td><td class="num">19.40×</td></tr>
 </tbody></table></div>
+{{chart:netting}}
 <p>The first prediction was wrong. Counting range proofs alone said net-net would be an eighth of the work; measured, it is 1.62×, because 3.5 ms per order is the verification of the zkPI instruction itself, needed once per trade, and netting does not remove it. What removes it is changing the granularity of the instruction: if the quorum signs a whole cycle, the settlement layer's work stops depending on the number of trades. The allocation then becomes the quorum's attestation rather than a proof. That is what a central counterparty has always been; this only makes it explicit, and <a href="deccp.html">DeCCP</a> is where it is made defensible.</p>
 
 <h3 id="limit">An intraday overdraft as a commitment</h3>
@@ -77,6 +80,7 @@ section: docs
 <tr><td>64</td><td class="num">14.5 ms</td><td class="num">3.7 ms</td><td class="num">38,144 B</td></tr>
 <tr><td>512</td><td class="num">40.3 ms</td><td class="num">9.3 ms</td><td class="num">38,816 B</td></tr>
 </tbody></table></div>
+{{chart:ring}}
 <p>The asymmetry is the point. The wire grows 224 B per doubling and verification stays under 10 ms up to a ring of 512; what grows is proving, on the payer's own device. So the payer caps the anonymity set, not the settlement node. A payee scans the pool at 0.063 ms per note, one scalar multiplication, and that is the only cost proportional to the pool. Two payments to the same address cannot be linked.</p>
 <p>In the Rust port the same DvP over two note rails settles in 51.9 ms at a ring of 8 with a <strong>5,476 B</strong> package, against 50,827 B for the retired implementation, the Bulletproofs-against-bit-decomposition effect again. The build column there includes the whole 3-of-7 FROST ceremony, so it is an end-to-end construction cost.</p>
 
@@ -89,6 +93,7 @@ section: docs
 <tr><td>recent</td><td>16</td><td class="num">1.000</td><td class="num">0.062</td><td class="num">0.062</td><td class="num">0.062</td></tr>
 </tbody></table></div>
 <p class="src">artifact: rings.json (host-a) · "traffic" is other settlements landing between being paid and paying</p>
+{{chart:ring_worth}}
 <blockquote>An anonymity set on a note rail is other people's traffic, and the decoy rule only decides how much of it the ring can use.</blockquote>
 <p>With no other traffic the ring is worth nothing at any size under either rule. With sixteen settlements of traffic, recency-matched decoys (<code>ring_recent</code>, thirty lines) bring the observer to exactly the nominal figure where uniform decoys left it at 5.8× that.</p>
 
@@ -116,6 +121,7 @@ section: docs
 
 <h2 id="vetting">Who is allowed to hold a handle</h2>
 <p>Anyone can pick a handle. What needs permission is being vetted, and the vetting roll holds sealed envelopes <code>C = a·G + r·h</code>, not handles, so adding one reveals a uniformly random point and the timing of an onboarding says nothing about which entry is theirs. Membership is proved one-out-of-many over a fixed group; a fresh ring per proof would look more private and be less, because overlapping rings intersect. A Schnorr proof pins the handle to the one the envelope determines, so a vetting yields one handle and not a family. <code>Roll::vetted()</code> and <code>Roll::crowd()</code> are public so anyone can check the anonymity set's size; hiding the vetting event and proving the size of the crowd are the same information, and the design chooses the second.</p>
+{{chart:vetting}}
 <p>Verification was predicted to double with the crowd and grows about 1.4× instead, the batched multi-scalar multiplication showing through. At a crowd of 128 the check is 3.84 ms and the proof 1,676 B, so <strong>128 is the default</strong> (<code>vetting::CROWD</code>). A crowd of thousands needs a Merkle tree inside a circuit, a different proof system from the sigma protocols and Bulletproofs here.</p>
 
 <h2 id="l1">The Avalanche L1</h2>

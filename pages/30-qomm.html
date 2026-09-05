@@ -31,6 +31,12 @@ flowchart TB
     NOTE["the trace is the same<br/>whether or not anyone asked"]
     REL -.- NOTE
     mpc -.- NOTE
+    classDef secret stroke:#f2b880,stroke-width:2px
+    classDef mech stroke:#9bb0ff,stroke-width:2px
+    classDef ok stroke:#5ee0c1,stroke-width:2px
+    class U,REL secret
+    class PRICE,GATE,TOUR mech
+    class OUT ok
 </pre>
 
 <h3>Transport</h3>
@@ -51,6 +57,7 @@ flowchart TB
 <tr><td>Rivinius et al. 2022</td><td>public verifiability + accountability + robustness</td><td>11× to 20× the online phase against plain SPDZ</td></tr>
 <tr><td><strong>QOMM</strong></td><td>public verifiability</td><td><strong>1.07× wall clock, 2.00× traffic, 1.00× rounds</strong></td></tr>
 </tbody></table></div>
+{{chart:audit_cost}}
 <p>The gap is where the audit attaches. Rivinius commits to every share of every wire, so the commitment scheme is inside the multiplication. Here the commitment is to a maker's policy, and one proof afterwards shows the mechanism was applied to it, so the MPC only has to run in a wider field: 16-byte elements become 32, and that is the whole 2.00×. Their construction also delivers blame and robustness; this one delivers neither in the deployed engine. Both halves belong in the comparison.</p>
 
 <h2 id="placement">Where the nodes sit decides more than the cryptography</h2>
@@ -66,6 +73,7 @@ flowchart TB
 <tr><td>all far (120 ms)</td><td class="num">120 ms</td><td class="num">26.148 s</td></tr>
 </tbody></table></div>
 <p class="src">artifacts: placement.json, sites.json · delay proxy on one machine; reproduces round trips, not jitter, loss or clock skew</p>
+{{chart:placement}}
 <p>Putting the seven nodes in one metro is six times more effective than any stack of cryptographic improvements, and it raises the correlation of collusion, which is governance, not technology. The obvious compromise, six near and one far, costs 86% of moving all seven far: independence cannot be bought inside a committee one node at a time. The linear model that predicted 18 s at 120 ms measured 23 s, a 28% under-prediction at eight times the distance it was validated at, and that miss is recorded.</p>
 <p>Whether 26 s matters is a different question, answered against UniswapX fills: the price drift across two Ethereum blocks (3.6 to 8.6 bp) is the same size as the dispersion the market shows within a single block (4.8 to 7.5 bp). A quote that took 26 s is not distinguishable from an instantaneous one because the price was never that precisely defined, and that is the harshest case available.</p>
 
@@ -92,4 +100,5 @@ http://&lt;host&gt;:8800/?seat=observer</code></pre>
   <li>The staleness measurement has selection bias: UniswapX fills are the trades that happened.</li>
 </ul>
 
+<p>The <a href="audit.html">audit page</a> has the machinery in detail, the <a href="binding.html">binding page</a> the field question, and the <a href="deployment.html">deployment page</a> what to pick.</p>
 <div class="next"><a href="deccp.html">← DeCCP</a><a href="oclob.html">OCLOB: oblivious order book →</a></div>

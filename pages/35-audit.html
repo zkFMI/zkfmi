@@ -1,0 +1,109 @@
+---
+title: Audit machinery
+description: How QOMM makes a seven-node computation checkable without leaking the request. Cover slots that leave the same trace as real ones, receipts and slashing, fixed-cadence transport over relays, the quote proof, the pricing-rule language and its derived audit, oblivious asset selection, the three times, and where the rounds go.
+path: docs/audit.html
+section: docs
+---
+<h1>Audit machinery</h1>
+<p class="lede">The property at the centre is that neither whether a request was made nor which market it was for may be told apart from outside, while a computing node's misbehaviour remains detectable. Every number here is generated from measurement JSON; none was typed by hand.</p>
+<p class="src">source: qomm/AUDIT.md · artifacts: audit_slots.json, transport.json, quote_proof.json, three_times.json, multi_asset.json, rounds.json, stages.json, rounds_by_channel.json, prep_split.json</p>
+
+<h2 id="cover">A cover slot and a real slot leave the same trace</h2>
+<p>A secret <code>is_real</code> bit goes into the circuit and is never branched on. The shape of the circuit does not change; the bit decides only whether the makers' state moves.</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th class="num">rounds</th><th class="num">sent per party</th><th class="num">wall clock, median</th></tr></thead>
+<tbody>
+<tr><td>real slot</td><td class="num">286</td><td class="num">22.2045 MB</td><td class="num">1.6493 s</td></tr>
+<tr><td>cover slot</td><td class="num">286</td><td class="num">22.2045 MB</td><td class="num">1.6390 s</td></tr>
+</tbody></table></div>
+<p>Compiler statistics, runtime round count and bytes sent all agree. The 0.0103 s wall-clock gap is smaller than the 0.0852 s spread seen when the same condition is repeated. This is the trace of the MPC job; the path from a user to the nodes is measured separately below.</p>
+
+<h2 id="receipts">Three kinds of audit, and slashing by the nature of the fault</h2>
+<p>Correctness of the computation is a per-slot digest of the result; contradictory signatures are two receipts; failure to answer is a deadline and an absence. Without a rule that every node emits a receipt every slot whether or not there was a real request, "it did not answer" cannot be shown to a third party. Dropping an eligible maker is caught by fixing the set to a single digest in advance; no hash is computed inside the circuit.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>fault injected (7 nodes, 6 slots, quorum 5)</th><th>node</th><th>slot</th><th class="num">slashed</th></tr></thead>
+<tbody>
+<tr><td>equivocation</td><td>2</td><td>1</td><td class="num">1,000,000</td></tr>
+<tr><td>forked state (the same double signature, counted again)</td><td>2</td><td>1</td><td class="num">500,000</td></tr>
+<tr><td>omitted makers</td><td>3</td><td>2</td><td class="num">500,000</td></tr>
+<tr><td>stale state</td><td>4</td><td>3</td><td class="num">250,000</td></tr>
+<tr><td>missing receipt</td><td>5</td><td>4</td><td class="num">50,000</td></tr>
+</tbody></table></div>
+<p>All detected, none missed, no honest node accused. A double signature is self-contained evidence that admits no excuse, so it is heaviest; a missing receipt happens to honest nodes too, so it is lightest. The weights are relative; the absolute bond follows from an estimate of what misbehaving could earn, which is a deployment decision.</p>
+
+<h2 id="transport">From user to node: fixed cadence and relay hops</h2>
+<ul>
+  <li><strong>Fixed cadence.</strong> One message of the same length to each node every slot, whether or not there is an order. In a design that speaks only when it needs to, speaking is itself the announcement.</li>
+  <li><strong>Additive secret sharing.</strong> Split into one share per node before leaving the device. A single share alone is uniform noise.</li>
+  <li><strong>Relay hops.</strong> Each hop holds until the slot boundary and reshuffles. The first hop knows the sender's address; the second knows only the first.</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>hops</th><th class="num">sent per user per slot</th><th class="num">origin-linking AUC</th><th>one relay can recover an order</th><th class="num">slot wall clock</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="num">2,121 B</td><td class="num">0.500</td><td>false</td><td class="num">27.8 ms</td></tr>
+<tr><td>2</td><td class="num">2,121 B</td><td class="num">0.500</td><td>false</td><td class="num">49.3 ms</td></tr>
+<tr><td>3</td><td class="num">2,121 B</td><td class="num">0.500</td><td>false</td><td class="num">69.3 ms</td></tr>
+</tbody></table></div>
+<p>A user who sent an order and one who did not send the same bytes. The batch a node sees is the same regardless of how active anyone was. Each hop is a real socket at about 4.4 ms; a single hop lets the relay see the user's IP, so two or more is recommended. If a relay colludes with its own node, that one share is linkable; recovering the order needs every node to collude.</p>
+
+<h2 id="proof">Proving the computation was right</h2>
+<p>A sigma protocol's response is linear in the witness, so a quorum of nodes can assemble a proof an ordinary verifier accepts while no one of them holds the witness. A general-purpose SNARK has no such structure, which is why collaborative SNARKs run the whole prover inside MPC. The statement: applying the committed policy to the committed request yields <code>key_i</code> for each maker, and the disclosed winner is the minimum of those. Minimality and membership together say exactly that the returned price is the best.</p>
+<div class="table-wrap"><table>
+<thead><tr><th class="num">makers</th><th class="num">prove</th><th class="num">verify</th><th>winner matches the cleartext minimum</th></tr></thead>
+<tbody>
+<tr><td class="num">4</td><td class="num">62 ms</td><td class="num">19 ms</td><td>true</td></tr>
+<tr><td class="num">8</td><td class="num">124 ms</td><td class="num">36 ms</td><td>true</td></tr>
+<tr><td class="num">16</td><td class="num">247 ms</td><td class="num">71 ms</td><td>true</td></tr>
+</tbody></table></div>
+<p>Linear in the number of makers. It fits a 60-second disclosure or a one-second RFS update; it does not fit under 200 ms. Six forgeries are tried and rejected: a winner swapped to a non-minimal maker, an expired maker that cannot win, a request nobody can fill answering "no quote", the winning maker switched off, minimality proofs swapped between makers, and minimality for a false winner (a value of −1 outside the range).</p>
+<p>What is assembled jointly is one Pedersen opening: a scalar dealt to seven nodes and one sigma proof built from a quorum of them (4.8 ms at quorum 3, 20.2 ms at 7). The quote proof's range proofs do not share that linearity, because extracting bits needs the value, so the joint figures are a lower bound on a fully assembled proof. Below the threshold the assembled proof does not verify, and that is checked too.</p>
+<p><strong>The prover's shares are the circuit's shares.</strong> Until the circuit kept them, the shares reached the prover by a route of their own, and a proof about numbers that merely agree with a computation is not a proof about the computation. This was the largest thing the design asserted rather than showed. Each node now writes its share of the winner and the persistence layer reads them back; every subset of three agrees, two do not recover it, and one flipped bit is noticed. The <a href="binding.html">binding page</a> is the rest of that story.</p>
+
+<h2 id="dsl">The pricing rule as a language</h2>
+<p>A maker's rule must reference only permitted inputs, must not use a user's identity or address as a pricing input, and must have a bounded output range. These are static properties of a program, so they are a checker's job and not a proof's. The instructions are <code>+ − ×</code>, comparison, <code>and</code>, and <code>min max clamp signed</code>. No division, no loop, no indexing, no attribute access. The grammar is written out rather than borrowed, so the subset is what the parser accepts and nothing else.</p>
+<pre><code># the price rule a market maker registers, and nothing else
+param ask_level[-2000,2000], spread[2,400], slope[0,16], invcoef[0,8], maxqty[1,1000]
+param expiry[0,1000000], active[0,1], use_ref[1,1]
+state inv[-4000,4000]
+input qty[1,400], ref_mid[90000,110000], now[0,1000000]
+
+ask      = use_ref * ref_mid + ask_level + slope * qty + invcoef * inv
+bid      = use_ref * ref_mid + ask_level - spread - slope * qty + invcoef * inv
+eligible = (qty &lt;= maxqty) and (expiry &gt; now) and (active == 1)</code></pre>
+<p>Non-crossing is an identity rather than a check: <code>ask − bid = spread + 2·slope·qty ≥ 2</code>, so a crossed quote cannot be written. Two forms are registered, anchored to a reference price or absolute for markets with no usable benchmark (a corporate bond has no continuous mid to be an offset from); the maker's <code>use_ref</code> bit chooses, and the checker refuses a rule that declares a value it does not price with.</p>
+<p>What the checker derives, with no proof involved: the output intervals of <code>ask</code>, <code>bid</code> and <code>eligible</code>, the maximum degree in the secrets (2), and the bit width the circuit needs (19 for both forms). The same declaration yields both the circuit's width and the content of the audit. One walk of the same tree produces the value and the proof together: 3 bit proofs, 12 product proofs, 11 range proofs, 28.9 ms to build and 32.2 ms to verify on Ed25519. A test checks that adding a term to the rule adds the corresponding proof. State-update rules are written in the same language and audit in about 30 ms.</p>
+
+<h2 id="assets">Hiding which market the request is for</h2>
+<p>Splitting the MPC job per market would let which job ran announce the market. So one circuit serves every market and selects the reference price while it stays secret: <code>ref = Σ_a (asset == a) · REF_TABLE[a]</code>, a secret bit times a public constant, which costs no multiplication. The round count is 64 from 1 to 32 assets; only traffic grows, by about 0.04 MB per asset. Across eight assets probed, rounds and bytes are identical and the answers differ. When few makers serve an asset the answer is "no quote", which is itself a hint about how thin the market is; the circuit runs the same shape and returns a sentinel.</p>
+
+<h2 id="times">Three times: priced, proved, settleable</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>one-way delay</th><th class="num">priced</th><th class="num">proved</th><th class="num">settleable</th><th class="num">total</th><th>meets an audited 1 s RFS slot</th></tr></thead>
+<tbody>
+<tr><td>1 ms</td><td class="num">961 ms</td><td class="num">+248 ms</td><td class="num">+71 ms</td><td class="num">1,281 ms</td><td>false</td></tr>
+<tr><td>15 ms</td><td class="num">4,328 ms</td><td class="num">+248 ms</td><td class="num">+71 ms</td><td class="num">4,647 ms</td><td>false</td></tr>
+</tbody></table></div>
+<p>An audited request-for-stream does not make a one-second slot. Completing the proof and reaching a quorum of receipts neither depends on the delay nor shrinks with a closer deployment. The remedies are a lighter proof in the number of makers, or setting the update interval to what is measured.</p>
+
+<h2 id="rounds">Where the rounds go, and what moves them</h2>
+{{chart:rounds}}
+<p>The opening channel, the comparison chain, is 49 rounds under both malicious and semi-honest Shamir. Dropping malicious security takes rounds out of everything else (64 to 56) and cuts bytes by 3.53×: the security model is paid in bandwidth and the latency is owed to depth either way. Making each maker's market public and moving the expiry gate to the registration audit cuts traffic 45% and moves rounds only from 70 to 69. Preprocessing on disk leaves an online phase that is 16% of party 0's bytes and 71% of the rounds, measured with a trusted dealer that no deployment can run, so it establishes the size of the online phase and not the cost of building it.</p>
+{{chart:batching}}
+<p>Rounds are a property of the job, not the request. Sharing the same comparison layers across Q requests divides the rounds per quote by Q, which fits the fixed-cadence slot design exactly. This is throughput, not one user's wait: a user's wait is capped by the slot period, so Q is chosen to match the arrival rate.</p>
+
+<h2 id="built">What is measured, built, and out of scope</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>item</th><th>state</th></tr></thead>
+<tbody>
+<tr><td>emit computations and receipts on a fixed cadence; real and cover slots leave the same trace</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>hide which market a request is for</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>fix the eligible-maker set; detect omission, double signing, stale state, selective stalling</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>check the computation with a proof every time; nodes jointly build one verifiable opening</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>restrict the form of a pricing rule and derive its audit; audit the state-update rule</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>register a digest of the approved circuit and refuse substitution</td><td><span class="pill ok">built</span></td></tr>
+<tr><td>identify a node that emitted an inconsistent partial value</td><td><span class="pill ok">built</span></td></tr>
+<tr><td>relays over a real network, multiple hops</td><td><span class="pill ok">measured</span></td></tr>
+<tr><td>secrecy after a trade, where settlement reveals market and size</td><td><span class="pill part">out of scope here; zkPI and DeFMI</span></td></tr>
+</tbody></table></div>
+
+<div class="next"><a href="binding.html">← Binding</a><a href="accountability.html">Accountability and robustness →</a></div>

@@ -1,0 +1,104 @@
+---
+title: Binding computed to committed
+description: The one gap in the middle of the zkFMI stack, the two ways to close it, and what each costs. Matching the MPC field to the commitment group, the per-party input check, the compile-flag error that misreported both, VOLE-in-the-Head measured, why no other group helps, post-quantum, and what a quantum network would change.
+path: docs/binding.html
+section: docs
+---
+<h1>Binding what was computed to what was committed</h1>
+<p class="lede">A maker deals its policy to seven computing nodes as shares. A node can check its share against the dealer's commitment before it computes. What nothing forces is that the value the node then puts into MP-SPDZ is the share it checked. This is the one gap in the middle of the stack, and everything here is about closing it and pricing the closure.</p>
+<p class="src">source: qomm/BINDING.md · measured on host-a unless stated; every arm verified against the cleartext answer before its time was taken</p>
+
+<h2 id="gap">The gap, stated exactly</h2>
+<p>The signature on a dealt share buys detection and attribution, not prevention. A node that substitutes an input can be shown afterwards to have done it. Whether that is enough is a question about who the nodes are: seven KYB'd legal entities with a bond to slash are held by attribution, and prevention buys them little; seven anonymous operators are held by nothing. The same gap sits under three modules and is one gap: the shares the audit is stated about are not, by default, the shares MP-SPDZ consumes, because MP-SPDZ works over its own prime field.</p>
+<p>So an end-to-end binding needs the computation to run over the same field as the commitments, or a commit-and-prove link between the two. Those are the two ways.</p>
+<p>The mechanism is not new and it is said at the top rather than discovered in review: Publicly Auditable MPC (Baum, Damgård, Orlandi, SCN 2014) has input providers publish Pedersen commitments whose homomorphic operations mirror what the protocol does, so an auditor replays the function on the commitments. The quote proof instantiates that construction. What is here is an application of it and the cost of running it.</p>
+
+<h2 id="field">Why the field stands in the way</h2>
+<p><code>threshold_sigma</code> is how the nodes prove anything about a value none of them holds. A sigma response is <code>z = k + c·w</code>, affine in the witness, so each node computes <code>z_i = k_i + c·w_i</code> from its own share and the pieces Lagrange-combine into z in the scalar field of the group. That is the whole method and it is why the design uses sigma protocols instead of a general-purpose SNARK. It works only if the shares are over the group order. Two proofs need this (the quote proof and zkPI, which are also the headline claim) and two do not (policy and state audits, where the maker knows its own witness).</p>
+
+<h2 id="matched">Way one: match the field</h2>
+<p>Run MP-SPDZ over the ed25519 group order and the Lagrange combination becomes valid as written. No new cryptography; the existing code starts meaning what it says.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>M=16, 31 bits, 4 assets, N=7</th><th class="num">rounds</th><th class="num">global traffic</th><th class="num">wall @15 ms</th><th class="num">wall @120 ms</th></tr></thead>
+<tbody>
+<tr><td>MP-SPDZ default field</td><td class="num">64</td><td class="num">19.37 MB</td><td class="num">3.621 s</td><td class="num">27.603 s</td></tr>
+<tr><td>ed25519 scalar field, 253 bits</td><td class="num">64</td><td class="num">38.73 MB</td><td class="num">3.877 s</td><td class="num">29.179 s</td></tr>
+<tr><td><strong>ratio</strong></td><td class="num"><strong>1.00×</strong></td><td class="num"><strong>2.00×</strong></td><td class="num"><strong>1.07×</strong></td><td class="num"><strong>1.06×</strong></td></tr>
+</tbody></table></div>
+<p>Rounds do not move. Traffic is exactly the element width going from 16 bytes to 32. Wall clock is 7% at 15 ms and 6% at 120 ms, cheaper cross-region because the round count is unchanged and round trips dominate there. Matching the field is affordable, and that decides most of this page.</p>
+
+<h3 id="flag">The seven-times error this section used to report</h3>
+<p>The first version reported 2.02× rounds and 14.3× traffic, and everything downstream was reasoned from it: which field to take, whether the input check was worth building, cross-region throughput, whether a different group would help. All of it was one wrong flag. The circuit was compiled with <code>-P &lt;prime&gt;</code>, and MP-SPDZ prints, in the compile output of every such run, a warning that this activates code that is not the efficient variant and that <code>-F</code> with the prime given at run time is the supported path. The warning was in the output every time and was not read.</p>
+<p>Three things were then measured against a problem that did not exist: edaBits (two orders of magnitude worse, because they are preprocessing measured in a single-phase harness), probabilistic truncation (changed nothing), and two real levers that still work but are no longer needed. The literature was searched for a way around a barrier that was not there; Rabbit removes the comparison cost that scales with the field, and MP-SPDZ already implements it, gated on a prime close to a power of two, which the ed25519 order is by a margin of 2⁻¹²⁷. A seven-times figure was published to three repositories and a slide deck while the tool printed the reason in plain English on every run. The <a href="principles.html">principles page</a> keeps that as the first lesson.</p>
+
+<h2 id="check">Way two: check the inputs instead</h2>
+<p>The dealer already publishes a commitment per input. After the inputs are fixed, public coefficients are derived by Fiat–Shamir, the circuit computes <code>s = Σ c_j v_j + r</code> for a committed mask r and opens s. Pedersen commitments add, so the same coefficients combine the commitments into one that s must open. A node that feeds <code>v_j + e_j</code> shifts s by <code>Σ c_j e_j</code>, and the coefficients it would have to satisfy did not exist when it chose e. Public coefficient times secret share is local, so the combination costs no communication; the opening is the round.</p>
+<p><strong>Writing the security proof found the check unsound.</strong> The coefficients were fixed from the dealer's commitments, which a node reads before it feeds the engine, so a node could choose an error in their kernel and pass with probability 1. The correction draws the challenge after the input phase, takes its powers, and works modulo the MPC prime. That fixes soundness (2⁻⁴² to about 2⁻²⁴⁵) and deletes the width budget that the integer version needed, at <strong>one extra round and 0.39% more traffic</strong> than the aggregate check.</p>
+<p>Detection is one opening for all inputs. A verdict needs one opening per node. The per-party form names the node that substituted, at 7.4× the verification cost of the aggregate (103.5 ms at 166 inputs) and no capacity limit: it names any number of substituting nodes, tested to all seven, because each party's check stands alone against that party's own commitments.</p>
+
+<h2 id="chain">Built and run end to end</h2>
+<p>The fix is an identity rather than a comparison: the party that commits to a value is the party that shares it, in the one pass that writes the party files, so nothing can be committed and not dealt or dealt and not committed. The circuit changes by one line: inputs are interpolated at zero from all n points with public Lagrange coefficients.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>inputs</th><th>field</th><th>check</th><th class="num">rounds</th><th class="num">global traffic</th></tr></thead>
+<tbody>
+<tr><td>additive</td><td>default</td><td>none</td><td class="num">57</td><td class="num">9.3038 MB</td></tr>
+<tr><td>additive</td><td>default</td><td>per-party</td><td class="num">59</td><td class="num">9.4448 MB</td></tr>
+<tr><td>Shamir</td><td>group order</td><td>none</td><td class="num">57</td><td class="num">18.6019 MB</td></tr>
+<tr><td><strong>Shamir</strong></td><td><strong>group order</strong></td><td><strong>per-party</strong></td><td class="num"><strong>59</strong></td><td class="num"><strong>18.8838 MB</strong></td></tr>
+</tbody></table></div>
+<p class="src">artifact: binding_chain.json (host-c, 8 makers) · re-measured after the fix to four decimal places, as counts should</p>
+<p>What each arm of the chain does: an honest run commits and shares 86 values in one pass, 602 share checks pass, and a range proof verifies against the commitment that was dealt; a dealer that deals what it did not commit is caught at party 3, position 8, before anything is computed; a node that feeds something else is not caught by the dealing and the artifact says so, because a substituted input is a valid share of a different number. That last case is what the input check catches.</p>
+<div class="note warn">They compose, and the first time they were run together they did not. The generator emitted two definitions of <code>secret_input</code>, the second silently replacing the first, so asking for both produced a check over an array nothing had written to. Nothing failed, because a check over zeros passes. The numbers were unaffected; the property was. It is recorded because "the rows are the cost of the machinery" and "the rows are evidence the composition works" are different claims, and only the second needed the fix.</div>
+
+<h2 id="which">Which one to take</h2>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>binds the inputs</th><th>quote proof publicly verifiable</th><th>cost</th></tr></thead>
+<tbody>
+<tr><td>default field</td><td class="no">no</td><td class="no">no</td><td>—</td></tr>
+<tr><td>default field + check</td><td class="yes">yes</td><td class="no">no</td><td>+1 round, +6 KB</td></tr>
+<tr><td><strong>group order (253 bits)</strong></td><td class="yes">yes</td><td class="yes">yes</td><td><strong>2.00× traffic, 1.07× wall</strong></td></tr>
+<tr><td>group order + check</td><td class="yes">yes</td><td class="yes">yes</td><td>the above, +1 round</td></tr>
+</tbody></table></div>
+<p>Take the group order. It is six to eight per cent of the wall clock and twice the bytes (5.5 MB a node a quote against 2.8) and it buys the publicly verifiable quote proof. The input check is then a fast pre-check: it catches a substituted input at once rather than when a 317 ms proof fails to verify. Defence in depth rather than a substitute. The narrow-field check remains the answer for a deployment that skips the quote proof entirely.</p>
+
+<h2 id="vole">The commitment scheme as a choice: VOLE-in-the-Head, measured</h2>
+<p>The Rust commitment traits move the seam to the commitment itself. A designated-verifier VOLE commitment is a field multiply where Pedersen is a scalar multiplication, and the raw comparison is 113× on one <code>scale</code>. But only the holder of Δ can check the cheap one, and the party that has to check is a regulator who was not there. Making it public is what VOLE-in-the-Head does, and it is now implemented, so the question is answered by a measurement. Both arms prove the same statement and both are publicly verifiable, host-a, n=30, 167 inputs:</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th class="num">prove</th><th class="num">verify</th><th class="num">proof</th></tr></thead>
+<tbody>
+<tr><td>Pedersen (ristretto255)</td><td class="num">9.83 ms</td><td class="num">5.25 ms</td><td class="num">5,440 B</td></tr>
+<tr><td><strong>VOLE-in-the-Head</strong></td><td class="num"><strong>57.83 ms</strong></td><td class="num"><strong>58.92 ms</strong></td><td class="num"><strong>45,616 B</strong></td></tr>
+<tr><td>ratio</td><td class="num">5.88×</td><td class="num">11.16×</td><td class="num">8.39×</td></tr>
+</tbody></table></div>
+<p>So the 113× was not an advantage over Pedersen; it was the price of not being checkable. What is expensive is not the trees: 88% of the proof is VOLE consistency corrections, which over F₂ (FAEST's setting, and the setting of every published number) are bits, and over a 127-bit prime are 16-byte elements. The published "2× the designated-verifier communication" does not carry to a witness that is not bits, and neither does the computation: 17.8 MB of PRG output against FAEST's 819 kB at identical tree parameters. A market-making policy is not bits. The depth-against-repetitions trade-off curve reproduces FAEST's table 2 shape, which is the reason to believe the harness.</p>
+<p>What it buys is real and is not speed: no group, so nothing for the MPC field to match; symmetric primitives only, so post-quantum; and a smaller commitment (2,672 B against 5,344) even though the proof is larger. What bites is that the commitment is one-time: after Δ is published a second statement about it proves nothing. <code>Prover.prove</code> raises rather than documenting the restriction. A maker's policy is opened against every quote for the life of the policy, so this is a redesign, not a footnote.</p>
+
+<h2 id="group">Would a different group be cheaper? No</h2>
+<p>128-bit security forces about 256 bits of scalar field for any discrete-log group, curve or multiplicative; no discrete-log scheme shrinks the MPC field. What the group changes is the speed of proofs, and a non-curve group is 338× to 475× slower there. The one direction that could shrink the field is lattice commitments, whose security comes from dimension rather than modulus.</p>
+
+<h2 id="pq">Post-quantum</h2>
+<p>The confidential computation is already post-quantum: Shamir with an honest majority is information-theoretically secure. Pedersen is perfectly hiding and only computationally binding, so a quantum adversary can never learn a committed value; what it takes away is the ability to prove. That sentence is consoling and only half true, because the thing being proved is an auction and the loss does not need a quantum computer, only time: a maker's policy commitment sits for the life of the policy against an adversary with a direct financial motive. Rivinius et al. make exactly this argument, and it is better than the generic one.</p>
+<p>Three obstacles in increasing difficulty. Size: a sigma proof is 4,960 B a step; lattice equivalents are kilobytes to tens of kilobytes. Rejection sampling: the abort test is on the combined response, so nodes would have to reconstruct to decide, and a rejection arrives after the leak it exists to prevent. Shortness against Shamir, the structural one: lattice soundness needs a short witness, and Lagrange coefficients are arbitrary field elements, so shortness does not survive reconstruction. Ways out (replicated sharing at 15× the storage, small-coefficient schemes, threshold lattice signatures) each trade against something. Signatures are size not speed: ML-DSA-44 is 14.7× the bytes of Ed25519 on the policy-update path, under three megabytes a second at real maker rates. Whichever reason takes you to lattices, the work is the same: an assembly method that does not need the response to be linear in the witness.</p>
+
+<h2 id="quantum">What a quantum network would change: one thing</h2>
+<p>It closes the one place the system is still computational: the MPC is unconditional and the pipe carrying it runs over TLS, so a recorder who breaks TLS later holds every share. Seven fixed endpoints in one metro is the shape QKD serves. It cannot one-time-pad the traffic (62 Mbps of key at the cheapest row against 0.1 to 10 Mbps from metro QKD); it would rekey a symmetric cipher, which is already quantum-safe, so the gain is not trusting the key-exchange assumption against store-now-decrypt-later. It does not rescue commitments, by a no-go theorem (Mayers; Lo–Chau) rather than by engineering, and a proof has to convince someone who was not on the link. A quantum network makes the pipe unconditional, not the proof.</p>
+
+<h2 id="misses">Every prediction here that missed</h2>
+<p>Kept together, because a document that shows only the predictions that landed is advertising a discipline rather than reporting one.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>predicted</th><th>measured</th><th>direction</th></tr></thead>
+<tbody>
+<tr><td>matched field leaves the round count unchanged</td><td>1.00×</td><td>landed, then reported as 2.02× for a week because of the compile flag</td></tr>
+<tr><td>matched field costs about 2× traffic</td><td>2.00×</td><td>landed exactly, likewise reported as 14.3×</td></tr>
+<tr><td>edaBits reduce it</td><td>150× worse</td><td>wrong phase, against a problem that did not exist</td></tr>
+<tr><td>the input check is free: one round, one field element</td><td>true of the opening; the mask was not counted</td><td>incomplete</td></tr>
+<tr><td>2⁻⁴⁰ hiding reachable at 127 bits: yes, then no, then yes</td><td>unreachable, ceiling about 2⁻³⁴</td><td>resolved by measuring, then made moot by the sound construction</td></tr>
+<tr><td>the check adds 1 to 3 rounds</td><td>1</td><td>landed</td></tr>
+<tr><td>VOLEitH co-paths cost 2,560 B</td><td>2,560 B</td><td>landed exactly</td></tr>
+<tr><td>VOLEitH proof is 5 to 7 kB at 167 inputs</td><td>45,616 B</td><td>7× too small</td></tr>
+<tr><td>the transform lands within 0.5 to 1.5× of Pedersen</td><td>5.88× and 11.16×</td><td>direction right, number wrong</td></tr>
+<tr><td>the one-time property is a real constraint</td><td>it is; <code>OneTimeError</code></td><td>landed</td></tr>
+</tbody></table></div>
+<p>All five VOLE-in-the-Head misses have one cause: the construction was costed as though the witness were bits. The two most important predictions were right the first time and were then buried under a measurement that contradicted them for a week; when arithmetic said the cost should be the element width and the measurement said fourteen times, the arithmetic was correct and the harness was misconfigured. That is the finding to carry out of here.</p>
+
+<div class="next"><a href="use-cases.html">← Use cases</a><a href="audit.html">Audit machinery →</a></div>

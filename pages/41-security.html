@@ -50,6 +50,8 @@ section: docs
   <li><strong>The quote proof is on the other axis.</strong> If it fails you know the answer was wrong. You do not know which node made it wrong, and you do not have an answer.</li>
 </ul>
 
+<p>The <a href="accountability.html">accountability page</a> has the full argument: the Reed–Solomon decoder in the engine, rung 5 at nine nodes, what dishonest majority would cost, and the taker as a misbehaving party.</p>
+
 <h2 id="validators">What validators verify, and do not</h2>
 <p>The product transaction carries the complete submitted evidence. Every Avalanche validator independently checks: the 3-of-7 Ed25519 approval, the typed zkPI, the complete quote proof, both jointly assembled range proofs, the taker's price limit, the asset link, the DvP relation, chain and rail domains, deadline, sequence, previous state root and nullifier, before applying the transition atomically.</p>
 <div class="note stop">Validators do not re-run the private MP-SPDZ transcript, and they do not prove the node-local share-to-proof handoff. That is the remaining committee trust and liveness boundary. Removing it requires a proof of the whole private computation and a separate consensus benchmark. It is written in the wire specification so that no reader mistakes "validators verify everything submitted" for "validators verify everything".</div>

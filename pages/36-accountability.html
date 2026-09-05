@@ -1,0 +1,91 @@
+---
+title: Accountability and robustness
+description: What happens when a node misbehaves. The five-rung ladder from abort to guaranteed output delivery, why robustness is a saving rather than a cost here, Reed–Solomon decoding of Shamir shares in the engine, rung 5 built at nine nodes, what dishonest majority would cost, and the taker as a misbehaving party.
+path: docs/accountability.html
+section: docs
+---
+<h1>Accountability and robustness</h1>
+<p class="lede">Not stopping, and naming the party that tried to stop you, are separate properties. The deployed engine has neither: a deviation is detected and the protocol aborts. This page is what it would take to have each, what has been built, and what each costs in a regime where an abort is not a liveness problem but an economic instrument.</p>
+<p class="src">source: zkpi/ACCOUNTABILITY.md · artifacts: locate.json, decode_patch.json, robust_atlas.json, robust_atlas_host_c.json, dishonest_majority.json, identity.json, fill_fold.json</p>
+
+<h2 id="ladder">The ladder, which is five rungs and not two</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>rung</th><th>what it gives</th><th>needs</th></tr></thead>
+<tbody>
+<tr><td>1. security with abort</td><td>the output is right, or there is no output</td><td>dishonest majority is fine</td></tr>
+<tr><td>2. identifiable abort</td><td>…and the honest parties learn who</td><td>dishonest majority is fine (Ishai–Ostrovsky–Zikas 2014)</td></tr>
+<tr><td>3. publicly identifiable abort</td><td>…and so does anybody reading the transcript</td><td>a bulletin board</td></tr>
+<tr><td>4. public accountability</td><td>…and a judge reaches a verdict from the transcript alone (Küsters–Truderung–Vogt 2010; strong form in Rivinius et al.)</td><td>a bulletin board</td></tr>
+<tr><td>5. robustness / guaranteed output delivery</td><td>there is no abort</td><td><strong>honest majority</strong></td></tr>
+</tbody></table></div>
+<p>Public verifiability is not on this ladder; it is the orthogonal axis, "the answer is right and an outsider can check it". A protocol can be publicly verifiable and still stop dead at rung 1, which is exactly the situation here. Where the mechanisms sit: the dealt share is rung 4 at the boundary only; what the node feeds the engine was rung 0 and is now checkable in the circuit (<a href="binding.html">binding</a>); the MPC itself is rung 1; the quote proof is on the other axis.</p>
+<p><strong>Why a griefing abort is worse here than in generic MPC.</strong> In most deployments an abort is retried. In an auction a node that can abort at will, anonymously and at no cost, can suppress the quotes it does not like, and a node colluding with a maker can suppress exactly the ones where that maker is about to be picked off. That converts a denial of service into a free option.</p>
+
+<h2 id="saving">Robustness is not a cost here. It is a saving.</h2>
+<p>T=2 of n=7 is t/n = 0.286, below n/3. Goyal, Song and Zhu (CRYPTO 2020) give unconditionally secure MPC with guaranteed output delivery for t &lt; n/2, and at t &lt; n/3 broadcast can be simulated over point-to-point links, so this deployment is in the stricter regime and needs no broadcast assumed. Their price is 5.5 field elements per party per multiplication, 7.5 once a corrupted party has been identified. Free against what? Measured on the same host as a slope between two circuit sizes:</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th class="num">elements per party per multiplication</th><th>rounds</th></tr></thead>
+<tbody>
+<tr><td>semi-honest Shamir, single phase</td><td class="num">5.714</td><td>4, flat</td></tr>
+<tr><td>malicious Shamir, online phase only</td><td class="num">8.000</td><td>3, flat</td></tr>
+<tr><td>malicious Shamir, single phase (triples generated in the run)</td><td class="num">48.231</td><td>17 → 137</td></tr>
+<tr><td>GSZ 2020, guaranteed output delivery, single phase (their figure)</td><td class="num">5.5 to 7.5</td><td>—</td></tr>
+</tbody></table></div>
+<p>Guaranteed output delivery costs less than the online phase alone of what is deployed, and 6.4× less than its total, while giving strictly more. So the reason this deployment has no robustness is the engine, not the setting: MP-SPDZ's honest-majority malicious protocols are all secure with abort, and GSZ is not implemented in it. The harness was checked before it was believed: GSZ state the best semi-honest protocol at 5.5, the harness returns 5.714, and a control circuit with additions instead of multiplications has slope zero.</p>
+
+<h2 id="decode">The shares are already an error-correcting code</h2>
+<p>On an opening, MP-SPDZ reconstructs from t+1 shares, reconstructs again from every longer prefix, and throws "inconsistent Shamir secret sharing" if they disagree. That is error detection performed on data that supports error correction: Shamir shares of a degree-t secret are a Reed–Solomon codeword RS[n, t+1], and at n=7, t=2 that is distance 5, correcting exactly two errors. Berlekamp–Welch returns both the correct value and the error locator, which names the parties that sent wrong shares.</p>
+<p>Asked directly whether the engine knows who cheated: no, and the obvious guess is wrong. One byte flipped in a party's preprocessing yields the same error string for two different culprits, and when the bad data belongs to a party the others reach later, they die on a dropped connection first, so an operator debugging it would blame the wrong node.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>decode capacity</th><th class="num">capacity</th><th class="num">0 wrong</th><th class="num">1</th><th class="num">2</th><th class="num">3</th></tr></thead>
+<tbody>
+<tr><td>degree-t (ordinary value)</td><td class="num">2</td><td class="num">300/300</td><td class="num">300/300</td><td class="num">300/300</td><td class="num">0/300 (refuses)</td></tr>
+<tr><td>degree-2t (unreduced product)</td><td class="num">1</td><td class="num">300/300</td><td class="num">300/300</td><td class="num">0/300</td><td class="num">0/300</td></tr>
+</tbody></table></div>
+<p>T=2 and the capacity is 2: this deployment's corruption threshold sits exactly at the decoding capacity of its own sharing, so every corruption it is designed to tolerate is also one it could name. At three the decoder refuses rather than guessing, which is the only correct behaviour. Cost on data already received, no extra rounds: 22.9 µs with no errors, 208 µs with two liars, against 20.6 µs for the plain Lagrange the engine does.</p>
+<p><strong>It is now in the engine.</strong> A patch to the malicious-Shamir opening names the sender: "sent by player 1, player 4", or "more than 2 parties sent wrong shares, which is beyond the decoding capacity of this sharing". It costs 1.50× the online elements and 1.33× the single-phase total, because the batched opening was a partial broadcast to the 2t+1 nearest and locating two liars needs all seven; the prediction said it would be free, on a reading of the unbatched code path. Third time in the project that reading one code path and assuming it is the one that executes cost a number.</p>
+<p>This names the party that sent a malformed share. It cannot name the party that lied about its input, which is the more likely attack: a different number in its own input file is a valid sharing of a different value, and there is no codeword to decode because the codeword is fine. That is the <a href="binding.html#check">per-party input check</a>, which has no capacity limit because each party's check stands alone. The same mechanism follows one quote end to end: a node substituting the taker's quantity is named, and the taker's request is bound exactly as a maker's policy is. Running that found that the generator had been emitting fixture coefficients a node could predict, and that a misconfigured field made the audit convict all seven nodes on an honest run, which is the worst failure mode an accountability mechanism can have.</p>
+
+<h2 id="rung5">Rung 5, built and run: the decoder is enough if there are nine nodes</h2>
+<p>Reed–Solomon corrects e errors iff n − d ≥ 2e + 1. A product before degree reduction is d = 2t and robustness wants e = t, so <strong>n ≥ 4t + 1</strong>. At n=7, t=2 the capacity on products is one, one short. At n=9 it is two, enough. t &lt; n/3 is the line where segmenting, checkpoints and player elimination become necessary; t &lt; n/4 is the line where a decoder is enough, and the distance between them is the whole of GSZ's machinery.</p>
+<p>It lands on ATLAS (Damgård–Nielsen), not on the protocol deployed: the king with relays and the random double sharings are already in it. The king is where "consistent but wrong" lives, and it can be removed: the masked product is not secret, so it can go to everybody, and every party decodes the codeword itself. Nobody's word is taken.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>host-a, n=9, T=2, 2,000 multiplications</th><th>answer</th><th>named</th><th></th></tr></thead>
+<tbody>
+<tr><td>none corrupted</td><td>correct</td><td>—</td><td>8 rounds</td></tr>
+<tr><td>{0}</td><td><strong>correct</strong></td><td>[0]</td><td><strong>did not stop</strong></td></tr>
+<tr><td>{0,1}</td><td><strong>correct</strong></td><td>[0,1]</td><td><strong>did not stop</strong></td></tr>
+<tr><td>{8}</td><td><strong>correct</strong></td><td>[8]</td><td><strong>did not stop</strong></td></tr>
+<tr><td>{0,1,2}</td><td>—</td><td>—</td><td>refuses: beyond capacity</td></tr>
+<tr><td>n=7</td><td>—</td><td>—</td><td>refuses to start: corrects 1 against a threshold of 2</td></tr>
+</tbody></table></div>
+<p>The four middle lines are rung 5. And it is cheaper than what is deployed: 18.222 elements per party per multiplication against 64.236 for malicious Shamir with naming at n=7, with fewer rounds (8 against 9 with a king). Measured on two machines with two independent builds. What is not robust: the double sharings (preprocessing, allowed to abort because it consumes no inputs), the output opening, and the input phase, which is the one that matters. The prediction was 1.6× low, from a model that counted traffic on the sending side only, and the discrepancy has not been isolated. What it costs that is not bandwidth: two more institutions, which the risk register says is the constraint that matters most. Keeping n=7 and dropping to T=1 also satisfies n ≥ 4T+1 and costs nothing on the wire, and drops the privacy threshold so any two colluding nodes reconstruct every order; not available to a venue.</p>
+
+<h2 id="dishonest">What if there were no honest majority at all?</h2>
+<p>The other move is to survive n−1 corruptions instead, which is strictly stronger. Measured with the same slope harness:</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th class="num">elements per party per multiplication</th></tr></thead>
+<tbody>
+<tr><td>Shamir malicious, n=7, T=2, online only</td><td class="num">8.000</td></tr>
+<tr><td>MASCOT, n=7, online only</td><td class="num">3.429</td></tr>
+<tr><td>Shamir malicious, n=7, T=2, total</td><td class="num">48.235</td></tr>
+<tr><td>semi-honest dishonest majority, n=7, total</td><td class="num">3,849</td></tr>
+<tr><td>MASCOT, n=7, total</td><td class="num">26,894</td></tr>
+<tr><td>MASCOT, n=2, total</td><td class="num">4,487</td></tr>
+</tbody></table></div>
+<p>The answer splits. Online, dishonest majority is 2.3× cheaper, because opening an additive sharing is one round trip through a designated party whatever n is. In total it is 558× more expensive, because triples need pairwise oblivious transfer and the cost is linear in the number of partners per party, quadratic globally. Giving up malicious security does not recover it: the cost is the corruption model, not the adversary model. What it would actually cost is not bandwidth: robustness stops being expensive and becomes impossible, and nobody would deploy seven, so the honest comparison is seven-party Shamir against two-party MASCOT, which is roughly Prime Match's shape and a governance decision rather than a performance one. Even so, two-party MASCOT moves 475 MB of global traffic per quote against 17.9 MB.</p>
+
+<h2 id="taker">The taker is a party too</h2>
+<p>A taker misbehaves differently: it submits requests it never intends to trade on and reads the price envelope for free. The fix is a market rule made enforceable by cryptography. The taker commits an acceptance level L with the request; the circuit computes the winner as before, then one comparison, and returns <code>fill × key</code> under the trader's mask. A quote at or inside the level is a trade, not an offer. On a no-fill the taker removes its mask and gets zero; it learns the fill bit and nothing else, and the fill bit is masked too, because a public fill bit marks every cover slot as cover.</p>
+<p>It does not stop probing: a prober can raise L from below and learn "worse than this" each time for free. What costs a trade is learning the market is better than a stated level, which is exactly what a resting limit order already reveals, so a binding-limit RFQ leaks no more than a central limit order book and less, because L is committed rather than displayed. Bisection costs fills. Folding the fill comparison into the tournament's last layer brought the cost from +9 rounds to +2 at +3.35% traffic, because depth was bought with width. What is not resolved: binding needs a settlement the taker cannot decline while the quorum cannot see the bit it would be settling on, and it costs an honest taker last look.</p>
+
+<h2 id="open">What is not settled</h2>
+<ul>
+  <li>GSZ is not implemented here and has not been run; §rung 5 reaches guaranteed output delivery without it, at n ≥ 4T+1, at a cost GSZ's asymptotics would beat.</li>
+  <li>Rung 5 here is the multiplication, not the whole protocol.</li>
+  <li>The honest-majority price of rung 4 is unknown; Rivinius et al. measured the dishonest-majority price at 11× to 20× and the analogous number for t &lt; n/3 Shamir does not appear to exist.</li>
+  <li>The bulletin board is assumed, not built. Both public auditability and the broadcast channel want one, and this repository has a delay proxy on one machine rather than seven sites with a shared append-only log.</li>
+  <li>Nothing here addresses input-party misbehaviour. A maker that commits to a policy and then disputes it is a contract problem.</li>
+</ul>
+
+<div class="next"><a href="audit.html">← Audit machinery</a><a href="deployment.html">Choosing a deployment →</a></div>

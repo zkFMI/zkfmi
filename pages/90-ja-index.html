@@ -84,6 +84,32 @@ section: ja
 
 <section class="block">
   <div class="wrap">
+    <h2>この研究の進め方</h2>
+    <div class="grid">
+      <div class="card"><h3>数値は手で書かない</h3><p>掲載する数値はすべて artifact（JSON）と、それを書いた Rust バイナリを持ちます。DeFMI や監査の文書は JSON から生成し、散文の数字が計測から乖離しないようにしています。</p></div>
+      <div class="card"><h3>予測を先に書き、外れを残す</h3><p>各計測文書は「予測・実測・外れた方向」の表で終わります。設計変更の多くは外れた予測から来ました。net-net が 1/8 になる予測は 1.62× で外れ、その結果としてサイクル単位の attestation が生まれました。</p></div>
+      <div class="card"><h3>主張の撤回を公開する</h3><p>初期稿の主張のうち 3 件を、帰属すべき論文名とともに撤回一覧に載せています。「MPC を公開検証可能にした」は Baum–Damgård–Orlandi 2014 のものです。</p></div>
+      <div class="card"><h3>fail closed、TEE は信頼境界の外</h3><p>MPC が欠けたら平文計算へ落とさず止まります。検証できない検証器は「受理」ではなく「構文が通った」と言います。CPU 製造者の attestation を信頼境界に加えません。</p></div>
+    </div>
+    <p style="margin-top:1rem"><a href="../docs/principles.html">How this project works（英語）</a> · <a href="../docs/faq.html">FAQ（英語）</a> · <a href="../docs/roadmap.html">Roadmap（英語）</a></p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>よくある質問（要約）</h2>
+    <div class="faq">
+      <details><summary>トークンはありますか</summary><p>ありません。販売も投資対象もありません。MIT ライセンスの研究コードです。ノードが差し入れる bond の額は運用側の決定で、コードは相対的な重みしか持ちません。</p></details>
+      <details><summary>ブロックチェーンですか</summary><p>決済層は専用の非 EVM Avalanche L1（AvalancheGo が Rust VM を起動）として動きます。市場（QOMM、OCLOB）はチェーン上ではなく 7 ノードの秘密計算で、指図を発行するだけです。DeKYX、DeCCP、Aethel は決定的状態機械です。</p></details>
+      <details><summary>なぜ EVM や Solana ではないのですか</summary><p>検証器の算術が収まらないからです。EVM バイトコードでの ed25519 スカラー乗算は 302,401 gas。Solana は曲線の syscall はあるがスカラー体の syscall がなく、one-of-many 検証は crowd 64 で計算上限を超えます。</p></details>
+      <details><summary>規制当局や監査人は何を見られますか</summary><p>三つの粒度の選択的開示が実装済みです。一つの committed フィールドだけ開く、ウォレットの一つの scope（銘柄・四半期・mandate）だけを名指しの監査人に渡す、定足数が誰も保持しない合計について組み立てる照合証明。実際の監督者の鍵儀式や法的要請の手続きは未接続です。</p></details>
+      <details><summary>本番に何が必要ですか</summary><p>単一主体が開けない決済権限、算術上でなく実際に独立した運営者、認証付き記憶域での状態世代の永続化、認証・鍵管理、validator が検証できる秘密計算全体の証明、法的 finality。それぞれ現状と併記して <a href="../docs/status.html">Status</a> に列挙しています。</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
     <h2>日本語資料</h2>
     <ul>
       <li><a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI 企業向け PoC 導入ガイド</a>: 導入、役割分離、障害試験、保存する証拠、合格条件、41 節の運用指針</li>

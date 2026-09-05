@@ -1,0 +1,114 @@
+---
+title: Choosing a deployment
+description: What every measurement implies for what to deploy where. Node placement and the collusion it trades against, why 26 seconds is affordable, three deployment profiles, the binding switches that default to off, preprocessing between slots, choosing each component, the decisions technology does not make, and what is still unverified.
+path: docs/deployment.html
+section: docs
+---
+<h1>Choosing a deployment</h1>
+<p class="lede">What every measurement implies for what to pick under which operating conditions. Estimates and measurements are marked apart. The first decision matters more than any other choice, and it is not a cryptographic one.</p>
+<p class="src">source: qomm/DEPLOYMENT.md · artifacts: placement.json, sites.json, staleness.json, binding_chain.json, prep_split.json, probe_budget.json, distributed_dp.json</p>
+
+<h2 id="placement">The first decision: where the nodes sit</h2>
+{{chart:placement}}
+<p>Of the 3.68 s at 15 ms one way, 2.13 s is pure round-trip time that no circuit change touches. Putting the seven nodes in one metro is six times more effective than any stack of cryptographic improvements. Against that, one metro raises the correlation of collusion: seven nodes in the same jurisdiction and commercial orbit leave the T=2 assumption resting on organisational independence alone. That is governance, and it is an explicit trade against latency.</p>
+<p><strong>Independence cannot be bought inside a committee.</strong> The obvious compromise, six nodes in one metro and a seventh under a different legal order, costs 86% of what moving all seven costs, because the round count is 70 and flat and the wall clock waits on the slowest link. The linear model validated to 1.4% at 15 ms under-predicted the 120 ms case by 28%, so it should not be extrapolated further either.</p>
+
+<h3 id="staleness">What 26 seconds is worth, which is not how long it is</h3>
+<p>The number that decides whether a slow committee matters is not the delay but whether the price moved during it. UniswapX fills carry a rate that was executable at a block, so drift across a gap can be set against the dispersion the same market shows within one block.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>gap</th><th class="num">drift</th><th class="num">vs the within-block floor</th></tr></thead>
+<tbody>
+<tr><td>within one block</td><td class="num">4.8 to 7.5 bp</td><td class="num">—</td></tr>
+<tr><td><strong>2 blocks, about 26 s: one cross-region quote</strong></td><td class="num">3.6 to 8.6 bp</td><td class="num"><strong>1.01× (median)</strong></td></tr>
+<tr><td>8 blocks, about 96 s</td><td class="num">7.4 to 9.4 bp</td><td class="num">1.34 to 1.75×</td></tr>
+<tr><td>25 blocks, about 300 s</td><td class="num">12.2 to 19.2 bp</td><td class="num">1.63 to 4.00×</td></tr>
+</tbody></table></div>
+<p>Twenty-six seconds of drift is the same size as the price uncertainty the market already has inside a single block, on the harshest rail available. So the criterion is drift against the instrument's own price uncertainty, not the latency. Where the spread is basis points a cross-region committee is affordable; where it is a fraction of one, it is not. The tier is therefore per instrument: a spread committee for RFQ where leakage hurts most (wide spread, thin book, large size) is also where 26 s is cheapest; request-for-stream survives it better than RFQ because the round trip leaves the critical path; settlement across regions was never round-bound; and a maker quoting outside its region needs no committee spanning both, because the rule crosses once, offline.</p>
+<p>The drift need not be paid at all: the quote is affine in the reference price and the winner does not depend on it, so a slow committee can run against whatever reference was current when it started and correct the revealed price afterwards. A test holds that property; the implementation does not yet use it.</p>
+
+<h2 id="profiles">Three deployment profiles</h2>
+<div class="grid">
+  <div class="card">
+    <div class="tag">profile A</div>
+    <h3>Metro, no audit, latency first</h3>
+    <ul>
+      <li>same metro, 1 ms one way: 0.617 s per quote</li>
+      <li>31 bits, binary tournament, Q matched to arrival rate</li>
+      <li>no quote proof: avoids +550 ms</li>
+      <li>malicious Shamir: 1.12 to 1.24× semi-honest, cheap</li>
+      <li>Shamir inputs over the group order and the per-party input check</li>
+    </ul>
+    <p>Gives sub-second quotes and secrecy for requests that do not settle (AUC 0.500). Does not give a proof the computation was right; receipts bind a node to a result, they do not show it correct.</p>
+  </div>
+  <div class="card">
+    <div class="tag">profile B</div>
+    <h3>Metro, audited, near-immediate</h3>
+    <ul>
+      <li>quote proof at M ≤ 16: 317 ms to prove, 400 ms to verify</li>
+      <li>the three times: 824 + 551 + 655 ms = 2.03 s</li>
+      <li>RFS update interval 3 s or more; one second is not met</li>
+      <li>disclosure interval 60 s</li>
+      <li>binding required: a quote proof about inputs nothing checked is a proof of the wrong statement</li>
+    </ul>
+    <p>Gives a verifiable computation every slot. Does not give a sub-second settleable time.</p>
+  </div>
+  <div class="card">
+    <div class="tag">profile C</div>
+    <h3>Wide area, batched</h3>
+    <ul>
+      <li>geographically spread, when governance independence comes first</li>
+      <li>batch Q of 16 to 32: 284 ms per quote at Q=32</li>
+      <li>one user's wait 9.09 s at Q=32</li>
+      <li>binding as profile B; the traffic it costs is the profile that can afford it least and needs it as much</li>
+    </ul>
+    <p>Suited to markets that value secrecy and dispersion over immediacy. At 15 ms one way, T(Q) ≈ 3.4 + 0.18Q seconds, so for a target wait W take the largest Q ≤ (W − 3.4)/0.18.</p>
+  </div>
+</div>
+
+<h2 id="switches">The switches that are off by default</h2>
+<p>A quote proof proves the opened price is the correct function of the inputs the nodes used. Whether those are the shares that were dealt and committed is closed by two mechanisms that catch different parties, and both are command-line flags that default to off: <code>--shamir-inputs</code> runs the circuit over the commitment group's field and catches a dealer that deals what it did not commit; <code>--input-check</code> opens one combination per node and catches a node that passed the share check and then supplied something else. Together they cost two rounds and 2.03× the traffic. The defaults are off because a research harness has to make every arm selectable and a default that doubled the traffic would make the arms incomparable. A deployment has no such reason, and a deployment that ran the audited profile without these would be publishing a proof about inputs that nothing checked. Review found that the deployment guide originally mentioned neither; the <a href="binding.html">binding page</a> has the measurements.</p>
+
+<h2 id="prep">Preprocessing between slots</h2>
+<p>The correlated randomness a round consumes does not depend on the request, only on the shape of the circuit, which is fixed and compiled once. With preprocessing on disk the online phase is 16% of party 0's bytes and 71% of the rounds. Read that as bandwidth, not latency: rounds are circuit depth and 44 rounds at a 17.4 ms round trip is still 0.77 s. The measurement used a trusted dealer no deployment can run, so it settles whether an offline phase is worth building (at a sixth of the bytes, yes) and not what that phase will cost.</p>
+
+<h2 id="components">Choosing each component</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>component</th><th>choice</th><th>measured basis</th></tr></thead>
+<tbody>
+<tr><td>anonymous credentials, N ≲ 8</td><td>OR composition</td><td>1.21 ms to prove at N=8; proving on the maker's device is the limit</td></tr>
+<tr><td>anonymous credentials, N ≳ 16</td><td>Groth–Kohlweiss one-of-many</td><td>2.35× faster to verify and 5.1× smaller at N=128</td></tr>
+<tr><td>range proofs in the quote proof</td><td>Bulletproofs</td><td>measured in Rust: 10.5× on the package, 6.3× on verification, widths fixed to powers of two</td></tr>
+<tr><td>differential-privacy disclosure</td><td>threshold disclosure (arm B) stays the default</td><td>DP disclosure measured worse than none (fill rate −0.039, maker P&amp;L −100.7) from upward bias in a non-linear statistic; a correction is needed before repeating</td></tr>
+<tr><td>threat model</td><td>malicious Shamir</td><td>1.12 to 1.24× wall clock and 2.9 to 3.2× traffic over semi-honest on the quote circuit; 1.9× and 6.0× on the disclosure circuit, which is comparisons</td></tr>
+<tr><td>multiple assets</td><td>one job for all markets</td><td>70 rounds flat from 1 to 32 assets; traffic +0.04 MB per asset</td></tr>
+<tr><td>settlement instruction</td><td>zkPI, whenever more than one asset is in scope</td><td>issue 11.8 ms, verify 12.6 ms, 32 B nullifier; drops into another venue unchanged</td></tr>
+<tr><td>rail widths</td><td>from the largest quantity and the currency's smallest unit; never the same for both rails</td><td>the only lever that works without changing a line of cryptography; Bulletproofs blunt it to powers of two</td></tr>
+<tr><td>instrument hiding</td><td>asset tags where the instrument is itself information</td><td>+32 B per settlement; membership proof only at issue</td></tr>
+<tr><td>netting</td><td>gross if failure is intolerable, net for liquidity; one attestation per cycle where third-party verifiability of the allocation can be given up</td><td>per trade 12.6 s to verify at N=256; per cycle 0.2 s</td></tr>
+<tr><td>counterparty hiding</td><td>notes when the relation is itself information; ring 64</td><td>the payer's device sets the ring; wire grows 224 B per doubling</td></tr>
+<tr><td>relays</td><td>two hops or more</td><td>about 4.4 ms per hop; one hop shows the relay the user's IP</td></tr>
+</tbody></table></div>
+
+<h2 id="decisions">Decided before deployment, and not by technology</h2>
+<ol>
+  <li><strong>Independence of the node operators.</strong> T=2 tolerates two colluding nodes. One metro gives up geographic independence, so operator, jurisdictional and corporate-parent independence has to carry it.</li>
+  <li><strong>The size of the bond.</strong> Slashing carries relative weights only; the absolute figure follows from an estimate of what misbehaving could earn.</li>
+  <li><strong>The target RFS update interval.</strong> With auditing, 3 s or more. One second means a lighter proof or no audit.</li>
+  <li><strong>A per-entity cap, and where its counter lives.</strong> Reading a maker's inventory off its own two-sided quotes is the one attack cryptography does not touch, because a firm price is what the protocol exists to return. Measured over 24 seeds, the correlation is about 0.53 and does not grow with the budget; what grows is confidence, from 23% of seeds at ten probes to a majority at 24 and nearly all at 96. So the cap sets how often an entity can refresh its picture, not whether it gets one; the shipped default is 60 requests an epoch. The in-memory rate limiter resets on restart and does not compose across instances, so a venue run as two processes gives every entity twice its allowance; persisting and sharing it is deployment work not yet done.</li>
+  <li><strong>What the settlement venue will accept.</strong> zkPI's instruction bounds, the floor and ceiling on quantity and price and the deadline horizon, are the venue's to publish. Narrow is safer and refuses legitimate trades.</li>
+</ol>
+
+<h2 id="unverified">Unverified, and still bearing on the decision</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>item</th><th>state</th><th>bearing</th></tr></thead>
+<tbody>
+<tr><td>a real seven-site deployment</td><td>measured to two sites (real RTT 17.4 ms, 1.66 s net)</td><td>operating and recovering seven sites is unknown; the largest remaining unknown</td></tr>
+<tr><td>disclosure halt rate in a thin market</td><td>unverified</td><td>if arm B always withholds in a thin market, the disclosure choice changes</td></tr>
+<tr><td>reproduction on other data</td><td>unverified</td><td>the stage-3 conclusions stand on generated data</td></tr>
+<tr><td>keeping the MPC party processes resident</td><td>not built (needs TLS certificates)</td><td>5.3 ms per quote at Q=32; only matters at Q=1</td></tr>
+</tbody></table></div>
+
+<h2 id="hardware">Sizing, from the enterprise PoC guide</h2>
+<p>The Japanese PoC guide for DeFMI gives starting configurations that are explicitly not performance guarantees: a single-host functional check at 8 vCPU, 16 GiB and 100 GiB NVMe; a five-validator PoC with each validator at 8 vCPU, 32 GiB and 500 GiB on its own database and logs, behind an API gateway that does not expose validator RPC, with an indexer that is not the book of record, a separate signer/HSM gateway, monitoring, and a load generator on a different host. Production-like placement spans at least three failure domains with dedicated or reserved CPU, because memory overcommit and burstable CPU show nothing in normal operation and cause consensus delay under load. The guide also separates the thresholds that are easy to conflate: validator consensus, MPC k-of-n, the FROST signing quorum, DeCCP approval weight and cross-domain committee weight are five different numbers, and process count says nothing about independence if one organisation holds all of them.</p>
+
+<div class="next"><a href="accountability.html">← Accountability</a><a href="measurements.html">Measurements →</a></div>

@@ -36,6 +36,12 @@ flowchart LR
     D --> V
     S --> V
     known -. "never crosses" .-> venue
+    classDef secret stroke:#f2b880,stroke-width:2px
+    classDef mech stroke:#9bb0ff,stroke-width:2px
+    classDef ok stroke:#5ee0c1,stroke-width:2px
+    class R,P,W secret
+    class C,N,D,S mech
+    class V ok
 </pre>
 
 <p>The instruction exists because publicly auditable MPC ends when the output is opened. A quote that is opened and then settled in the clear has leaked everything the computation protected: the asset, the size, the counterparties and, by difference, the policy. zkPI makes the payment instruction itself a commitment plus a proof, so the audited value and the settled value are the same unopened commitment.</p>

@@ -1,0 +1,56 @@
+---
+title: Roadmap
+description: What is done, what is next, and what blocks production for the zkFMI stack, ordered from the status documents, the use-case survey and the open research questions. No dates, because none has been promised.
+path: docs/roadmap.html
+section: docs
+---
+<h1>Roadmap</h1>
+<p class="lede">Ordered from the status documents, the use-case survey and the open questions in the position papers. There are no dates, because none has been promised, and the items are grouped by what they depend on rather than by when they might happen.</p>
+
+<h2 id="done">Done and accepted</h2>
+<ul class="timeline">
+  <li class="done"><h4>Protocol core in Rust, measured</h4><p>zkPI v2 with threshold range proofs and fixed vectors; DeFMI accounts, notes, tags, netting, limits, waterfall, PvP, reconciliation, scoped viewing, vetting; Bulletproof backend; DeKYX, DeCCP, Aethel crate workspaces.</p></li>
+  <li class="done"><h4>Native Avalanche L1 with five validators, one host</h4><p>Atomic multi-RFQ settlement, replay rejection, restart recovery, state-root agreement. The QOMM path settles from seven MP-SPDZ processes with no additional signature.</p></li>
+  <li class="done"><h4>OCLOB distributed path to the L1, one host</h4><p>Participant-side splitting, encrypted direct delivery to seven containers, 5-of-7 arrival certificates, MPC matching, maker and taker reservations, DvP with restart and replay checks.</p></li>
+  <li class="done"><h4>Binding and accountability mechanisms</h4><p>Matched field at 2.00× traffic; sound per-party input check; share-locating decoder in the engine; robust reconstruction at n=9 measured on two machines.</p></li>
+  <li class="done"><h4>Two review rounds on the record</h4><p>Soundness findings fixed and documented; retracted claims listed; misses kept.</p></li>
+</ul>
+
+<h2 id="next">Next, by dependency</h2>
+<ul class="timeline">
+  <li><h4>Threshold settlement authority for OCLOB</h4><p>Replace the single research gateway that opens the participant's fixed-length settlement authority with threshold decryption or joint zkPI generation by the MPC nodes. The P0 item that keeps OCLOB off real assets.</p></li>
+  <li><h4>Note rail on the L1 for OCLOB</h4><p>The L1 acceptance for QOMM runs with zero account records; OCLOB's authoritative state still uses commitment accounts and a reservation root.</p></li>
+  <li><h4>Atomic admit-pledge-limit-pay</h4><p>Grant and admit are separate calls and no state locks pledged collateral. Written requirement, not built.</p></li>
+  <li><h4>Persistent state generations</h4><p>Encrypted queues, rate-limiter counters and nullifier ledgers in authenticated storage across restart, so a rollback cannot re-enable a replay and a venue run as two processes does not double every allowance.</p></li>
+  <li><h4>Production surface</h4><p>mTLS, per-tenant authorisation, OpenAPI, rate limits, audit logs, external KMS/HSM, key rotation, backup and recovery. Currently demo APIs only.</p></li>
+  <li><h4>Offline phase among the nodes</h4><p>The online phase is measured at 16% of the bytes with a trusted dealer; a real preprocessing protocol among seven nodes is not built.</p></li>
+  <li><h4>Bias correction for differential-privacy disclosure</h4><p>DP disclosure measured worse than none from upward bias in a non-linear statistic; the in-MPC sampler needs an exact unbounded construction before a pure-DP claim.</p></li>
+  <li><h4>Reference-price correction for slow committees</h4><p>The winner does not depend on the reference and the price is affine in it; the implementation still reveals a price as old as the computation.</p></li>
+</ul>
+
+<h2 id="products">Products, in the order the use-case survey recommends</h2>
+<ul class="timeline">
+  <li><h4>1. Fund subscription and redemption</h4><p>Separate keys for issuer, administrator, investor and KYC; eligibility, cap, reservation and issuable units bound to one zkPI; cash and unit notes updated together; over-subscription, expiry, replay and one-leg tests.</p></li>
+  <li><h4>2. Collateral and margin</h4><p>Eligibility, haircut and concentration as approved circuits; coverage proved over a secret portfolio; substitution and return; concurrent-call ordering under per-entity caps. The strongest research topic.</p></li>
+  <li><h4>3. Two-currency PvP</h4><p>Two issuers and two reservations in one instruction; outage, expiry, restart and resend tests; ISO 20022 in an external adapter.</p></li>
+  <li><h4>4. External ledger connection</h4><p>Mock fund, collateral and bank ledgers as independent processes; signed reservations and receipts; an explicit list of which faults break atomicity.</p></li>
+</ul>
+
+<h2 id="blocked">Blocked on things outside the code</h2>
+<ul class="timeline">
+  <li class="blocked"><h4>Independent operators on a WAN</h4><p>Seven MPC operators, five or more validators, separate administrators, key stores and failure domains. The largest remaining unknown, and the one the risk register says is hardest.</p></li>
+  <li class="blocked"><h4>Proof of the private computation</h4><p>Validators verify everything submitted but do not re-run the MP-SPDZ transcript or prove the share-to-proof handoff. Closing that needs a proof of the whole MPC and a consensus benchmark.</p></li>
+  <li class="blocked"><h4>Legal finality and register connection</h4><p>A book-entry register, a CSD, a central-bank or designated cash leg, and a supervisor's disclosure workflow. In the EU and UK the natural home is non-equity RFQ; in Switzerland the ledger entry can be the right.</p></li>
+  <li class="blocked"><h4>Independent audit</h4><p>Cryptographic, Rust state-machine, host-VM and integration audit by a third party. Two internal review rounds are not that.</p></li>
+</ul>
+
+<h2 id="research">Open research questions</h2>
+<ol>
+  <li>A publicly verifiable, linearly homomorphic commitment over F_p that opens many times on a random oracle only.</li>
+  <li>Comparison without slack in a field that also holds a group order, for seven-party Shamir.</li>
+  <li>The honest-majority price of public accountability.</li>
+  <li>A formal security definition and proof for OCLOB, including communication leakage and selective halting.</li>
+  <li>Whether Prime Match's two-round malicious comparison transfers to seven-party Shamir.</li>
+</ol>
+
+<div class="next"><a href="status.html">← Status</a><a href="get-started.html">Get started →</a></div>

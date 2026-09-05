@@ -6,20 +6,80 @@ section: top
 ---
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow">zkfmi.com · research stack · Rust · MIT</div>
-    <h1>Markets that settle what they cannot read.</h1>
-    <p class="lede">zkFMI is a family of protocols for financial market infrastructure where the venue never sees the order, the settlement layer never sees the amount, and anyone can still check that the price was the best one offered and that both legs moved together. Every number here has an artifact behind it. Every limit is written down.</p>
-    <div class="cta">
-      <a class="btn primary" href="docs/architecture.html">How it fits together</a>
-      <a class="btn" href="docs/zkpi.html">Read the wire format</a>
-      <a class="btn" href="docs/status.html">What is not production</a>
+    <div>
+      <div class="eyebrow">zkfmi.com · research stack · Rust · MIT · no token</div>
+      <h1>Markets that settle what they <em>cannot read</em>.</h1>
+      <p class="lede">zkFMI is a family of protocols for financial market infrastructure where the venue never sees the order, the settlement layer never sees the amount, and anyone can still check that the price was the best one offered and that both legs moved together. Every number here has an artifact behind it. Every limit is written down.</p>
+      <div class="cta">
+        <a class="btn primary" href="docs/architecture.html">How it fits together</a>
+        <a class="btn" href="docs/zkpi.html">Read the wire format</a>
+        <a class="btn" href="docs/status.html">What is not production</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 520 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, ui-monospace, Menlo, monospace">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--fg-3)"/></marker>
+          <linearGradient id="tok" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent-2)"/><stop offset="1" stop-color="var(--accent-3)"/></linearGradient>
+        </defs>
+        <!-- the one value -->
+        <g transform="translate(260,34)">
+          <rect x="-96" y="-22" width="192" height="44" rx="22" fill="var(--bg-2)" stroke="url(#tok)" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" font-size="12" fill="var(--fg)">C = g^price · h^r</text>
+          <text x="0" y="13" text-anchor="middle" font-size="9.5" fill="var(--fg-3)">one committed price</text>
+        </g>
+        <!-- spine -->
+        <line x1="260" y1="56" x2="260" y2="372" stroke="var(--line-2)" stroke-width="2" stroke-dasharray="4 5"/>
+        <!-- stations -->
+        <g font-size="10.5">
+          <g transform="translate(0,96)">
+            <line x1="260" y1="0" x2="214" y2="0" stroke="var(--fg-3)" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="6" y="-26" width="208" height="52" rx="8" fill="var(--bg-2)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="18" y="-8" fill="var(--accent)" font-size="9" letter-spacing="1.5">1 · QUOTE PROOF</text>
+            <text x="18" y="8" fill="var(--fg)">minimum of the committed keys</text>
+            <text x="18" y="20" fill="var(--fg-3)" font-size="9">best execution, checkable by anyone</text>
+            <circle cx="260" cy="0" r="6" fill="url(#tok)"/>
+          </g>
+          <g transform="translate(0,166)">
+            <line x1="260" y1="0" x2="306" y2="0" stroke="var(--fg-3)" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="306" y="-26" width="208" height="52" rx="8" fill="var(--bg-2)" stroke="var(--accent-3)" stroke-width="1.5"/>
+            <text x="318" y="-8" fill="var(--accent-3)" font-size="9" letter-spacing="1.5">2 · QUORUM SIGNATURE</text>
+            <text x="318" y="8" fill="var(--fg)">3-of-7 FROST, ristretto255</text>
+            <text x="318" y="20" fill="var(--fg-3)" font-size="9">no node holds the witness</text>
+            <circle cx="260" cy="0" r="6" fill="url(#tok)"/>
+          </g>
+          <g transform="translate(0,236)">
+            <line x1="260" y1="0" x2="214" y2="0" stroke="var(--fg-3)" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="6" y="-26" width="208" height="52" rx="8" fill="var(--bg-2)" stroke="var(--accent-2)" stroke-width="1.5"/>
+            <text x="18" y="-8" fill="var(--accent-2)" font-size="9" letter-spacing="1.5">3 · zkPI INSTRUCTION</text>
+            <text x="18" y="8" fill="var(--fg)">ranges, nullifier, deadline</text>
+            <text x="18" y="20" fill="var(--fg-3)" font-size="9">9,726 bytes on the wire</text>
+            <circle cx="260" cy="0" r="6" fill="url(#tok)"/>
+          </g>
+          <g transform="translate(0,306)">
+            <line x1="260" y1="0" x2="306" y2="0" stroke="var(--fg-3)" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="306" y="-26" width="208" height="52" rx="8" fill="var(--bg-2)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="318" y="-8" fill="var(--accent)" font-size="9" letter-spacing="1.5">4 · LEDGER PRODUCT PROOF</text>
+            <text x="318" y="8" fill="var(--fg)">cash = quantity × price</text>
+            <text x="318" y="20" fill="var(--fg-3)" font-size="9">both legs move, or neither</text>
+            <circle cx="260" cy="0" r="6" fill="url(#tok)"/>
+          </g>
+        </g>
+        <!-- lock -->
+        <g transform="translate(260,372)">
+          <rect x="-58" y="-14" width="116" height="30" rx="15" fill="var(--bg-3)" stroke="var(--line-2)"/>
+          <rect x="-46" y="-3" width="10" height="9" rx="1.5" fill="none" stroke="var(--fg-2)" stroke-width="1.3"/>
+          <path d="M-44 -3v-3a3 3 0 0 1 6 0v3" fill="none" stroke="var(--fg-2)" stroke-width="1.3"/>
+          <text x="6" y="5" text-anchor="middle" font-size="10.5" fill="var(--fg)">never opened</text>
+        </g>
+      </svg>
     </div>
   </div>
 </section>
 
 <div class="strip">
   <div class="wrap">
-    <div class="stat"><b>7.0 ms</b><span>to settle one DvP, 64-bit Bulletproof rails, single core</span></div>
+    <div class="stat"><b>7.0 ms</b><span>to settle one DvP on 64-bit Bulletproof rails, one core</span></div>
     <div class="stat"><b>3,424 B</b><span>settlement package on the wire at that width</span></div>
     <div class="stat"><b>217 / s</b><span>settlements verified by one node on 8 workers</span></div>
     <div class="stat"><b>1.07×</b><span>wall-clock cost of making the RFQ auditable (2.00× traffic)</span></div>
@@ -30,7 +90,7 @@ section: top
 <section class="block">
   <div class="wrap">
     <h2>One value, four proofs, never opened</h2>
-    <p style="max-width:70ch;color:var(--fg-2)">A request for quote is priced inside a seven-node multiparty computation. The winning price leaves as a Pedersen commitment. The same commitment is what the quote proof shows is minimal, what the quorum signs, what the payment instruction carries, and what the ledger's product proof consumes. The trade clears at a price nobody in the pipeline learns.</p>
+    <p>A request for quote is priced inside a seven-node multiparty computation. The winning price leaves as a Pedersen commitment. The same commitment is what the quote proof shows is minimal, what the quorum signs, what the payment instruction carries, and what the ledger's product proof consumes. The trade clears at a price nobody in the pipeline learns.</p>
     <div class="three">
       <div class="col h">
         <h3>What settlement never reads</h3>
@@ -69,7 +129,7 @@ section: top
 <section class="block">
   <div class="wrap">
     <h2>The stack</h2>
-    <p style="max-width:70ch;color:var(--fg-2)">Seven repositories, one shared research tree. Each is self-contained: its tests, locks, measurements and source do not need the others' working trees. They compose through explicit ports, not shared state.</p>
+    <p>Seven repositories, one shared research tree. Each is self-contained: its tests, locks, measurements and source do not need the others' working trees. They compose through explicit ports, not shared state.</p>
     <div class="grid">
       <a class="card proved" href="docs/zkpi.html"><div class="tag">instruction</div><h3>zkPI</h3><p>Zero-knowledge payment instruction. A venue's decision, provable without the inputs that produced it: committed amount, price and asset, a nullifier, a deadline, a FROST quorum signature, two threshold range proofs. 9,726 bytes on the wire.</p></a>
       <a class="card proved" href="docs/defmi.html"><div class="tag">settlement</div><h3>DeFMI</h3><p>Decentralized financial market infrastructure. Delivery versus payment and payment versus payment over committed balances, notes with ring signatures, asset tags, netting, a default waterfall, reconciliation against a book of record. Runs as a dedicated non-EVM Avalanche L1.</p></a>
@@ -85,11 +145,30 @@ section: top
 
 <section class="block">
   <div class="wrap">
+    <h2>Where it sits among the alternatives</h2>
+    <p>Six axes, stated in both directions. On most of them somebody else is stronger; on two of them nobody else is present.</p>
+    <div class="table-wrap"><table class="compare">
+      <thead><tr><th></th><th>Conventional FMI chain</th><th>DvP on DLT pilots</th><th>MPC dark pools (Rialto, P2DEX, Renegade)</th><th>Prime Match (J.P. Morgan)</th><th>Auditable MPC (BDO 2014, Rivinius 2022)</th><th>zkFMI</th></tr></thead>
+      <tbody>
+        <tr><td>venue sees the order</td><td class="no">yes</td><td class="no">yes</td><td class="yes">no</td><td class="part">semi-honest hub</td><td class="yes">no</td><td class="yes">no</td></tr>
+        <tr><td>settlement sees amount and price</td><td class="no">yes</td><td class="no">yes</td><td class="no">mostly</td><td class="no">yes</td><td class="no">out of scope</td><td class="yes">no</td></tr>
+        <tr><td>best execution provable by an outsider</td><td class="no">reports, abolished as unverifiable</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="part">circuit correctness</td><td class="yes">yes, the mechanism</td></tr>
+        <tr><td>clearing: novation, netting, waterfall</td><td class="yes">CCP</td><td class="part">partly</td><td class="no">no</td><td class="no">bank pipeline</td><td class="no">no</td><td class="yes">DeCCP, on commitments</td></tr>
+        <tr><td>robustness / accountability</td><td class="yes">legal</td><td class="part">consensus</td><td class="part">varies</td><td class="part">the bank</td><td class="yes">Rivinius: both, 11–20×</td><td class="part">rung 1 deployed; rung 5 built at n=9</td></tr>
+        <tr><td>in production</td><td class="yes">yes</td><td class="part">pilots</td><td class="part">some</td><td class="yes">yes</td><td class="no">no</td><td class="no">research, one host</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted" style="font-size:.9rem">The <a href="docs/prior-art.html">prior-art page</a> has the paper-by-paper version, including the three claims retracted from earlier drafts.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
     <h2>Where the trust actually sits</h2>
     <div class="grid">
       <div class="card">
         <h3>Publicly verifiable, rung 1</h3>
-        <p>The quote proof lets anyone check the winner was the minimum of the committed keys. The MPC is malicious-secure with abort: a deviation is detected, not attributed, not survived. Robust reconstruction at n ≥ 4t+1 is built and measured at nine nodes; the deployed engine runs seven.</p>
+        <p>The quote proof lets anyone check the winner was the minimum of the committed keys. The deployed MPC is malicious-secure with abort: a deviation is detected, not attributed, not survived. Robust reconstruction at n ≥ 4t+1 is built and measured at nine nodes, and costs less than the deployed engine; the deployed engine runs seven.</p>
       </div>
       <div class="card">
         <h3>Validators check everything submitted</h3>
@@ -97,7 +176,7 @@ section: top
       </div>
       <div class="card">
         <h3>What they do not re-run</h3>
-        <p>Validators do not replay the private MP-SPDZ transcript, and nothing proves that a node fed the engine the share it was dealt. That share-to-proof handoff is the remaining committee trust boundary, and it is stated in the wire specification rather than left implicit.</p>
+        <p>Validators do not replay the private MP-SPDZ transcript. The share-to-proof handoff is closed by matching the field and a per-party input check, and that remaining committee trust boundary is stated in the wire specification rather than left implicit.</p>
       </div>
       <div class="card">
         <h3>Anonymity is other people's traffic</h3>
@@ -109,21 +188,47 @@ section: top
 
 <section class="block">
   <div class="wrap">
-    <div class="honest">
-      <h3>What this is not</h3>
-      <p>A research implementation. Not audited. It custodies nothing. Every multi-node acceptance ran as processes or containers on one host under one administrator: five AvalancheGo validators, seven MP-SPDZ parties, seven order-book nodes. No deployment has run across independent organisations, a real WAN, HSM-held keys or a legal finality regime. Under Japan's book-entry regime DeFMI cannot be the register; it mirrors one and reconciles. None of this is compliance, and "auditable" is material for control, not control. The <a href="docs/status.html">status page</a> lists what stands between the current gate and production, item by item.</p>
+    <h2>Three ways in</h2>
+    <div class="paths">
+      <div class="card">
+        <div class="tag">protocol engineer</div>
+        <h3>Build against it</h3>
+        <ol>
+          <li><a href="docs/zkpi.html#wire">The zkPI wire layout</a> and its vectors</li>
+          <li><a href="docs/defmi.html#guarantees">What DeFMI checks</a>, then the note ledger</li>
+          <li><a href="docs/binding.html">Binding computed to committed</a></li>
+          <li><a href="docs/get-started.html">Clone, test, run the L1 gate</a></li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="tag">fmi designer · risk</div>
+        <h3>Decide what to deploy</h3>
+        <ol>
+          <li><a href="docs/deployment.html">Choosing a deployment</a>: placement, profiles, switches</li>
+          <li><a href="docs/defmi.html#netting">Netting models and the intraday limit</a></li>
+          <li><a href="docs/deccp.html">DeCCP</a> and <a href="docs/dekyx.html">DeKYX</a></li>
+          <li><a href="docs/use-cases.html">Use cases beyond RFQ</a></li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="tag">researcher · reviewer</div>
+        <h3>Check the claims</h3>
+        <ol>
+          <li><a href="docs/prior-art.html">Position against prior work</a></li>
+          <li><a href="docs/measurements.html#misses">Predictions that missed</a></li>
+          <li><a href="docs/accountability.html">Accountability and robustness</a></li>
+          <li><a href="docs/status.html">Status</a> and the <a href="docs/principles.html">working rules</a></li>
+        </ol>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="block">
   <div class="wrap">
-    <h2>Start reading</h2>
-    <div class="grid">
-      <a class="card" href="docs/architecture.html"><h3>Architecture</h3><p>The data flow from a request to two moved legs, and which component owns each secret.</p></a>
-      <a class="card" href="docs/measurements.html"><h3>Measurements</h3><p>The numbers that decide deployment questions, with the artifact each came from.</p></a>
-      <a class="card" href="docs/prior-art.html"><h3>Position against prior work</h3><p>Baum–Damgård–Orlandi, Rivinius et al., Prime Match, Baum–Zok. What is borrowed, what is retracted, what is new.</p></a>
-      <a class="card" href="docs/get-started.html"><h3>Get started</h3><p>Clone, <code>cargo test --locked</code>, check the zkPI vectors, run the five-validator gate.</p></a>
+    <div class="honest">
+      <h3>What this is not</h3>
+      <p>A research implementation. Not audited. It custodies nothing and there is no token. Every multi-node acceptance ran as processes or containers on one host under one administrator: five AvalancheGo validators, seven MP-SPDZ parties, seven order-book nodes. No deployment has run across independent organisations, a real WAN, HSM-held keys or a legal finality regime. Under Japan's book-entry regime DeFMI cannot be the register; it mirrors one and reconciles. None of this is compliance, and "auditable" is material for control, not control. The <a href="docs/status.html">status page</a> lists what stands between the current gate and production, item by item.</p>
     </div>
   </div>
 </section>

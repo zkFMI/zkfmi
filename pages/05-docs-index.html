@@ -12,7 +12,8 @@ section: docs
   <li><a href="architecture.html">Architecture</a> gives the shape: who decides, who instructs, who settles, and which secret sits where.</li>
   <li><a href="zkpi.html">zkPI</a> and <a href="defmi.html">DeFMI</a> are the protocol core. Read them together; the instruction is meaningless without the ledger that consumes it.</li>
   <li><a href="qomm.html">QOMM</a> and <a href="oclob.html">OCLOB</a> are the two venues built so far. <a href="use-cases.html">Use cases</a> is the argument that they are examples, not the product.</li>
-  <li><a href="security.html">Security</a>, <a href="measurements.html">Measurements</a> and <a href="status.html">Status</a> are the evidence pages. If you only read one, read <a href="status.html">Status</a>: it says what is accepted and what is not.</li>
+  <li><a href="binding.html">Binding</a>, <a href="audit.html">Audit</a>, <a href="accountability.html">Accountability</a> and <a href="deployment.html">Deployment</a> are the deep dives, distilled from the design documents that carry the measurements.</li>
+  <li><a href="security.html">Security</a>, <a href="measurements.html">Measurements</a> and <a href="status.html">Status</a> are the evidence pages. If you only read one, read <a href="status.html">Status</a>: it says what is accepted and what is not. <a href="principles.html">How this project works</a> explains why the evidence pages are shaped the way they are.</li>
 </ol>
 
 <h2 id="conventions">Conventions used on this site</h2>
@@ -32,6 +33,13 @@ section: docs
   <a class="card hidden" href="qomm.html"><h3>QOMM</h3><p>Oblivious RFQ: transport, seven-party tournament, quote proof, differential privacy on publication, cost of auditability.</p></a>
   <a class="card hidden" href="oclob.html"><h3>OCLOB</h3><p>Oblivious order book: participant-side splitting, 5-of-7 arrival order, MPC matching, aggregate book, pre-authorised settlement.</p></a>
   <a class="card checked" href="aethel.html"><h3>Aethel</h3><p>Payment streams as receivables; provider capabilities; confidential guarantees through DeCCP; settlement through zkPI.</p></a>
+  <a class="card" href="binding.html"><h3>Binding computed to committed</h3><p>The gap in the middle of the stack, the two closures, the compile-flag error, VOLE-in-the-Head measured, post-quantum, quantum networks.</p></a>
+  <a class="card" href="audit.html"><h3>Audit machinery</h3><p>Cover slots, receipts and slashing, relays, the quote proof, the pricing-rule language, oblivious asset selection, where the rounds go.</p></a>
+  <a class="card" href="accountability.html"><h3>Accountability and robustness</h3><p>The five-rung ladder, Reed–Solomon decoding in the engine, rung 5 at nine nodes, dishonest majority priced, the taker as a party.</p></a>
+  <a class="card" href="deployment.html"><h3>Choosing a deployment</h3><p>Placement against collusion, why 26 s is affordable, three profiles, the switches that default off, component choices.</p></a>
+  <a class="card" href="principles.html"><h3>How this project works</h3><p>No number by hand, predictions before runs, retractions in public, fail closed, no TEE.</p></a>
+  <a class="card" href="faq.html"><h3>FAQ</h3><p>Token, blockchain, EVM, TEEs, seven nodes, regulators, post-quantum, dark pools, production.</p></a>
+  <a class="card" href="roadmap.html"><h3>Roadmap</h3><p>Done, next by dependency, products in order, blocked outside the code, open questions.</p></a>
   <a class="card" href="use-cases.html"><h3>Use cases beyond RFQ</h3><p>Fund subscription, collateral, PvP, issuance, receivables, certificates, insurance; an implementation order.</p></a>
   <a class="card" href="measurements.html"><h3>Measurements</h3><p>The decision-relevant numbers in one place, with artifacts.</p></a>
   <a class="card" href="security.html"><h3>Security and trust boundary</h3><p>Adversaries, the accountability ladder, what validators verify and do not, anonymity as traffic, what is not defended.</p></a>
