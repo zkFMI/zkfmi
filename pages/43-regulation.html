@@ -1,0 +1,66 @@
+---
+title: Regulation
+description: What the zkFMI architecture needs from a legal system, how Japan, Switzerland, the EU, the UK and Singapore score, why DeFMI cannot be Japan's book-entry register, where the nodes sit and under whose law, how the argument inverts on a pure crypto rail, and what may and may not be claimed. Not legal advice.
+path: docs/regulation.html
+section: docs
+---
+<h1>Regulation</h1>
+<p class="lede">A map of the accounts and statutes a live deployment touches, drawn so that the engineering does not walk into a structural problem late. <strong>This is not legal advice.</strong> Whether any of it is lawful depends on who operates it and where, and that question belongs to counsel. What the map can do is narrow the search.</p>
+<p class="src">source: defmi/REGULATION.md, qomm/REGULATION.md · sources listed there</p>
+
+<h2 id="needs">What the architecture needs from a legal system</h2>
+<ul>
+  <li><strong>N1: a venue category that permits a system to evaluate orders it does not publish.</strong> QOMM never discloses a quote pre-trade, by construction. It needs a regime where that is permitted as a matter of rule, not tolerated as a matter of practice.</li>
+  <li><strong>N2: a legal record that the settlement ledger can be.</strong> DeFMI either mirrors an authoritative register kept elsewhere, or it is the register. The second requires a statute saying that an entry in a ledger constitutes title. Whether such a statute exists is the single largest difference between jurisdictions.</li>
+  <li><strong>N3: a cash leg with real finality that a distributed ledger can reach.</strong> Without it, DvP is atomic on one side only.</li>
+</ul>
+<p>Two further costs are independent of all three: the seven node operators are seven third parties whose availability the venue still owns, and no supervisor anywhere accepts "we are unable to show you".</p>
+
+<h2 id="compare">Five jurisdictions</h2>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>N1: non-disclosing venue</th><th>N2: ledger as title</th><th>N3: cash leg</th><th>already exists</th></tr></thead>
+<tbody>
+<tr><td><strong>Japan</strong></td><td>PTS authorisation, art. 30: heavy</td><td>No on the book-entry rail; yes on the FIEA art. 2(3) rail, security tokens only</td><td>BOJ-NET; PSA electronic payment instruments</td><td>START (ODX), ST PTS since Dec 2023</td></tr>
+<tr><td><strong>Switzerland</strong></td><td>DLT trading facility licence, purpose-built; one licence covers trading, settlement and custody</td><td><strong>Yes: CO arts. 973d–973i, in force 1 Feb 2021. The register entry is the right.</strong></td><td>SDX plus SNB wholesale CBDC</td><td>BX Digital, first DLT trading facility licence, Mar 2025; SDX since Sep 2021; six digital bonds over CHF 750m in wCBDC</td></tr>
+<tr><td><strong>EU</strong></td><td>MTF/OTF, plus DLT MTF and DLT TSS under Reg. 2022/858</td><td>member state by member state; Germany's eWpG register constitutes the security</td><td>T2; MiCA e-money tokens; ECB DLT settlement work</td><td>three authorised DLT infrastructures at 31 May 2025</td></tr>
+<tr><td><strong>UK</strong></td><td>MTF/OTF, plus the Digital Securities Sandbox</td><td>within the sandbox perimeter, yes</td><td><strong>strongest available: the BoE omnibus account puts central bank money under a DLT payment system</strong></td><td>DSS open since Sep 2024; Fnality live in sterling since Dec 2023 with finality designation</td></tr>
+<tr><td><strong>Singapore</strong></td><td>Recognised Market Operator, institutional tier is exactly wholesale</td><td>weakest: no statute making the ledger entry the right</td><td>MAS stablecoin framework; Project Orchid</td><td>Project Guardian: real institutions, real trades, the regulator in the room</td></tr>
+</tbody></table></div>
+
+<h2 id="japan">Japan: DeFMI cannot be the book-entry register</h2>
+<p>Under the Book-Entry Transfer Act the right is the entry in the register kept by the transfer institution and account management institutions, not a commitment ledger kept alongside it. Two options remain. <strong>(a)</strong> Run as a mirror, a control plane: DeFMI reflects the register, checks rules, state and receipts, and is never authoritative; the price is double bookkeeping in which the register is always right. That is the default, and the <a href="defmi.html#reconcile">reconciliation proof</a> is its cost. <strong>(b)</strong> Issue on the electronically recorded rights rail under FIEA art. 2(3), where DeFMI's record can be the record, for security tokens only and never for listed equities.</p>
+<p>What DeFMI is not: the existing chain decomposes into execution, confirmation, clearing (JSCC: novation, netting, margin, guarantee), securities delivery (JASDEC) and cash delivery (BOJ-NET). DeFMI touches delivery. Exchanging two parties' tokens simultaneously does not reproduce a CCP, and <a href="deccp.html">DeCCP</a> is the component that supplies novation and a waterfall rather than a claim the code does not support.</p>
+
+<h2 id="finding">The finding that changes what to build</h2>
+<p>The 2024 MiFIR review narrowed pre-trade publication for bonds, structured products and emission allowances to central limit order books and periodic auctions, and removed the RFQ waiver as no longer needed. In EU non-equity markets an RFQ system is not required to publish quotes before the trade: the confidentiality QOMM provides is the baseline the legislator chose, not a tolerated edge. Equities are the reverse. So <strong>QOMM's natural home in the EU and UK is bonds and derivatives</strong>, which is also where RFQ is how the market already trades, and that cuts against Japan, where the friction lives on the equity book-entry rail.</p>
+<p>A second consequence: the RTS 27/28 execution-quality reports were abolished because nobody could verify them, while the article 27 best-execution duty survives. QOMM produces the verifiable version of exactly the thing that was abolished for being unverifiable. That is the strongest regulatory argument the system has, and it does not depend on any DLT regime.</p>
+
+<h2 id="nodes">Where the nodes sit, and under whose law</h2>
+<p>Two tiers face two adversaries: a regional committee under one supervisor faces an adversary that must go through lawful access, and a spread committee faces one that must corrupt operators in several legal orders. Routing is by instrument, because the register decides the law. The <a href="qomm.html#placement">placement measurements</a> price the spread committee at 26 s a quote and show it is affordable exactly in the market that most needs it.</p>
+<p><strong>On a pure crypto rail the argument inverts.</strong> N2 is free: the chain is the record because no competing register exists, so DvP on one ledger is available at all. But the chain gives the record without the enforcement: a Swiss ledger entry is a right a court enforces, a chain entry is a record nothing off-chain must honour, and finality of the transfer is not finality of the claim, which a stablecoin transfer illustrates exactly. With no authorising supervisor there is no lawful-access channel substituting for geographic spread, so the spread committee is the answer rather than a luxury, and what decides the committee becomes an operator rather than a register.</p>
+
+<h2 id="claims">What may and may not be claimed</h2>
+<div class="grid">
+  <div class="card proved">
+    <h3>May</h3>
+    <ul>
+      <li>A price can be produced without the order reaching the makers or any single node. Measured.</li>
+      <li>That the returned price was the minimum under the registered rules can be proved in a form anyone can check.</li>
+      <li>Node inaction, double signing and reuse of stale state are detectable and attributable.</li>
+      <li>Settlement checks conservation, non-negativity and double-spend without reading amounts, prices or instrument names.</li>
+      <li>Selective disclosure is built at three grains: one committed field, one scope of a wallet to a named auditor, and a quorum-assembled statement about a value none of them holds.</li>
+    </ul>
+  </div>
+  <div class="card" style="border-color:color-mix(in srgb,var(--danger) 45%,var(--line))">
+    <h3>May not</h3>
+    <ul>
+      <li>"This is compliant." Lawfulness depends on the operator and the jurisdiction.</li>
+      <li>"Confidential computation makes it safe for retail." Investor protection is a different layer.</li>
+      <li>"DeFMI replaces the book-entry register." Under the Act it does not.</li>
+      <li>"A CCP is no longer needed." Two-party simultaneous exchange is not novation.</li>
+      <li>"It is auditable, therefore controls exist." Evidence is material for control, not control.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="next"><a href="prior-art.html">← Prior art</a><a href="status.html">Status and acceptance →</a></div>

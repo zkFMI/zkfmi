@@ -1,0 +1,68 @@
+---
+title: Get started
+description: Clone the zkFMI repositories, run the locked test suites, check the zkPI vectors, run the five-validator Avalanche L1 acceptance, try the QOMM seat demo, and find the enterprise PoC guides.
+path: docs/get-started.html
+section: docs
+---
+<h1>Get started</h1>
+<p class="lede">Everything is Rust with checked-in lock files. Library tests run anywhere Rust does. The network gates need Linux, an explicitly supplied AvalancheGo, and for the MPC paths an official MP-SPDZ checkout. The scripts never download an external binary for you.</p>
+
+<h2 id="clone">Clone and test</h2>
+<pre><code>git clone https://github.com/shukob/defmi.git
+cd defmi/rust
+cargo test -j 4 --locked --workspace</code></pre>
+<p>The same command works in <code>zkpi</code> and <code>qomm</code>. The standalone crates use the four-gate form:</p>
+<pre><code>git clone https://github.com/shukob/dekyx.git   # or deccp, aethel
+cd dekyx
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo fmt --all -- --check
+cargo build --workspace --release --locked</code></pre>
+<p>There is no <code>rust-toolchain.toml</code>; record <code>rustc --version</code> at the start of an evaluation and pin it across build machines. The integration Docker build currently references Rust 1.97.1.</p>
+
+<h2 id="vectors">Check the instruction vectors</h2>
+<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
+qomm-zkpi-verify --self-test</code></pre>
+<p>Exit 0 accepts, 1 rejects, 2 could not be asked. The accepted vector must decode and re-encode to the same bytes. Regenerate vectors with <code>--vectors &lt;dir&gt;</code> only when the format changes, never because a check disagreed.</p>
+
+<h2 id="l1">Run the five-validator L1 gate</h2>
+<p>From <code>defmi/</code>, with AvalancheGo and avalanche-network-runner supplied at approved versions:</p>
+<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p qomm-avalanche-vm -p qomm-harness
+# launchers and configuration under avalanche/defmivm/
+cargo run --release --manifest-path rust/Cargo.toml -p qomm-harness --bin run_avalanche_l1_acceptance</code></pre>
+<p>The run writes <code>artifacts/avalanche_l1_acceptance.json</code>. The <a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">enterprise PoC guide</a> (Japanese) walks through pinning sources, building the VM, launching the network, the trade scenarios, the QOMM path with no extra signature, the mandatory rejection and fault tests, the evidence to retain, and the pass criteria, then continues into hardware sizing, process separation, network design, genesis, key management, backup, monitoring and fault injection for a company-run evaluation.</p>
+
+<h2 id="demo">Try the QOMM seat demo</h2>
+<pre><code>cd qomm
+cargo run -j 4 --release --manifest-path rust/Cargo.toml -p qomm-harness --bin serve_demo
+# then hand out seats:
+#   http://&lt;host&gt;:8800/?seat=taker
+#   http://&lt;host&gt;:8800/?seat=maker:1&amp;label=Ann
+#   http://&lt;host&gt;:8800/?seat=node:3&amp;label=Rin
+#   http://&lt;host&gt;:8800/?seat=observer</code></pre>
+<p>Each browser is sent only what its role would see. The observer seat shows everything and says on every frame that it is a view no deployment has.</p>
+
+<h2 id="oclob">Run the OCLOB gates</h2>
+<p>OCLOB builds and tests only inside a Linux container on a remote host; the Makefile ships the source there.</p>
+<pre><code>make release-gate REMOTE_TEST_HOST=&lt;linux-host&gt; REMOTE_TEST_REUSE_IMAGE=0
+make remote-distributed-e2e REMOTE_TEST_HOST=&lt;linux-host&gt;
+make remote-integrated-e2e  REMOTE_TEST_HOST=&lt;linux-host&gt;</code></pre>
+<p>Results land in <code>artifacts/oclob_rough_e2e.json</code>, <code>oclob_distributed_e2e.json</code> and <code>oclob_distributed_avalanche_acceptance.json</code>, each carrying its own <code>non_claims</code> and <code>privacy_boundary</code> fields.</p>
+
+<h2 id="measure">Regenerate a document from its artifacts</h2>
+<pre><code>cd defmi
+make defmi-doc      # DEFMI.md from artifacts/*.json; no number typed by hand
+cd ../qomm
+make audit-doc      # AUDIT.md likewise</code></pre>
+
+<h2 id="poc">Enterprise PoC guides</h2>
+<ul>
+  <li><a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI</a>: installation, role separation, failure cases, evidence, acceptance, and 41 sections of operational guidance.</li>
+  <li><a href="https://github.com/shukob/qomm/blob/main/docs/ENTERPRISE_POC_JA.md">QOMM</a>, <a href="https://github.com/shukob/dekyx/blob/main/docs/ENTERPRISE_POC_JA.md">DeKYX</a>, <a href="https://github.com/shukob/deccp/blob/main/docs/ENTERPRISE_POC_JA.md">DeCCP</a>, <a href="https://github.com/shukob/aethel/blob/main/docs/ENTERPRISE_POC_JA.md">Aethel</a>, <a href="https://github.com/shukob/oclob/blob/main/docs/POC_GUIDE_JA.md">OCLOB</a>.</li>
+</ul>
+<p>All are in Japanese. They assume synthetic assets, disposable keys and a network not exposed to the internet, and they say which evidence to keep so that a later auditor can check the run rather than take the word for it.</p>
+
+<h2 id="license">License</h2>
+<p>MIT across all seven repositories. Third-party notices are carried where vendored code requires them.</p>
+
+<div class="next"><a href="status.html">← Status</a><a href="glossary.html">Glossary →</a></div>

@@ -1,0 +1,149 @@
+---
+title: Architecture
+description: How the zkFMI components compose. From a request through oblivious pricing, a proof-carrying instruction, and atomic settlement on a dedicated Avalanche L1, with each secret assigned to the component that holds it.
+path: docs/architecture.html
+section: docs
+---
+<h1>Architecture</h1>
+<p class="lede">zkFMI separates three jobs that conventional infrastructure fuses: deciding a trade, instructing its settlement, and settling it. Each job runs in a component that holds only the secrets that job needs. The joints between them are commitments, proofs and signatures, never plaintext.</p>
+
+<h2 id="shape">The shape of the system</h2>
+<pre class="mermaid">
+flowchart LR
+    subgraph up["upstream: decides"]
+        Q["QOMM<br/>oblivious RFQ"]
+        O["OCLOB<br/>oblivious order book"]
+        A["Aethel<br/>receivables"]
+        X["any business system<br/>fund, collateral, bank"]
+    end
+    subgraph gate["eligibility"]
+        K["DeKYX<br/>anonymous qualification"]
+    end
+    subgraph inst["instructs"]
+        Z["zkPI<br/>committed instruction<br/>+ quorum signature<br/>+ range proofs"]
+    end
+    subgraph clear["clears (optional)"]
+        C["DeCCP<br/>netting, margin, waterfall"]
+    end
+    subgraph settle["settles"]
+        D["DeFMI<br/>notes, asset tags,<br/>DvP / PvP, reconciliation"]
+        L["Avalanche L1<br/>5 validators, Rust VM"]
+        D --- L
+    end
+    K -.->|"verified eligibility"| Q
+    K -.->|"verified eligibility"| O
+    K -.->|"verified eligibility"| C
+    Q --> Z
+    O --> Z
+    A --> Z
+    X --> Z
+    Z --> C --> D
+    Z --> D
+    D -->|"receipt, state root"| up
+</pre>
+
+<p>Three properties follow from that shape and are worth holding onto while reading the rest of the site.</p>
+<ul>
+  <li><strong>The settlement layer has no opinion about meaning.</strong> DeFMI checks arithmetic: conservation, non-negativity, the product relation, atomicity, single use. Whether the price was reasonable or the instrument was the right one is the upstream's decision and travels in the quorum signature. Making DeFMI re-derive it would mean handing it the plaintext, which is the one thing the construction exists to avoid.</li>
+  <li><strong>The instruction is the only thing that crosses.</strong> The request, the pricing policies and the losing quotes never leave the upstream. What the venue publishes is a committed instruction, a nullifier, a deadline and a signature.</li>
+  <li><strong>Every upstream is replaceable.</strong> QOMM was built first, but a fund administrator, a collateral engine or a bank's sanctions check can issue the same instruction type. The <a href="use-cases.html">use-cases page</a> orders those by feasibility.</li>
+</ul>
+
+<h2 id="flow">One trade, end to end</h2>
+<p>The QOMM path is the most complete, so it is the one traced here. OCLOB replaces the pricing step with matching; the instruction and settlement steps are the same.</p>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant T as Taker
+    participant N as 7 MPC nodes
+    participant M as Makers (policies dealt in advance)
+    participant Q as 3-of-7 quorum
+    participant V as DeFMI validators (5)
+    T->>N: additive shares of (asset, size, side), fixed cadence
+    M-->>N: committed pricing rules, dealt as Shamir shares
+    N->>N: price every maker, gate eligibility, binary tournament
+    N->>N: open one key: winner and committed price
+    N->>N: quote proof: winner is the minimum of committed keys
+    N->>Q: assemble two threshold range proofs (amount, price)
+    Q->>Q: FROST-sign the instruction (nonce, deadline, digest)
+    Q->>V: zkPI + complete quote proof + DvP package
+    V->>V: verify approval, instruction, proofs, price limit, asset link, roots, nullifier
+    V->>V: apply both legs atomically, or neither
+    V-->>T: height, receipt, state root before and after
+</pre>
+
+<h2 id="secrets">Who holds which secret</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Secret</th><th>Held by</th><th>Seen by settlement?</th><th>Mechanism</th></tr></thead>
+<tbody>
+<tr><td>the request (asset, size, side)</td><td>taker; nodes hold shares</td><td>no</td><td>additive shares over relay hops, fixed cadence so the trace is the same whether or not anyone asked</td></tr>
+<tr><td>a maker's pricing rule</td><td>maker; nodes hold shares</td><td>no</td><td>committed, dealt with signed shares; the commitment is what the audit is stated against</td></tr>
+<tr><td>the losing quotes</td><td>nobody after the tournament</td><td>no</td><td>only one key is opened</td></tr>
+<tr><td>the winning price</td><td>nobody in the clear</td><td>no</td><td>Pedersen commitment carried through proof, signature, instruction and ledger</td></tr>
+<tr><td>amount, quantity</td><td>counterparties</td><td>no</td><td>commitments, range proofs, product proof</td></tr>
+<tr><td>which instrument</td><td>counterparties</td><td>no</td><td>blinded asset tag; membership proved once at issue</td></tr>
+<tr><td>who paid whom</td><td>counterparties</td><td>no</td><td>note ledger, Groth–Kohlweiss one-of-many ring; per-venue handles</td></tr>
+<tr><td>who is eligible</td><td>DeKYX issuer and holder</td><td>only a scoped subject line</td><td>anonymous presentation bound to audience, action, nonce, expiry</td></tr>
+<tr><td>the audit view</td><td>a named auditor, one scope</td><td>—</td><td>scoped view keys derived per instrument or period; incoming notes only, no spend capability</td></tr>
+</tbody></table></div>
+
+<h2 id="repos">Repositories and crates</h2>
+<p>Seven repositories. The first three were generated from one shared research tree, which is why their layout is regular; the other four are standalone crate workspaces with explicit ports.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Repository</th><th>Role</th><th>Principal crates</th><th>Depends on</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/shukob/zkpi">zkpi</a></td><td>instruction and proof gadgets</td><td><code>qomm-zk</code>, <code>qomm-zkpi</code>, <code>qomm-proofs</code></td><td>curve25519-dalek, bulletproofs, frost-ristretto255</td></tr>
+<tr><td><a href="https://github.com/shukob/defmi">defmi</a></td><td>settlement ledger and Avalanche VM</td><td><code>qomm-defmi</code>, <code>qomm-avalanche-vm</code>, <code>zkpi-defmi-sdk</code>, <code>qomm-harness</code></td><td>aethel, deccp</td></tr>
+<tr><td><a href="https://github.com/shukob/qomm">qomm</a></td><td>oblivious RFQ venue</td><td><code>qomm-dsl</code>, <code>qomm-mpc</code>, <code>qomm-transport</code>, <code>qomm-audit</code>, <code>qomm-law</code></td><td>MP-SPDZ (external)</td></tr>
+<tr><td><a href="https://github.com/shukob/oclob">oclob</a></td><td>oblivious order book</td><td><code>oclob-core</code>, <code>oclob-edge</code>, <code>oclob-node</code>, <code>oclob-ordering</code>, <code>oclob-mpc</code>, <code>oclob-settlement</code></td><td>dekyx, zkPI/DeFMI SDK, MP-SPDZ</td></tr>
+<tr><td><a href="https://github.com/shukob/dekyx">dekyx</a></td><td>eligibility credentials</td><td><code>dekyx-core</code>, <code>dekyx-aethel</code></td><td>none</td></tr>
+<tr><td><a href="https://github.com/shukob/deccp">deccp</a></td><td>clearing state machine</td><td><code>deccp-core</code>, <code>deccp-aethel</code></td><td>none (ports)</td></tr>
+<tr><td><a href="https://github.com/shukob/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and seven siblings</td><td>dekyx</td></tr>
+</tbody></table></div>
+
+<h2 id="primitives">Cryptographic primitives, used not rewritten</h2>
+<p>Everything sits on ristretto255. Audited crates supply the curve, the range proofs and the threshold signature; the project's own gadgets are sigma protocols over them.</p>
+<pre class="mermaid">
+flowchart TB
+    subgraph ext["audited crates"]
+        DALEK["curve25519-dalek<br/>ristretto255"]
+        BP["bulletproofs<br/>range proofs"]
+        FROST["frost-ristretto255<br/>threshold signatures"]
+    end
+    subgraph zk["qomm-zk"]
+        PED["pedersen<br/>commitments, asset tags"]
+        SIG["sigma<br/>opening, cross-generator, product"]
+        RNG["range"]
+        OOM["oneofmany<br/>Groth-Kohlweiss"]
+        ORD["or_dleq"]
+        ADP["adaptor<br/>pre-sign, adapt, extract"]
+        SHA["shamir<br/>Reed-Solomon decoder"]
+    end
+    subgraph pi["qomm-zkpi"]
+        ISS["issuer<br/>KYB credentials"]
+        INS["instruction<br/>commit, bound, nullify"]
+        QUO["quorum"]
+        HAN["handles<br/>one seed, an unrelated point per venue"]
+    end
+    DALEK --> PED
+    DALEK --> HAN
+    BP --> RNG
+    FROST --> QUO
+    PED --> SIG
+    PED --> OOM
+    PED --> ORD
+    SIG --> ADP
+    SIG --> INS
+    RNG --> INS
+    OOM --> ISS
+    ORD --> ISS
+    INS --> QUO
+    HAN --> INS
+</pre>
+<p>The field is matched deliberately: the MPC runs over the same prime as the commitment group's order, so a commitment to a share is a linear statement the auditor can replay. That match is what makes auditability cost 2.00× traffic and nothing else, and it is also what keeps the stack on discrete-log assumptions rather than lattices. The <a href="prior-art.html">prior-art page</a> explains why both halves of that trade are true.</p>
+
+<h2 id="execution">Execution target</h2>
+<p>The deployed path is a dedicated non-EVM Avalanche L1. AvalancheGo is an external consensus host that launches the Rust VM over RPCChainVM protocol 45. The VM has native transitions for asset registration, account opening, pre-authorised reserves and atomic multi-leg settlement. No Solidity, no EVM bytecode, no precompile is in the acceptance path.</p>
+<p>The reasons EVM and Solana were rejected are recorded rather than assumed: one ed25519 scalar multiplication in EVM bytecode measured 302,401 gas, and on Solana the Groth–Kohlweiss verifier's scalar-field polynomial evaluation exceeds the compute ceiling at a crowd of 64 because the runtime has curve syscalls but no field syscalls. The <a href="zkpi.html#where">zkPI page</a> has the table.</p>
+
+<div class="next"><a href="index.html">← Docs home</a><a href="zkpi.html">zkPI: the instruction →</a></div>

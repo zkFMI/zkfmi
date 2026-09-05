@@ -1,0 +1,52 @@
+---
+title: Status and acceptance
+description: What is built, what has passed a release gate, and what stands between the zkFMI stack and production, component by component. One host, one administrator, demo keys, no legal finality.
+path: docs/status.html
+section: docs
+---
+<h1>Status and acceptance</h1>
+<p class="lede">"Built" means the code exists and its tests pass in the locked workspace. "Accepted" means it ran in the repository's release gate on the stated topology. Neither means production, and the stated topology for every multi-node acceptance is one Linux host under one administrator.</p>
+<p class="src">last checked against repository heads of 2026-09-05</p>
+
+<h2 id="summary">One-paragraph summary</h2>
+<p>The end-to-end path exists and has been run: a participant splits an order or request, seven MPC processes compute it, a 3-of-7 quorum issues a threshold zkPI, and five AvalancheGo validators running the Rust VM settle both legs atomically, agree on a state root, refuse a replay, and recover one validator after a restart with the same root. That is evidence for native execution and recovery. It is not evidence for independent organisations, a WAN, HSM-held keys, a supervisor's key ceremony, or a legal finality regime, and none of those has been attempted.</p>
+
+<h2 id="components">By component</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>component</th><th>state</th><th>gate that covers it</th><th>what remains</th></tr></thead>
+<tbody>
+<tr><td>zkPI v2 wire, vectors, verifier</td><td><span class="pill ok">built · vectors fixed</span></td><td><code>qomm-zkpi-verify --check-vectors</code>; decode/re-encode byte identity</td><td>independent second implementation against the vectors</td></tr>
+<tr><td>DeFMI ledger: accounts, notes, tags, netting, PvP, reconciliation, viewing, vetting</td><td><span class="pill ok">built · measured</span></td><td><code>cargo test --locked --workspace</code>; every table regenerated from JSON</td><td>atomic admit-pledge-limit-pay; production note rail on the L1 (OCLOB still uses commitment accounts)</td></tr>
+<tr><td>Bulletproof backend</td><td><span class="pill ok">built · measured on host-a</span></td><td>rust_bench.json</td><td>rerun both backends on one host before promotion</td></tr>
+<tr><td>Avalanche L1, Rust VM, 5 validators</td><td><span class="pill ok">accepted · 1 host</span></td><td>run_avalanche_l1_acceptance; QOMM full path at heights 53–54</td><td>independent hosts and operators, WAN, reorg tests, HSM keys, public-network readiness</td></tr>
+<tr><td>QOMM RFQ, 7-party MP-SPDZ, quote proof, audit slots</td><td><span class="pill ok">built · measured</span></td><td>research_run, placement/sites proxies</td><td>seven-site deployment; input-check and shamir-inputs switches default off in the harness; persistent rate-limiter counters</td></tr>
+<tr><td>DP publication inside MPC</td><td><span class="pill ok">built · 14 processes on 1 host</span></td><td>distributed_publication.json</td><td>exact unbounded sampler before a pure-DP claim</td></tr>
+<tr><td>robust reconstruction (n ≥ 4t+1)</td><td><span class="pill part">built · measured at n=9</span></td><td>robust_atlas.json on two machines</td><td>not the deployed n=7 engine; input phase not robust; two more institutions</td></tr>
+<tr><td>OCLOB distributed path to L1</td><td><span class="pill ok">accepted · 1 host, 7 containers</span></td><td>make remote-integrated-e2e</td><td>threshold settlement gateway (one research gateway currently opens the order), independent operators, production API, formal proof</td></tr>
+<tr><td>DeKYX</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>issuer governance, revocation ops, issuer-unlinkable credentials (BBS+/CL adapter)</td></tr>
+<tr><td>DeCCP</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>cross-margining, partial guarantee transitions, legal novation</td></tr>
+<tr><td>Aethel</td><td><span class="pill ok">built · 8 crates</span></td><td>test, clippy, fmt, release build</td><td>legal assignment, perfection, tax, bankruptcy treatment outside code</td></tr>
+<tr><td>Enterprise PoC guides (JA)</td><td><span class="pill ok">written</span></td><td>—</td><td>a company-run evaluation on its own hardware</td></tr>
+<tr><td>Formal security definition and proofs</td><td><span class="pill no">not accepted</span></td><td>soundness of input check, naming, hiding proved; MPC assumed; composition argued</td><td>UC treatment; OCLOB security definition</td></tr>
+<tr><td>Third-party audit</td><td><span class="pill no">none</span></td><td>two internal review rounds, findings recorded</td><td>independent cryptographic, Rust, host-VM and integration audit</td></tr>
+</tbody></table></div>
+
+<h2 id="gates">What the gates run</h2>
+<p><strong>Library gate</strong>: <code>cargo test -j 4 --locked --workspace</code> in each repository. State-machine checks; no consensus, no multiple validators, no process isolation.</p>
+<p><strong>Avalanche L1 gate</strong> (defmi): five AvalancheGo processes launching the Rust VM over RPCChainVM 45; account-free notes, pre-authorised reserves, seven-party MPC zkPI, atomic multi-RFQ settlement, shared legal-entity caps, restart recovery, state-root agreement. External binaries (AvalancheGo, avalanche-network-runner, MP-SPDZ) are supplied explicitly with approved SHA-256; the scripts never fetch them.</p>
+<p><strong>OCLOB release gate</strong>: Rust fmt, clippy, all crate tests, React Flow typecheck and build, real MP-SPDZ, zkPI, DeFMI DvP, canonical readback, replay rejection, in one run on a remote Linux container. The development Mac never builds or tests.</p>
+
+<h2 id="p0">What blocks production</h2>
+<ol>
+  <li><strong>A settlement authority that no single party can open.</strong> OCLOB's research gateway decrypts the participant's fixed-length settlement authority alone; production needs threshold decryption or joint zkPI generation by the MPC nodes.</li>
+  <li><strong>Independence that is real and not only cryptographic.</strong> k-of-n is a property of the arithmetic; seven operators, seven hosts, seven key stores, seven failure domains are a property of the world, and none has been set up.</li>
+  <li><strong>Persistent state generations across restart</strong> for queues, rate limiters and nullifier ledgers, in authenticated storage, so a rollback cannot re-enable a replay.</li>
+  <li><strong>Authentication, authorisation and key management</strong>: mTLS, per-tenant authorisation, external KMS/HSM, key rotation, backup and recovery.</li>
+  <li><strong>The share-to-proof handoff</strong>: validators do not re-run the private computation. Closing that needs a proof of the whole MPC and a consensus benchmark that does not exist.</li>
+  <li><strong>Legal finality and register connection</strong>: a book-entry register, a CSD, a central bank cash leg, a supervisor's disclosure workflow.</li>
+</ol>
+
+<h2 id="review">Two review rounds, on the record</h2>
+<p>The repositories keep a review document with every finding, including what was checked and found sound and what was not accepted. Examples of what review changed: two binding switches that were off by default and absent from the deployment guide; a probe budget quoted three times and measured nowhere; a state root that grew with history; an unlinkability property that lived in a naming convention; an input check whose coefficients a node could read before committing; a vetting roll a caller could push its own envelope into; an unexplained single failure that is still listed as unexplained. Reading those before reading the mechanisms is a reasonable order.</p>
+
+<div class="next"><a href="regulation.html">← Regulation</a><a href="get-started.html">Get started →</a></div>

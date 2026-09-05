@@ -1,0 +1,79 @@
+---
+title: OCLOB — oblivious continuous limit order book
+description: OCLOB is a non-batched limit order book that keeps side, price, size and identity hidden from the operator until arrival order is fixed and matching is done. Participant-side splitting, 5-of-7 arrival certificates, price-time priority inside MPC, an aggregate public book, and pre-authorised settlement through zkPI and DeFMI.
+path: docs/oclob.html
+section: docs
+---
+<h1>OCLOB: oblivious continuous limit order book</h1>
+<p class="lede">A continuous, non-batched limit order book where the operator does not see side, price, quantity or the participant until arrival order is fixed and matching is done. The public book is total quantity per price level. Fills settle as pre-authorised zkPI instructions into DeFMI with no re-signing after the match.</p>
+<p class="src">source: oclob/README.md, docs/ARCHITECTURE.md, docs/THREAT_MODEL.md, docs/STATUS.md, docs/RELATED_WORK.md</p>
+
+<h2 id="problem">What it prevents</h2>
+<p>In an ordinary decentralized CLOB an order is visible to validators, sequencers and mempool watchers before it matches. Whoever sees it can insert a better order ahead of it or delay only the unfavourable ones. OCLOB fixes one thing: <strong>reading a pending order's content and then placing one's own order ahead of it.</strong> It does not prevent ordinary prediction from the public book, inference from post-fill book deltas, traffic-timing observation, collusion of three or more MPC nodes, or halting by network interference.</p>
+
+<h2 id="order">The order of operations</h2>
+<ol>
+  <li>A maker reserves maximum inventory or cash before resting on the book; a taker pre-authorises, at submission, a reservation and any fill inside its limits.</li>
+  <li>The order is secret-shared at the participant; only a commitment is published.</li>
+  <li>Five of seven nodes sign the arrival number.</li>
+  <li>Seven nodes run price-time priority matching in MPC without changing the arrival number.</li>
+  <li>A transition proof binds the fills to the public book update.</li>
+  <li>A threshold zkPI is built and cash and securities settle simultaneously in DeFMI.</li>
+  <li>Only after DeFMI's authoritative receipt does the screen say "settled".</li>
+</ol>
+<pre class="mermaid">
+flowchart LR
+    CORP["participant module<br/>signing, DeKYX, reservation"]
+    QUEUE["encrypted durable queue<br/>keeps order while halted"]
+    ORDER["arrival committee<br/>5 of 7"]
+    MPC["secret matching<br/>MP-SPDZ, 7 processes"]
+    PROOF["transition proof<br/>arrival + book + fills"]
+    ZKPI["threshold zkPI<br/>only the fill range"]
+    DEFMI["DeFMI<br/>cash and securities together"]
+    BOOK["public book<br/>totals per price level"]
+    CORP --> QUEUE --> ORDER --> MPC --> PROOF --> ZKPI --> DEFMI
+    MPC --> BOOK
+    DEFMI -->|"authoritative receipt"| CORP
+</pre>
+
+<h2 id="states">Four states, deliberately apart</h2>
+<ul>
+  <li><strong>Participant secret state:</strong> the full order, signing keys, the DeKYX credential, reservation openings.</li>
+  <li><strong>MPC secret state:</strong> each node's share of the order and of the resting book. One node alone cannot read a value.</li>
+  <li><strong>Public state:</strong> market id, arrival numbers, order commitments, per-level totals, fills, verification evidence, DeFMI root digests.</li>
+  <li><strong>Settlement authority:</strong> the pre-signed order and the DeKYX presentation, as a fixed-length ciphertext, delivered only to the settlement side.</li>
+</ul>
+<p>In the distributed path the participant builds a verifiable 3-of-7 Pedersen split, encrypts one share per node under that node's key, and delivers over mutual TLS with fixed-length messages, so message size does not vary with the order. Each node returns a signed storage receipt over the order digest and its persisted state generation. The public summary is signed with a per-order disposable key, so the coordinator receives neither the order nor the participant's long-term key.</p>
+
+<h2 id="arrival">Arrival order without content</h2>
+<p>The statement five nodes sign contains only <code>(market id, arrival number, order commitment, previous certificate digest, expiry)</code>. Each node persists its vote before signing and will not sign a different order under the same number in the same window. The MPC request carries the certificate body, not just its digest, and every node re-verifies signature count, subject and chain continuity against the fixed seven public keys before running. Two conflicting 5-of-7 certificates cannot exist because any two five-sets share an honest node. This is not a claim about which packet was first in the world: asynchronous networks have no total arrival order, and the design separates observed order from the provable fixing rule.</p>
+
+<h2 id="matching">Matching and the book</h2>
+<p>Bids from highest, asks from lowest, and within a level by arrival number. The MPC evaluates a fixed batch of eight slots and opens only: whether each slot filled, fill price and quantity, and the arriving order's publishable remainder. It does not open the participant, the DeKYX nullifier, keys or reservation openings. An order that could fill more than eight slots at once is rejected at admission rather than silently truncated. The public book is <code>(side, price tick, total resting quantity)</code>; it does not publish counts. A level with one participant leaks that participant's size through deltas, and that leakage is measured separately from the anonymity claim.</p>
+
+<h2 id="settle">Pre-authorised settlement</h2>
+<p>A participant signs at submission that any fill inside the following may settle automatically: no worse than the limit, within quantity and reservation caps, within expiry, on the named market, asset and DeFMI, under the published price-time rule. So no re-signing after the match, and no probing a counterparty by refusing to sign after seeing the result. Implementation is two-phase: a resting GTC maker order, once the MPC says "no fill, rests", gets a threshold zkPI for its secret maximum and a reservation root pair, and joins the matchable set only after Avalanche finality. An arriving taker that fills has its reservation, all fills and the release of the unused remainder applied as one DeFMI compare-and-swap; if the L1 rejects, the secret book, entity caps, balances and DeKYX one-time state are all as before.</p>
+
+<h2 id="dekyx">Eligibility and entity caps</h2>
+<p>Participation is a DeKYX anonymous presentation under the qualification namespace <code>org.zkfmi.oclob.legal-entity-participant</code>, with a scope-specific nullifier so one legal entity's concurrent orders share one reservation cap across the book. DeCCP and DeFMI hold the external configuration of that cap.</p>
+
+<h2 id="acceptance">What was accepted, and where</h2>
+<p>The integrated acceptance runs on one Linux host under one administrator (no builds on the development Mac): participant-side split, direct delivery to seven MPC containers, maker reservation, taker reservation plus multi-fill DvP on the five-validator non-EVM DeFMI L1, root agreement across all validators, rejection of a replayed transition, and recovery of one validator after restart, all on the same order digest. The React Flow demo was driven at 1440×1000 and 390×844 with zero horizontal overflow and zero console errors.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>area</th><th>state</th><th>remaining for production</th></tr></thead>
+<tbody>
+<tr><td>secret order wire, GTC/IOC, price-time, partial and multi-fill, cancel, expiry</td><td><span class="pill ok">built</span></td><td>schema negotiation, long-run and restart tests, extension beyond eight slots</td></tr>
+<tr><td>5-of-7 arrival certificates, vote persistence, re-verification</td><td><span class="pill ok">built · 1-host accepted</span></td><td>HSM keys, epoch rotation, independent nodes on a WAN, a formal fairness definition</td></tr>
+<tr><td>participant-side split and encrypted direct delivery</td><td><span class="pill ok">built · 1-host accepted</span></td><td>separate operators, per-operator key generation</td></tr>
+<tr><td>MP-SPDZ matching, plaintext fallback forbidden</td><td><span class="pill ok">built</span></td><td>seven hosts, traffic and failure evaluation</td></tr>
+<tr><td>threshold zkPI, atomic DvP on Avalanche</td><td><span class="pill ok">built · 1-host L1 accepted</span></td><td>threshold settlement gateway, independent validators, reorg tests, note-based ledger</td></tr>
+<tr><td>settlement gateway that cannot see the order</td><td><span class="pill part">not yet</span></td><td>one research gateway currently opens the fixed-length ciphertext; must become threshold decryption or joint zkPI generation by the MPC nodes</td></tr>
+<tr><td>production HTTP API</td><td><span class="pill no">not built</span></td><td>mTLS, authorisation, OpenAPI, rate limits, audit</td></tr>
+<tr><td>formal security proof, statistical performance comparison</td><td><span class="pill no">not accepted</span></td><td>security definition, proof, review; preregistered cohort and gates</td></tr>
+</tbody></table></div>
+<p class="src">artifacts: oclob_distributed_avalanche_acceptance.json, oclob_distributed_e2e.json, oclob_rough_e2e.json</p>
+
+<h2 id="related">Against prior work</h2>
+<p>"A DEX that matches secret orders in MPC" is not new. Rialto, P2DEX and Renegade are clear predecessors, and TEE-based (Tesseract), commit-then-reveal, batch and distributed-public-CLOB designs exist. OCLOB claims no cryptographic component. The candidate difference is one state machine that combines: continuous rather than batch processing; variable quantity, partial and multiple fills, GTC, IOC, cancel and expiry in secret state; arrival order fixed 5-of-7 before content is opened and bound to time priority; a continuously published per-level aggregate book; and anonymous legal-entity eligibility, entity-wide reservations, threshold zkPI and atomic DvP with no post-match signature. P2DEX's UC security and misbehaving-server compensation are ahead of OCLOB and listed as open work. TEEs are deliberately not in the trust boundary.</p>
+
+<div class="next"><a href="qomm.html">← QOMM</a><a href="aethel.html">Aethel: receivables →</a></div>

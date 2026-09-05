@@ -1,0 +1,68 @@
+---
+title: Glossary
+description: The terms of art used across zkFMI, both the market-infrastructure ones (FMI, DvP, PvP, novation, netting models, Herstatt risk) and the cryptographic ones (Pedersen commitment, range proof, nullifier, one-of-many ring, adaptor signature, FROST, Shamir, VOLE-in-the-Head).
+path: docs/glossary.html
+section: docs
+---
+<h1>Glossary</h1>
+<p class="lede">Two vocabularies meet in this stack. Market infrastructure has its own precise words, and so does cryptography; a reader fluent in one is often guessing at the other.</p>
+
+<h2 id="market">Market infrastructure</h2>
+<dl class="kv">
+  <dt>FMI</dt><dd>Financial market infrastructure: a payment system, securities settlement system, central securities depository, central counterparty or trade repository, as governed by the CPMI-IOSCO Principles. DeFMI borrows the term deliberately.</dd>
+  <dt>DvP</dt><dd>Delivery versus payment: securities and cash move together or not at all. BIS models 1 (gross-gross), 2 (gross securities, net cash) and 3 (net-net).</dd>
+  <dt>PvP</dt><dd>Payment versus payment: two currencies, or two ledgers, move together. Across two ledgers that share no state this needs something to pass between them; here an adaptor signature.</dd>
+  <dt>Herstatt risk</dt><dd>Settlement risk from paying one leg before receiving the other, named for the 1974 bank failure. In the PvP protocol here it is the gap between two deadlines, set by ledger finality and not by proof speed.</dd>
+  <dt>netting</dt><dd>Reducing many gross obligations to fewer net ones. Here a net rail accumulates homomorphically and proves coverage once at the close.</dd>
+  <dt>novation</dt><dd>Replacing a bilateral obligation with two obligations against a central counterparty. On committed obligations it is two multiplications and no proof.</dd>
+  <dt>CCP</dt><dd>Central counterparty: novates, nets, collects margin, guarantees settlement, runs a default waterfall. DeCCP is the decentralized state machine for that role.</dd>
+  <dt>default waterfall</dt><dd>The order in which a defaulter's margin, its fund contribution, the CCP's own capital and the mutualised fund absorb a loss. Enforced here by a committed product pinned to zero.</dd>
+  <dt>RFQ</dt><dd>Request for quote: a taker asks several makers for a price and trades with the best. QOMM is an RFQ venue where asking does not mean telling.</dd>
+  <dt>CLOB</dt><dd>Central limit order book: resting orders matched continuously by price, then time. OCLOB keeps the orders secret and publishes only depth per level.</dd>
+  <dt>best execution</dt><dd>The duty to obtain the best available result. The quote proof is a verifiable statement of it: the winner was the minimum of the committed keys.</dd>
+  <dt>book-entry register</dt><dd>The authoritative record of securities title kept by a transfer institution and account management institutions. In Japan DeFMI mirrors it and reconciles; it cannot be it.</dd>
+  <dt>intraday overdraft</dt><dd>A limit against pledged collateral allowing a net position to go negative during the day. Here the limit is a commitment and coverage is proved on position plus limit.</dd>
+  <dt>KYB / KYC</dt><dd>Know your business / customer. DeKYX generalises to "know your X" and returns a scoped eligibility rather than an identity.</dd>
+  <dt>finality</dt><dd>The moment a transfer is irrevocable. Finality of the transfer is not finality of the claim: a stablecoin moves finally while the claim stays with its issuer.</dd>
+</dl>
+
+<h2 id="crypto">Cryptography</h2>
+<dl class="kv">
+  <dt>Pedersen commitment</dt><dd><code>g^v · h^r</code>: hides v, binds to it, and multiplies homomorphically so sums of hidden values can be checked without opening. The atom of every ledger here.</dd>
+  <dt>range proof</dt><dd>A proof that a committed value lies in [0, 2^n). Linear bit-decomposition here, or Bulletproofs (logarithmic size). What makes "no balance goes negative" hold.</dd>
+  <dt>Bulletproofs</dt><dd>A range proof of size logarithmic in the width, from an audited crate. 3,424 B for a settlement package at 64-bit rails.</dd>
+  <dt>sigma protocol</dt><dd>A three-move proof of knowledge (opening, equality across generators, product) made non-interactive with a Fiat–Shamir transcript.</dd>
+  <dt>product proof</dt><dd>A sigma proof that three commitments satisfy c = a × b. What makes "cash leg = quantity × price" hold.</dd>
+  <dt>asset tag</dt><dd>A per-asset generator <code>A_a</code> under which a balance is committed; each transfer publishes a blinded tag so the instrument is hidden while conservation stays per asset.</dd>
+  <dt>nullifier</dt><dd>A value derived from a secret that is published on spend so the same note or instruction cannot be used twice, without revealing which one it was. Zcash-style.</dd>
+  <dt>note</dt><dd>A one-time output <code>C = g^S · A_a^v · h^r</code> whose serial S only the payee can construct. Replaces accounts so that no handle is named at settlement.</dd>
+  <dt>one-of-many (Groth–Kohlweiss)</dt><dd>A proof that one of N commitments opens to zero, without saying which. Used for note rings, asset membership and vetting.</dd>
+  <dt>ring / anonymity set</dt><dd>The N notes a spend could be. Worth 1/N only when the decoys are indistinguishable from the real one, which is a function of other people's traffic.</dd>
+  <dt>adaptor signature</dt><dd>A pre-signature that becomes a valid signature only with a secret, and from which the secret can be recovered once the signature appears. Passes a scalar between two ledgers with nothing in common on either.</dd>
+  <dt>FROST</dt><dd>A threshold Schnorr signature; here 3-of-7 over ristretto255. The quorum's signature on an instruction.</dd>
+  <dt>Shamir sharing</dt><dd>Splitting a secret into n points on a degree-t polynomial; any t+1 reconstruct. The shares are a Reed–Solomon codeword, which is what makes robust decoding possible.</dd>
+  <dt>MP-SPDZ</dt><dd>The multiparty computation framework running the seven-node circuits, in malicious-Shamir mode.</dd>
+  <dt>honest majority / dishonest majority</dt><dd>Whether the protocol assumes fewer than half the parties are corrupt. Honest majority is a stronger assumption about the world and buys robustness and an information-theoretic online phase.</dd>
+  <dt>security with abort</dt><dd>Rung 1: a deviation is detected and the protocol stops with no output. Where the deployed engine sits.</dd>
+  <dt>public verifiability</dt><dd>An outsider can check the answer is right. Orthogonal to the abort ladder; what the quote proof provides.</dd>
+  <dt>matched field</dt><dd>Running the MPC over the prime that is the commitment group's order, so the audit is linear replay. Costs 2.00× traffic.</dd>
+  <dt>VOLE-in-the-Head</dt><dd>A commitment resting on a random oracle only, post-quantum, but one-time. Measured here and not claimed.</dd>
+  <dt>differential privacy</dt><dd>Bounding what a published output reveals about any one input, by calibrated noise; here drawn inside the MPC with a stated (ε, δ).</dd>
+  <dt>ristretto255</dt><dd>The prime-order group over Curve25519 that every commitment, proof and signature here uses.</dd>
+</dl>
+
+<h2 id="stack">This stack</h2>
+<dl class="kv">
+  <dt>zkFMI</dt><dd>The family name: zero-knowledge financial market infrastructure. Also the namespace root in code, e.g. <code>org.zkfmi.oclob.legal-entity-participant</code>.</dd>
+  <dt>zkPI</dt><dd>Zero-knowledge payment instruction.</dd>
+  <dt>DeFMI</dt><dd>Decentralized financial market infrastructure: the settlement ledger and its Avalanche VM.</dd>
+  <dt>QOMM</dt><dd>Query-oblivious market making.</dd>
+  <dt>OCLOB</dt><dd>Oblivious continuous limit order book.</dd>
+  <dt>DeKYX</dt><dd>Decentralized know your X.</dd>
+  <dt>DeCCP</dt><dd>Decentralized central counterparty.</dd>
+  <dt>Aethel</dt><dd>Programmable payment-stream receivables.</dd>
+  <dt>handle</dt><dd>A public point <code>a·G</code> naming a participant at one venue, derived per venue from one seed.</dd>
+  <dt>host-a / host-b / host-c</dt><dd>Labels for the machines measurements ran on; the mapping to real machines is not published.</dd>
+</dl>
+
+<div class="next"><a href="get-started.html">← Get started</a><a href="index.html">Docs home →</a></div>

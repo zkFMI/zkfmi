@@ -1,0 +1,129 @@
+---
+title: Zero-knowledge financial market infrastructure
+description: zkFMI is a research stack for markets and settlement that never read what they clear. Proof-carrying payment instructions, a settlement ledger of commitments, oblivious venues, anonymous eligibility, and a decentralized CCP. Rust, measured, limits stated.
+path: index.html
+section: top
+---
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">zkfmi.com · research stack · Rust · MIT</div>
+    <h1>Markets that settle what they cannot read.</h1>
+    <p class="lede">zkFMI is a family of protocols for financial market infrastructure where the venue never sees the order, the settlement layer never sees the amount, and anyone can still check that the price was the best one offered and that both legs moved together. Every number here has an artifact behind it. Every limit is written down.</p>
+    <div class="cta">
+      <a class="btn primary" href="docs/architecture.html">How it fits together</a>
+      <a class="btn" href="docs/zkpi.html">Read the wire format</a>
+      <a class="btn" href="docs/status.html">What is not production</a>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <div class="wrap">
+    <div class="stat"><b>7.0 ms</b><span>to settle one DvP, 64-bit Bulletproof rails, single core</span></div>
+    <div class="stat"><b>3,424 B</b><span>settlement package on the wire at that width</span></div>
+    <div class="stat"><b>217 / s</b><span>settlements verified by one node on 8 workers</span></div>
+    <div class="stat"><b>1.07×</b><span>wall-clock cost of making the RFQ auditable (2.00× traffic)</span></div>
+    <div class="stat"><b>5 validators</b><span>non-EVM Avalanche L1, state roots agree across a restart</span></div>
+  </div>
+</div>
+
+<section class="block">
+  <div class="wrap">
+    <h2>One value, four proofs, never opened</h2>
+    <p style="max-width:70ch;color:var(--fg-2)">A request for quote is priced inside a seven-node multiparty computation. The winning price leaves as a Pedersen commitment. The same commitment is what the quote proof shows is minimal, what the quorum signs, what the payment instruction carries, and what the ledger's product proof consumes. The trade clears at a price nobody in the pipeline learns.</p>
+    <div class="three">
+      <div class="col h">
+        <h3>What settlement never reads</h3>
+        <ul>
+          <li>the amounts</li>
+          <li>the price</li>
+          <li>which instrument</li>
+          <li>who paid whom</li>
+          <li>the maker's pricing rule and the losing quotes</li>
+        </ul>
+      </div>
+      <div class="col m">
+        <h3>What hides it</h3>
+        <ul>
+          <li>Pedersen commitments plus range proofs</li>
+          <li>a blinded asset tag, fresh at every transfer</li>
+          <li>a note ledger with a one-of-many ring</li>
+          <li>Shamir shares across seven nodes, honest majority, malicious security</li>
+          <li>per-venue handles derived from one seed</li>
+        </ul>
+      </div>
+      <div class="col c">
+        <h3>What settlement does check</h3>
+        <ul>
+          <li>value is neither created nor destroyed</li>
+          <li>no balance goes negative</li>
+          <li>cash leg = quantity × price</li>
+          <li>both legs move, or neither does</li>
+          <li>one instruction settles once, signed by a 3-of-7 quorum</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>The stack</h2>
+    <p style="max-width:70ch;color:var(--fg-2)">Seven repositories, one shared research tree. Each is self-contained: its tests, locks, measurements and source do not need the others' working trees. They compose through explicit ports, not shared state.</p>
+    <div class="grid">
+      <a class="card proved" href="docs/zkpi.html"><div class="tag">instruction</div><h3>zkPI</h3><p>Zero-knowledge payment instruction. A venue's decision, provable without the inputs that produced it: committed amount, price and asset, a nullifier, a deadline, a FROST quorum signature, two threshold range proofs. 9,726 bytes on the wire.</p></a>
+      <a class="card proved" href="docs/defmi.html"><div class="tag">settlement</div><h3>DeFMI</h3><p>Decentralized financial market infrastructure. Delivery versus payment and payment versus payment over committed balances, notes with ring signatures, asset tags, netting, a default waterfall, reconciliation against a book of record. Runs as a dedicated non-EVM Avalanche L1.</p></a>
+      <a class="card hidden" href="docs/qomm.html"><div class="tag">venue</div><h3>QOMM</h3><p>Query-oblivious market making. Sixteen makers' pricing rules applied to a request nobody sees, inside MP-SPDZ. The best quote is proved minimal and settled without being opened. Differential privacy on what is published.</p></a>
+      <a class="card hidden" href="docs/oclob.html"><div class="tag">venue</div><h3>OCLOB</h3><p>Oblivious continuous limit order book. Orders are split at the participant and delivered encrypted to seven nodes. A 5-of-7 committee fixes arrival order before matching. Price-time priority inside MPC. The public book is aggregate depth per tick only.</p></a>
+      <a class="card checked" href="docs/dekyx.html"><div class="tag">eligibility</div><h3>DeKYX</h3><p>Decentralized know-your-X. Anonymous presentations that prove only the qualifications one action needs, bound to audience, action, nonce and expiry. Scope-specific nullifiers, signed revocation lists, key rotation. Pseudonymous per scope, not yet issuer-unlinkable.</p></a>
+      <a class="card checked" href="docs/deccp.html"><div class="tag">clearing</div><h3>DeCCP</h3><p>Decentralized central counterparty. Threshold-governed clearing books, gross-gross to net-net cycles, margin, confidential guarantee facilities, a deterministic loss waterfall. Advances state only against a DeFMI receipt for the exact proposal. Novation costs 0.53 µs a trade.</p></a>
+      <a class="card checked" href="docs/aethel.html"><div class="tag">upstream</div><h3>Aethel</h3><p>Programmable payment-stream receivables. A signed payment stream becomes a financeable receivable; independent providers supply credit decisions, guarantees, funding and servicing through scoped capabilities. Settles by issuing a typed zkPI.</p></a>
+      <a class="card" href="docs/use-cases.html"><div class="tag">beyond rfq</div><h3>Other upstreams</h3><p>zkPI and DeFMI are not QOMM parts. Fund subscription and redemption, collateral and margin calls, two-currency PvP, issuance and coupons, receivables, environmental certificates. Any system that decides may issue the instruction.</p></a>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>Where the trust actually sits</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Publicly verifiable, rung 1</h3>
+        <p>The quote proof lets anyone check the winner was the minimum of the committed keys. The MPC is malicious-secure with abort: a deviation is detected, not attributed, not survived. Robust reconstruction at n ≥ 4t+1 is built and measured at nine nodes; the deployed engine runs seven.</p>
+      </div>
+      <div class="card">
+        <h3>Validators check everything submitted</h3>
+        <p>Every Avalanche validator independently verifies the 3-of-7 approval, the typed instruction, the complete quote proof, both joint range proofs, the taker's price limit, the asset link, the DvP relation, deadline, sequence, previous root and nullifier before applying a transition atomically.</p>
+      </div>
+      <div class="card">
+        <h3>What they do not re-run</h3>
+        <p>Validators do not replay the private MP-SPDZ transcript, and nothing proves that a node fed the engine the share it was dealt. That share-to-proof handoff is the remaining committee trust boundary, and it is stated in the wire specification rather than left implicit.</p>
+      </div>
+      <div class="card">
+        <h3>Anonymity is other people's traffic</h3>
+        <p>A ring of 16 with no other settlements around it names its note with certainty. With sixteen settlements of traffic and recency-matched decoys the observer is at the nominal 1/16. A construction that hides you in a crowd does nothing in an empty room, and the measurements say so.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="honest">
+      <h3>What this is not</h3>
+      <p>A research implementation. Not audited. It custodies nothing. Every multi-node acceptance ran as processes or containers on one host under one administrator: five AvalancheGo validators, seven MP-SPDZ parties, seven order-book nodes. No deployment has run across independent organisations, a real WAN, HSM-held keys or a legal finality regime. Under Japan's book-entry regime DeFMI cannot be the register; it mirrors one and reconciles. None of this is compliance, and "auditable" is material for control, not control. The <a href="docs/status.html">status page</a> lists what stands between the current gate and production, item by item.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>Start reading</h2>
+    <div class="grid">
+      <a class="card" href="docs/architecture.html"><h3>Architecture</h3><p>The data flow from a request to two moved legs, and which component owns each secret.</p></a>
+      <a class="card" href="docs/measurements.html"><h3>Measurements</h3><p>The numbers that decide deployment questions, with the artifact each came from.</p></a>
+      <a class="card" href="docs/prior-art.html"><h3>Position against prior work</h3><p>Baum–Damgård–Orlandi, Rivinius et al., Prime Match, Baum–Zok. What is borrowed, what is retracted, what is new.</p></a>
+      <a class="card" href="docs/get-started.html"><h3>Get started</h3><p>Clone, <code>cargo test --locked</code>, check the zkPI vectors, run the five-validator gate.</p></a>
+    </div>
+  </div>
+</section>

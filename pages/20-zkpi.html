@@ -1,0 +1,123 @@
+---
+title: zkPI — zero-knowledge payment instruction
+description: The zkPI instruction. What it commits, what a venue checks, the version-2 wire layout with field sizes, the test vectors, the verifier, and the execution-layer comparison that chose a dedicated Avalanche VM.
+path: docs/zkpi.html
+section: docs
+---
+<h1>zkPI: zero-knowledge payment instruction</h1>
+<p class="lede">A proof-carrying instruction. A venue's decision, provable without the inputs that produced it. The settlement layer learns that some enrolled entity holds an instruction whose amount and price lie in declared ranges, whose price matches what a quorum signed, whose deadline has not passed and whose nullifier is unseen. It learns nothing else.</p>
+<p class="src">source: zkpi/ZKPI_WIRE.md, zkpi/README.md, defmi/POSITION.md §7 · crates qomm-zk, qomm-zkpi, qomm-proofs</p>
+
+<h2 id="what">What crosses and what does not</h2>
+<pre class="mermaid">
+flowchart LR
+    subgraph known["what the quorum computes over"]
+        direction TB
+        R["the request<br/>asset, size, side"]
+        P["each maker's<br/>pricing policy"]
+        W["the winner<br/>and its price"]
+    end
+    subgraph published["what is published"]
+        direction TB
+        C["committed<br/>instruction"]
+        N["nullifier"]
+        D["deadline"]
+        S["quorum<br/>signature"]
+    end
+    subgraph venue["what a settlement venue checks"]
+        direction TB
+        V["in range<br/>unspent<br/>in time<br/>signed by the quorum"]
+    end
+    R --> C
+    P --> C
+    W --> C
+    C --> V
+    N --> V
+    D --> V
+    S --> V
+    known -. "never crosses" .-> venue
+</pre>
+
+<p>The instruction exists because publicly auditable MPC ends when the output is opened. A quote that is opened and then settled in the clear has leaked everything the computation protected: the asset, the size, the counterparties and, by difference, the policy. zkPI makes the payment instruction itself a commitment plus a proof, so the audited value and the settled value are the same unopened commitment.</p>
+
+<h2 id="proves">What the instruction proves</h2>
+<ul>
+  <li><strong>Authorisation.</strong> A FROST threshold signature over ristretto255 from a 3-of-7 quorum of the venue's nodes. A verifier holds the group key and nothing about which three signed.</li>
+  <li><strong>Bounded amount and price.</strong> Two range proofs, each jointly assembled from node-local Shamir contributions, so no single node holds the witness. Version 2 carries these as threshold range proofs; version 1 carried two ordinary Bulletproofs.</li>
+  <li><strong>Binding to the audited decision.</strong> A SHA-256 digest of the complete public quote proof. The digest reveals neither the packed winner nor the price; the validator receives the full proof beside the instruction and checks it independently.</li>
+  <li><strong>Single use.</strong> A 32-byte nonce from which the nullifier is derived. Settlement registers the nullifier; a second presentation is refused before any proof is examined.</li>
+  <li><strong>Counterparties as handles.</strong> Two compressed points. A handle is derived per venue from one seed, so the same firm is an unrelated point at each venue. The ledger derives the four account names from the two signed handles; an instruction and a package whose accounts disagree is rejected.</li>
+</ul>
+
+<h2 id="wire">On the wire, version 2</h2>
+<p>Big-endian throughout. Every field is fixed-width or length-prefixed, in this order. Nothing is optional: an instruction with a field missing is not a shorter instruction, it is a malformed one.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>field</th><th class="num">bytes</th><th>what</th></tr></thead>
+<tbody>
+<tr><td>magic</td><td class="num">8</td><td><code>QOMMZKPI</code></td></tr>
+<tr><td>version</td><td class="num">2</td><td>currently 2. A verifier that meets a version it does not know <strong>stops</strong>. It does not guess at a layout, because a misparsed commitment is a valid point.</td></tr>
+<tr><td>amount commitment</td><td class="num">32</td><td>compressed Ristretto</td></tr>
+<tr><td>price commitment</td><td class="num">32</td><td>compressed Ristretto</td></tr>
+<tr><td>asset commitment</td><td class="num">32</td><td>compressed Ristretto</td></tr>
+<tr><td>payer handle</td><td class="num">32</td><td>compressed Ristretto</td></tr>
+<tr><td>payee handle</td><td class="num">32</td><td>compressed Ristretto</td></tr>
+<tr><td>deadline</td><td class="num">8</td><td>seconds since the Unix epoch</td></tr>
+<tr><td>nonce</td><td class="num">32</td><td>what makes the nullifier unique</td></tr>
+<tr><td>quote proof digest</td><td class="num">32</td><td>SHA-256 of the complete public quote proof</td></tr>
+<tr><td>signature</td><td class="num">64</td><td>FROST over Ristretto255</td></tr>
+<tr><td>amount proof length</td><td class="num">4</td><td></td></tr>
+<tr><td>amount range proof</td><td class="num">n</td><td>jointly assembled threshold range proof</td></tr>
+<tr><td>price proof length</td><td class="num">4</td><td></td></tr>
+<tr><td>price range proof</td><td class="num">n</td><td>jointly assembled threshold range proof</td></tr>
+</tbody></table></div>
+<p>The fixed product vector is <strong>9,726 bytes</strong> at 16-bit quantity and 32-bit price bounds. The version-1 compatibility vector is 1,572 bytes. The gap is the price of threshold assembly and it is stated rather than presenting the smaller legacy wire as the product cost.</p>
+
+<h3>What is deliberately absent</h3>
+<p>No compression, no self-describing container, no forward compatibility. Each is a way for two implementations to disagree about what they read, and the table above is a day's work to implement from.</p>
+
+<h2 id="vectors">Checking an implementation</h2>
+<p>Vectors live in <code>artifacts/zkpi_vectors/</code>: one accepted instruction per wire version and five damaged forms of each. The accepted vector must <strong>decode and re-encode to the same bytes</strong>. That is stronger than "it parsed": an implementation that dropped a field and re-derived it would pass the second test and fail the first, and the first is what decides whether two venues settle the same instruction.</p>
+<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
+qomm-zkpi-verify --self-test                       # issue v2, encode, decode, verify
+qomm-zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
+qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
+<p>Exit 0 accepts, 1 rejects, 2 could not be asked. Without a quorum key the tool checks the layout and says that is a parse and not a verification. A tool that printed "ok" for a well-formed unsigned instruction would be worse than none.</p>
+
+<h2 id="where">Where it runs, and why not elsewhere</h2>
+<p>The implementation target is the dedicated non-EVM Avalanche L1 described on the <a href="defmi.html#l1">DeFMI page</a>. The trust boundary is explicit: the node committee verifies the two threshold range proofs and the complete quote proof before signing; every validator independently checks the 3-of-7 Ed25519 approval, the typed instruction, the complete quote proof, both joint ranges, the taker's price limit, the asset link, the DvP relation, chain and rail domains, deadline, sequence, previous state root and nullifier before applying a transition. Validators do not re-run the private MP-SPDZ transcript or prove the node-local share-to-proof handoff.</p>
+
+<h3>The execution-layer comparison, kept as history</h3>
+<p>Before the dedicated VM existed, the project measured where the version-1 verifier could fit. Its verification is about 1.6 ms of curve arithmetic, dominated by two Bulletproofs.</p>
+<ul>
+  <li><strong>EVM bytecode.</strong> One ed25519 scalar multiplication measured 302,401 gas. Rejected.</li>
+  <li><strong>Subnet-EVM precompile.</strong> Feasible: the verifier is Go you write, priced as you choose. The cost is that the curve code becomes yours, and a bug in it is a consensus bug on a chain nobody else is watching.</li>
+  <li><strong>Solana.</strong> The runtime has ristretto255 syscalls, which is the exact curve here. But a Groth–Kohlweiss verifier evaluates one degree-log₂(n) polynomial per commitment in the scalar field before touching a point, and Solana has no field syscall.</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>operation on Solana (Agave 4.2.1)</th><th class="num">compute units</th></tr></thead>
+<tbody>
+<tr><td>scalar field: one multiplication</td><td class="num">5,450</td></tr>
+<tr><td>scalar field: one addition</td><td class="num">350</td></tr>
+<tr><td>Merlin transcript, per 32-byte item</td><td class="num">3,688</td></tr>
+<tr><td>the same through the <code>sha256</code> syscall</td><td class="num">132</td></tr>
+<tr><td>one base-point scalar mul in the program</td><td class="num">~863,000</td></tr>
+<tr><td>one ristretto scalar mul as a syscall (published)</td><td class="num">2,208</td></tr>
+<tr><td>one-of-many verifier, crowd of 16</td><td class="num">398,825</td></tr>
+<tr><td>one-of-many verifier, crowd of 32</td><td class="num">951,503</td></tr>
+<tr><td>crowd of 128 (predicted; ceiling is 1,400,000)</td><td class="num">~5,200,000</td></tr>
+</tbody></table></div>
+<p class="src">artifact: defmi/artifacts/solana_cu.json · stylus_gas.json</p>
+<p>Compute units are counted by the virtual machine rather than timed, so those figures are reproducible to the unit and carry a toolchain label instead of a host label. The bottleneck is the field, not the curve, and that settled the question in favour of a VM where the verifier is native Rust.</p>
+
+<h2 id="handles">Handles: the property that was prose until it was code</h2>
+<p>The design always said a firm's handle is derived per venue, so that one firm is two unrelated points. The first library offered no way to derive them, so the obvious integration used one name everywhere, and the payment-versus-payment unlinkability measurement showed an observer joining the legs with probability 1.000 at every swap count. <code>qomm_zkpi::handles</code> now derives them from one seed, and the test beside it runs the scheme that suggests itself first (one secret scaled by a public per-venue factor) and shows it is publicly linkable. With derived handles the observer falls to 1/k and stays there. Nothing about the cryptography changed between those two rows; only the names did.</p>
+
+<h2 id="not">What zkPI does not do</h2>
+<ul>
+  <li>It does not say the price was reasonable or the instrument was right. Those are the quorum's assertions, carried by the signature.</li>
+  <li>It does not hide from the sender that a note was later spent: the sender knows the <code>g^S</code> it built. To a third party the ring size is the limit of what is learned.</li>
+  <li>It does not prove that a node fed the engine the share it was dealt. That gap is the subject of QOMM's binding document and remains the committee trust boundary.</li>
+  <li>Version 1 is a migration format, still decoded and re-encoded when tagged, not the product issuance path.</li>
+</ul>
+
+<div class="next"><a href="architecture.html">← Architecture</a><a href="defmi.html">DeFMI: the settlement layer →</a></div>

@@ -1,0 +1,72 @@
+---
+title: Aethel — programmable payment-stream receivables
+description: Aethel turns a signed payment stream into a financeable receivable and lets independent providers supply credit assessment, guarantees, funding and servicing through narrowly scoped capabilities. It settles by issuing a typed zkPI to DeFMI and holds no cash, securities or title itself.
+path: docs/aethel.html
+section: docs
+---
+<h1>Aethel: programmable payment-stream receivables</h1>
+<p class="lede">The payment stream itself becomes the receivable. Aethel does not hard-code a lender, a rating model, a guarantor or a marketplace: providers join through explicit capabilities, sign the artifacts they are responsible for, and can be replaced or combined without changing the stream's payment semantics. It records commercial meaning and lifecycle; authoritative assets and their settlement stay in DeFMI.</p>
+<p class="src">source: aethel/README.md · eight crates, aethel-core at the centre · research implementation, not audited</p>
+
+<h2 id="flow">End to end</h2>
+<pre class="mermaid">
+flowchart LR
+    S["Signed payment stream"] --> R["Register stream"]
+    R --> RS["Create receivable series"]
+    K["DeKYX<br/>qualified subject"] --> C
+    C["Credit providers<br/>submit signed decisions"] --> G
+    G["Guarantors<br/>commit coverage"] --> F
+    F["Liquidity providers<br/>submit funding quotes"] --> I
+    RS --> C
+    I["Issue receivable"] --> P["zkPI<br/>settlement instruction"]
+    P --> D["DeFMI<br/>asset and cash settlement"]
+    I --> M{"Payment stream outcome"}
+    M -->|paid| X["Close receivable"]
+    M -->|default| A["Default attestation"]
+    A --> W["DeCCP<br/>guarantee claim / loss allocation"]
+    W --> D
+</pre>
+
+<h2 id="providers">Open provider model</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Capability</th><th>Responsibility</th></tr></thead>
+<tbody>
+<tr><td><code>StreamAttestor</code></td><td>attest that a payment stream and its updates are valid</td></tr>
+<tr><td><code>CreditAssessor</code></td><td>sign a credit decision for an eligible receivable</td></tr>
+<tr><td><code>Guarantor</code></td><td>commit a guarantee backed by an external facility</td></tr>
+<tr><td><code>LiquidityProvider</code></td><td>submit an executable funding quote</td></tr>
+<tr><td><code>Servicer</code></td><td>perform permitted servicing actions</td></tr>
+<tr><td><code>CredentialIssuer</code></td><td>vouch for a DeKYX issuer key without becoming a lender or guarantor</td></tr>
+</tbody></table></div>
+<p>Capabilities do not imply one another. A credit assessment cannot silently act as a guarantee; a guarantor cannot issue a funding quote unless separately authorised. Providers may be suspended or permanently revoked. Key rotation keeps artifacts signed under a formerly valid key verifiable while rejecting new artifacts under the retired key.</p>
+
+<h2 id="state">Core state</h2>
+<p><code>AethelBook</code> is the validated aggregate. Its records are the registered stream and its state, receivable series and policy, credit decisions, guarantee commitments and releases, funding quotes, receivable issuances, default attestations and guarantee claims, and provider definitions. Operations carry stable identifiers, validity windows, nonces, policy digests and signatures; transitions reject duplicates, unexpected versions, wrong capabilities, expired artifacts and inconsistent references.</p>
+
+<h2 id="qualification">Qualification and confidentiality</h2>
+<p>A series may require an anonymous DeKYX presentation before a credit decision or guarantee is accepted, bound to the exact Aethel domain, action, unsigned artifact statement, nonce and expiry; a proof for one decision cannot be replayed for another. Aethel stores only the verified subject-line binding. The guarantee amount may stay confidential: Aethel and DeCCP then exchange commitments, state digests, identifiers and verified transition receipts rather than a plaintext amount.</p>
+
+<h2 id="settlement">Settlement</h2>
+<p>When issuance or a claim moves assets, the host creates a typed zkPI and asks DeFMI to settle it. Aethel changes its final state only after the host has validated the settlement evidence. A deployment can reserve a DeCCP hold when a guarantee is accepted, bind it at issuance, and release or consume it when the obligation closes.</p>
+
+<h2 id="layout">Crates</h2>
+<pre><code>crates/
+├── aethel-types/              shared identifiers, digests, time and signature checks
+├── aethel-provider-sdk/       provider capabilities and signed artifacts
+├── aethel-core/               stream, receivable, guarantee and issuance semantics
+├── aethel-tokenization/       supply caps and external-ledger mint/burn intents
+├── aethel-distribution/       circulation admission, venue fills and settlement binding
+├── aethel-obligation-wallet/  bounded pre-authorisation and payment retry queue
+├── aethel-servicing/          payment evidence, delinquency, cure and default evidence
+└── aethel/                    composition boundary and end-to-end tests</code></pre>
+<p><code>cargo metadata --locked --no-deps</code> is the authoritative inventory. A layout diagram is not evidence that a crate was shipped.</p>
+
+<h2 id="limits">Current limits</h2>
+<ul>
+  <li>The anonymous credential contract is scope-pseudonymous, not issuer-unlinkable.</li>
+  <li>Cross-issuer anti-Sybil policy needs a governance or registry decision outside the crate.</li>
+  <li>Guarantee claims and releases target full-cover transitions; partial transitions need an extended state model.</li>
+  <li>Legal assignment, perfection, tax, accounting and bankruptcy treatment of a receivable are outside the code.</li>
+</ul>
+
+<div class="next"><a href="oclob.html">← OCLOB</a><a href="use-cases.html">Use cases beyond RFQ →</a></div>

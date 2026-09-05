@@ -1,0 +1,43 @@
+---
+title: Documentation
+description: Technical documentation for the zkFMI stack. Protocol pages for zkPI, DeFMI, DeKYX and DeCCP; venue pages for QOMM and OCLOB; evidence pages for measurements, security, prior art, regulation and status.
+path: docs/index.html
+section: docs
+---
+<h1>Documentation</h1>
+<p class="lede">These pages are distilled from the design documents, review records and measurement artifacts in the seven repositories. They are written for someone who builds or evaluates market infrastructure and wants to know exactly what is proved, what is measured, and what is still a claim.</p>
+
+<h2 id="how">How to read this</h2>
+<ol>
+  <li><a href="architecture.html">Architecture</a> gives the shape: who decides, who instructs, who settles, and which secret sits where.</li>
+  <li><a href="zkpi.html">zkPI</a> and <a href="defmi.html">DeFMI</a> are the protocol core. Read them together; the instruction is meaningless without the ledger that consumes it.</li>
+  <li><a href="qomm.html">QOMM</a> and <a href="oclob.html">OCLOB</a> are the two venues built so far. <a href="use-cases.html">Use cases</a> is the argument that they are examples, not the product.</li>
+  <li><a href="security.html">Security</a>, <a href="measurements.html">Measurements</a> and <a href="status.html">Status</a> are the evidence pages. If you only read one, read <a href="status.html">Status</a>: it says what is accepted and what is not.</li>
+</ol>
+
+<h2 id="conventions">Conventions used on this site</h2>
+<ul>
+  <li><strong>Every number is from an artifact.</strong> Measurements name the host label (<code>host-a</code>, <code>host-b</code>, <code>host-c</code>) and the JSON file under <code>artifacts/</code> that carries them. A machine's calibration is stated beside its figures; compare calibrations before comparing anything else.</li>
+  <li><strong>"Built" and "accepted" are different words.</strong> Built means the code exists and its tests pass. Accepted means it ran in the repository's release gate. Neither means production.</li>
+  <li><strong>"Not claimed" is a section, not a footnote.</strong> Each protocol page ends with what it does not do. Those lists come from the review records and are as much part of the design as the mechanisms.</li>
+</ul>
+
+<h2 id="pages">Pages</h2>
+<div class="grid">
+  <a class="card" href="architecture.html"><h3>Architecture</h3><p>Data flow, secret ownership, repositories, primitives, execution target.</p></a>
+  <a class="card proved" href="zkpi.html"><h3>zkPI</h3><p>The instruction: what it commits, what it proves, the version-2 wire layout, the vectors, where it runs.</p></a>
+  <a class="card proved" href="defmi.html"><h3>DeFMI</h3><p>Guarantees, balance width, asset tags, netting models, overdraft limits, default waterfall, notes and rings, PvP, reconciliation, viewing, vetting, the Avalanche VM.</p></a>
+  <a class="card checked" href="dekyx.html"><h3>DeKYX</h3><p>Credentials, anonymous presentations, scope nullifiers, revocation, rotation, what "scope-pseudonymous" means.</p></a>
+  <a class="card checked" href="deccp.html"><h3>DeCCP</h3><p>Clearing books, admission, margin, three netting modes, guarantee facilities, default waterfall, receipts.</p></a>
+  <a class="card hidden" href="qomm.html"><h3>QOMM</h3><p>Oblivious RFQ: transport, seven-party tournament, quote proof, differential privacy on publication, cost of auditability.</p></a>
+  <a class="card hidden" href="oclob.html"><h3>OCLOB</h3><p>Oblivious order book: participant-side splitting, 5-of-7 arrival order, MPC matching, aggregate book, pre-authorised settlement.</p></a>
+  <a class="card checked" href="aethel.html"><h3>Aethel</h3><p>Payment streams as receivables; provider capabilities; confidential guarantees through DeCCP; settlement through zkPI.</p></a>
+  <a class="card" href="use-cases.html"><h3>Use cases beyond RFQ</h3><p>Fund subscription, collateral, PvP, issuance, receivables, certificates, insurance; an implementation order.</p></a>
+  <a class="card" href="measurements.html"><h3>Measurements</h3><p>The decision-relevant numbers in one place, with artifacts.</p></a>
+  <a class="card" href="security.html"><h3>Security and trust boundary</h3><p>Adversaries, the accountability ladder, what validators verify and do not, anonymity as traffic, what is not defended.</p></a>
+  <a class="card" href="prior-art.html"><h3>Position against prior work</h3><p>Five papers, six axes, three retracted claims, four open questions.</p></a>
+  <a class="card" href="regulation.html"><h3>Regulation</h3><p>What the architecture needs from a legal system, Japan in detail, four other jurisdictions, what may and may not be claimed.</p></a>
+  <a class="card" href="status.html"><h3>Status and acceptance</h3><p>Per-component state, what the gates cover, what blocks production.</p></a>
+  <a class="card" href="get-started.html"><h3>Get started</h3><p>Clone, test, verify vectors, run the L1 gate, enterprise PoC guides.</p></a>
+  <a class="card" href="glossary.html"><h3>Glossary</h3><p>The terms of art, both the cryptographic and the market-infrastructure ones.</p></a>
+</div>

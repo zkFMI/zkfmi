@@ -1,0 +1,96 @@
+---
+title: zkFMI 日本語概要
+description: zkFMI はゼロ知識証明付きの金融市場基盤の研究スタック。取引内容を読まずに決済する台帳 DeFMI、証明付き決済指図 zkPI、注文を見ない RFQ 市場 QOMM と板市場 OCLOB、匿名資格 DeKYX、分散清算機関 DeCCP、債権化 Aethel。Rust 実装、計測済み、限界を明記。
+path: ja/index.html
+section: ja
+---
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">zkfmi.com · 研究スタック · Rust · MIT</div>
+    <h1>読めないものを決済する市場基盤</h1>
+    <p class="lede">zkFMI は、取引所が注文を見ず、決済層が金額を見ず、それでも「提示された中で最良の価格だった」ことと「二つの脚が同時に動いた」ことを誰でも検証できる、金融市場基盤のプロトコル群です。掲載する数値にはすべて計測 artifact があり、限界はすべて文書に書いてあります。</p>
+    <div class="cta">
+      <a class="btn primary" href="../docs/architecture.html">全体構成（英語）</a>
+      <a class="btn" href="../docs/status.html">未達事項（英語）</a>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>何をするか</h2>
+    <p>見積依頼（RFQ）は 7 ノードの秘密計算の中で値付けされます。勝った価格は Pedersen commitment のまま外へ出ます。その同じ commitment を、最小値であることの証明が参照し、定足数が署名し、決済指図が運び、台帳の積の証明が消費します。<strong>一つの値、四つの証明、一度も開かない。</strong> 取引は、経路上の誰も知らない価格で決済されます。</p>
+    <div class="three">
+      <div class="col h">
+        <h3>決済が読まないもの</h3>
+        <ul><li>金額</li><li>価格</li><li>どの銘柄か</li><li>誰が誰に払ったか</li><li>マーケットメイカーの値付け規則と負けた見積</li></ul>
+      </div>
+      <div class="col m">
+        <h3>隠す仕組み</h3>
+        <ul><li>Pedersen commitment と範囲証明</li><li>移転ごとに新しい blinded asset tag</li><li>one-of-many ring を持つ note 台帳</li><li>7 ノード Shamir 分散、honest majority、malicious 安全</li><li>一つの seed から venue ごとに導出する handle</li></ul>
+      </div>
+      <div class="col c">
+        <h3>決済が確かめること</h3>
+        <ul><li>価値が生成も消滅もしていない</li><li>残高が負にならない</li><li>資金脚 = 数量 × 価格</li><li>両脚が動くか、どちらも動かない</li><li>一つの指図は一度だけ、3-of-7 の署名付き</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>構成要素</h2>
+    <div class="grid">
+      <a class="card proved" href="../docs/zkpi.html"><div class="tag">指図</div><h3>zkPI</h3><p>ゼロ知識証明付き決済指図。金額・価格・資産の commitment、nullifier、期限、FROST 定足数署名、閾値範囲証明 2 本。wire 上 9,726 バイト。</p></a>
+      <a class="card proved" href="../docs/defmi.html"><div class="tag">決済</div><h3>DeFMI</h3><p>分散型金融市場基盤。commitment 残高上の DvP/PvP、ring 署名付き note、asset tag、ネッティング、デフォルト・ウォーターフォール、正本台帳との照合。専用の非 EVM Avalanche L1 として動作。</p></a>
+      <a class="card hidden" href="../docs/qomm.html"><div class="tag">市場</div><h3>QOMM</h3><p>問い合わせを見ないマーケットメイキング。16 社の値付け規則を、誰も見ない依頼に MP-SPDZ の中で適用。最良見積を最小値として証明し、開かずに決済。公開値には差分プライバシー。</p></a>
+      <a class="card hidden" href="../docs/oclob.html"><div class="tag">市場</div><h3>OCLOB</h3><p>注文内容を見せない連続指値板。法人側で 7 分割し各ノードへ暗号化配送。5-of-7 委員会が照合前に受付順を確定。MPC 内で価格・時間優先。公開板は価格帯別合計だけ。</p></a>
+      <a class="card checked" href="../docs/dekyx.html"><div class="tag">資格</div><h3>DeKYX</h3><p>分散型 Know Your X。一つの行為に必要な資格だけを証明する匿名提示。audience・action・nonce・期限に束縛。scope 別 nullifier、署名付き失効一覧、鍵交代。</p></a>
+      <a class="card checked" href="../docs/deccp.html"><div class="tag">清算</div><h3>DeCCP</h3><p>分散型清算機関。閾値統治の清算簿、gross-gross から net-net、証拠金、秘匿保証枠、決定的な損失ウォーターフォール。DeFMI 受領証があるときだけ状態を進める。</p></a>
+      <a class="card checked" href="../docs/aethel.html"><div class="tag">上流</div><h3>Aethel</h3><p>支払ストリームの債権化。署名された支払ストリームを金融可能な債権にし、独立した提供者が審査・保証・資金・サービシングを供給。zkPI を発行して決済。</p></a>
+      <a class="card" href="../docs/use-cases.html"><div class="tag">RFQ 以外</div><h3>他の上流</h3><p>ファンド申込・解約、担保・証拠金、二通貨 PvP、発行・利払、売掛債権、環境証書。判断する主体なら誰でも指図を出せる。</p></a>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>主な計測値</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>項目</th><th class="num">値</th></tr></thead>
+      <tbody>
+        <tr><td>DvP 一件の決済（64 ビット Bulletproof、1 コア）</td><td class="num">7.02 ms · 3,424 B</td></tr>
+        <tr><td>決済ノード 1 台、8 ワーカー</td><td class="num">217 件/秒</td></tr>
+        <tr><td>RFQ を検証可能にするコスト</td><td class="num">壁時計 1.07× · 通信量 2.00×</td></tr>
+        <tr><td>RFQ 一件（16 社、同一メトロ / 東京–シンガポール / 一社だけ 120 ms）</td><td class="num">0.62 s / 3.88 s / 23.0 s</td></tr>
+        <tr><td>note ring 64: 証明 / 検証</td><td class="num">14.5 ms / 3.7 ms</td></tr>
+        <tr><td>PvP の後手側の反応時間</td><td class="num">0.06 ms（露出窓は台帳の finality が決める）</td></tr>
+        <tr><td>正本台帳との照合証明</td><td class="num">96 B、4,096 ポジションで 0.65 ms</td></tr>
+        <tr><td>Avalanche L1: 検証者 · 決済受理 · 再起動復旧</td><td class="num">5 · 207 ms · 1,455 ms</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted" style="color:var(--fg-3);font-size:.9rem">すべて artifact 由来。ホストはラベル（host-a/b/c）で示し、較正値を併記しています。詳細は <a href="../docs/measurements.html">Measurements</a>。</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="honest">
+      <h3>これは何ではないか</h3>
+      <p>研究実装です。監査を受けていません。資産を保管しません。複数ノードの受入はすべて 1 台の Linux ホスト上のプロセスまたはコンテナで、管理者も一人です（AvalancheGo 検証者 5、MP-SPDZ 7、板ノード 7）。独立した組織、実 WAN、HSM 保管鍵、法的 finality 制度での運用は行っていません。日本の振替制度の下では DeFMI は振替口座簿にはなれず、鏡として照合します。「準拠している」「CCP は不要」「監査可能だから統制がある」はいずれも主張しません。<a href="../docs/status.html">Status</a> に本番までの残課題を項目ごとに列挙しています。</p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <h2>日本語資料</h2>
+    <ul>
+      <li><a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI 企業向け PoC 導入ガイド</a>: 導入、役割分離、障害試験、保存する証拠、合格条件、41 節の運用指針</li>
+      <li><a href="https://github.com/shukob/defmi/blob/main/doc/ja/DEFMI_ZKPI_USE_CASES.md">DeFMI と zkPI を QOMM なしで使う用途</a>: ファンド、担保、PvP ほか、先行例と実装順</li>
+      <li><a href="https://github.com/shukob/oclob">OCLOB</a>: README、設計、脅威モデル、実装状況、関連研究がすべて日本語</li>
+      <li>QOMM / DeKYX / DeCCP / Aethel の各リポジトリにも <code>docs/ENTERPRISE_POC_JA.md</code> があります</li>
+    </ul>
+    <p>技術文書の本体は英語です。<a href="../docs/index.html">Documentation</a> から読めます。</p>
+  </div>
+</section>

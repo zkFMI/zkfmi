@@ -1,0 +1,107 @@
+---
+title: Measurements
+description: The decision-relevant numbers from the zkFMI stack in one place, each with its artifact and host label. Settlement cost by width, note rings, PvP exposure, reconciliation, vetting, node throughput, Avalanche acceptance, RFQ latency by placement, the cost of auditability, and the predictions that missed.
+path: docs/measurements.html
+section: docs
+---
+<h1>Measurements</h1>
+<p class="lede">Every reported number has an artifact under <code>artifacts/</code> and a Rust binary that produced it. Where a measurement needs something not shipped (MP-SPDZ, a second host, a market feed) the binary says so and fails rather than substituting a default. Hosts are labelled, not named. Compare calibrations before comparing anything else.</p>
+
+<h2 id="calibration">Calibration</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>host</th><th class="num">scalar multiplication</th><th class="num">40-bit range proof</th><th>used for</th></tr></thead>
+<tbody>
+<tr><td>host-c</td><td class="num">38.4 ± 4.1 µs</td><td class="num">20.88 ms</td><td>most DeFMI tables, linear backend, vetting</td></tr>
+<tr><td>host-a</td><td class="num">25.8 µs</td><td class="num">—</td><td>Bulletproof backend, rings, PvP, one-chain unlinkability, VOLEitH</td></tr>
+</tbody></table></div>
+<p>The same machine has been half again slower at another time. Cross-host ratios include host differences; rerun both arms on one host before using them as promotion evidence.</p>
+
+<h2 id="settlement">Settlement</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>what</th><th class="num">figure</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>settle one DvP, 40-bit rails, linear backend</td><td class="num">34.0 ms · 57,939 B</td><td>defmi.json</td></tr>
+<tr><td>settle one DvP, 64-bit rails, Bulletproof backend</td><td class="num">7.02 ms · 3,424 B</td><td>rust_bench.json</td></tr>
+<tr><td>settlement cost slope (linear backend)</td><td class="num">0.80 ms/bit · 896 B/bit</td><td>defmi.json</td></tr>
+<tr><td>zkPI verification inside settlement (intercept)</td><td class="num">2.1 ms</td><td>defmi.json</td></tr>
+<tr><td>securities 24-bit, cash 48-bit vs both 48</td><td class="num">−24% time · −10,752 B</td><td>defmi.json</td></tr>
+<tr><td>one node, 8 workers, verification only</td><td class="num">216.6 settlements/s (7.40×)</td><td>defmi.json</td></tr>
+<tr><td>asset tag per settlement</td><td class="num">+32 B · time inside 0.2 ms noise</td><td>defmi.json</td></tr>
+<tr><td>asset membership at issue, 64 instruments</td><td class="num">verify 2.24 ms · 1,344 B</td><td>defmi.json</td></tr>
+<tr><td>note DvP in Rust, ring 8, incl. 3-of-7 FROST ceremony</td><td class="num">build 37.6 ms · settle 51.9 ms · 5,476 B</td><td>note_dvp_rust.json</td></tr>
+<tr><td>state root kept vs walked, 4,096 notes</td><td class="num">0.23 µs vs 15,325 µs</td><td>note_dvp_rust.json</td></tr>
+</tbody></table></div>
+
+<h2 id="instruction">Instruction and quote proof</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>what</th><th class="num">figure</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>zkPI v2 product vector</td><td class="num">9,726 B</td><td>zkpi_vectors/accepted-v2.bin</td></tr>
+<tr><td>zkPI v1 compatibility vector</td><td class="num">1,572 B</td><td>zkpi_vectors/</td></tr>
+<tr><td>quote proof, 4 makers</td><td class="num">prove 152 ms · verify 173 ms</td><td>quote_proof.json (host-a)</td></tr>
+<tr><td>quote proof, 8 makers</td><td class="num">prove 307 ms · verify 350 ms</td><td>quote_proof.json</td></tr>
+<tr><td>auditability overhead (matched field)</td><td class="num">1.07× wall · 2.00× traffic · 1.00× rounds</td><td>binding_chain.json</td></tr>
+<tr><td>per-party input check</td><td class="num">+1 round · +0.39% traffic · soundness 2⁻²⁴⁵</td><td>input_check.json</td></tr>
+<tr><td>Pedersen vs VOLE-in-the-Head, 167 values, n=30</td><td class="num">18.6/15.5 ms, 5,440 B vs 73.1/69.9 ms, 45,616 B</td><td>voleith.json (host-a)</td></tr>
+</tbody></table></div>
+
+<h2 id="privacy">Privacy, priced</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>what</th><th class="num">figure</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>ring of 64: prove / verify / wire</td><td class="num">14.5 ms / 3.7 ms / 38,144 B</td><td>defmi.json</td></tr>
+<tr><td>ring of 512: prove / verify</td><td class="num">40.3 ms / 9.3 ms</td><td>defmi.json</td></tr>
+<tr><td>payee scan, per note</td><td class="num">0.063 ms</td><td>defmi.json</td></tr>
+<tr><td>observer vs ring 16, uniform decoys, 16 traffic</td><td class="num">0.359 (nominal 0.062)</td><td>rings.json</td></tr>
+<tr><td>observer vs ring 16, recent decoys, 16 traffic</td><td class="num">0.062</td><td>rings.json</td></tr>
+<tr><td>PvP: second mover's reaction</td><td class="num">0.06 ms</td><td>pvp.json (host-a)</td></tr>
+<tr><td>one-chain adaptor vs single transaction, 16 swaps</td><td class="num">+3.0% verification · 4× calls</td><td>same_chain.json</td></tr>
+<tr><td>observer joining PvP legs, per-venue handles, 16 in flight</td><td class="num">0.062</td><td>same_chain.json</td></tr>
+<tr><td>observer joining PvP legs, one name everywhere</td><td class="num">1.000</td><td>same_chain.json</td></tr>
+<tr><td>real vs cover MPC slot</td><td class="num">same rounds (286), same bytes (22.2 MB), Δ 0.01 s</td><td>audit_slots.json</td></tr>
+<tr><td>scoped viewing grant: issue / check</td><td class="num">0.08 / 0.07 ms</td><td>viewing.json</td></tr>
+<tr><td>DP publication in MPC, n=7</td><td class="num">28 rounds · 63.9 MB (92.9% of rounds is noise)</td><td>distributed_publication.json</td></tr>
+</tbody></table></div>
+
+<h2 id="clearing">Clearing and reconciliation</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>what</th><th class="num">figure</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>net-net vs gross-gross, 64 trades, 8 participants</td><td class="num">1.62×</td><td>defmi.json</td></tr>
+<tr><td>cycle-level attestation vs gross-gross</td><td class="num">19.40×</td><td>defmi.json</td></tr>
+<tr><td>DeCCP cleared cycle, 256 trades</td><td class="num">38.3 ms vs 794.6 ms net-net (20.7×)</td><td>deccp.json, ccp_rust.json</td></tr>
+<tr><td>novation per trade</td><td class="num">0.53 µs</td><td>deccp.json</td></tr>
+<tr><td>intraday limit: coverage proof with / without</td><td class="num">9.2 / 9.4 ms</td><td>defmi.json</td></tr>
+<tr><td>default waterfall per tranche</td><td class="num">build 11.2 ms · verify ~1.4 ms</td><td>defmi.json</td></tr>
+<tr><td>reconciliation proof, any size</td><td class="num">96 B · check 0.65 ms at 4,096</td><td>reconcile.json, reconcile_rust.json</td></tr>
+<tr><td>vetting crowd 128: prove / verify / proof</td><td class="num">9.02 / 3.84 ms / 1,676 B</td><td>vetting.json</td></tr>
+</tbody></table></div>
+
+<h2 id="network">Network and consensus</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>what</th><th class="num">figure</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>Avalanche L1: validators · settlement acceptance · restart recovery</td><td class="num">5 · 207.3 ms · 1,454.7 ms</td><td>avalanche_l1_acceptance.json</td></tr>
+<tr><td>full QOMM path on L1: two RFQs atomically at height 53, claim at 54, restart with identical roots</td><td class="num">accepted</td><td>avalanche_qomm_full_acceptance.json</td></tr>
+<tr><td>one RFQ quote, M=16, 7 nodes: same rack / metro / 15 ms / 120 ms</td><td class="num">0.17 / 0.62 / 3.88 / 26.1 s</td><td>placement.json, sites.json</td></tr>
+<tr><td>six near, one far (120 ms)</td><td class="num">23.0 s (86% of all-far)</td><td>sites.json</td></tr>
+<tr><td>MPC rounds per quote</td><td class="num">70, flat in makers and assets</td><td>rounds.json</td></tr>
+<tr><td>price drift over one cross-region quote vs within-block dispersion (UniswapX)</td><td class="num">1.01× median</td><td>staleness.json</td></tr>
+<tr><td>robust ATLAS, n=9, t=2: elements per party per multiplication</td><td class="num">18.2 vs 64.2 deployed</td><td>robust_atlas.json, robust_atlas_host_c.json</td></tr>
+<tr><td>EVM: one ed25519 scalar multiplication</td><td class="num">302,401 gas</td><td>stylus_gas.json</td></tr>
+<tr><td>Solana: one-of-many verifier, crowd 32</td><td class="num">951,503 CU (ceiling 1.4M)</td><td>solana_cu.json</td></tr>
+</tbody></table></div>
+
+<h2 id="misses">Predictions that missed</h2>
+<p>The documents record predictions before runs, and the misses are kept beside the results because they are what the measurement was for.</p>
+<ul>
+  <li><strong>Net-net was predicted at an eighth of gross-gross</strong>; measured 1.62×, because the zkPI verification per trade does not net away.</li>
+  <li><strong>Note DvP was predicted by adding parts</strong> and was off by more than a factor of two.</li>
+  <li><strong>Vetting verification was predicted to double with the crowd</strong> and grew 1.4×; that miss raised the default crowd from 16 to 128.</li>
+  <li><strong>The 120 ms placement was predicted at 18 s</strong> from a model validated to 1.4% at 15 ms; measured 23 s, a 28% under-prediction.</li>
+  <li><strong>Robust reconstruction was predicted 1.6× low.</strong></li>
+  <li><strong>"About ten probes"</strong> appeared in the paper three times and in no artifact; measured, the correlation does not grow with the budget, only the confidence does.</li>
+  <li><strong>Two arms read 413 ms with 9 and 20 ms standard deviations</strong> on a loaded machine against a gap that should have been 14 ms. It was not measured to be zero; it was not measurable, and it was rerun.</li>
+</ul>
+
+<div class="next"><a href="use-cases.html">← Use cases</a><a href="security.html">Security and trust boundary →</a></div>

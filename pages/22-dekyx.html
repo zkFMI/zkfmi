@@ -1,0 +1,78 @@
+---
+title: DeKYX — decentralized know your X
+description: DeKYX is the eligibility layer. An issuer signs a scoped credential, the holder proves only the qualifications one action needs, and the application receives a scoped eligibility result instead of an identity record. Nullifiers, revocation, rotation, replay, and what scope-pseudonymous means.
+path: docs/dekyx.html
+section: docs
+---
+<h1>DeKYX: decentralized know your X</h1>
+<p class="lede">A reusable identity and participation-qualification layer for systems that must verify eligibility without learning more identity than one action needs. X may be a person, a legal entity, a device, a service or an autonomous agent. The application never receives the holder's secret; it receives a verified, scoped result.</p>
+<p class="src">source: dekyx/README.md · crates dekyx-core, dekyx-aethel · research implementation, not certified as a KYC/KYB system</p>
+
+<h2 id="flow">Credential and presentation flow</h2>
+<pre class="mermaid">
+sequenceDiagram
+    participant G as Governance
+    participant I as Credential issuer
+    participant H as Holder
+    participant D as DeKYX verifier
+    participant A as Application
+    G->>D: Register issuer, key epoch, namespace and policy
+    H->>H: Generate subject secret and commitment
+    H->>I: Credential request + proof of possession
+    I->>H: Signed scoped credential
+    I->>D: Signed revocation status list
+    A->>H: Exact presentation context and requirements
+    H->>D: Anonymous presentation + selected qualification proofs
+    D->>D: Verify issuer, signature, status, scope, context and replay
+    D-->>A: VerifiedEligibility / scoped subject line
+</pre>
+
+<h2 id="objects">Core objects</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Object</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>IssuerDefinition</code></td><td>an issuer, its key epoch, namespace, subject kinds and validity window</td></tr>
+<tr><td><code>IssuerDirectory</code></td><td>validated issuer epochs and current revocation lists</td></tr>
+<tr><td><code>CredentialRequest</code></td><td>binds a holder-created commitment to an issuance proof</td></tr>
+<tr><td><code>Credential</code></td><td>issuer-signed scope, policy, commitment and qualification root</td></tr>
+<tr><td><code>RevocationStatusList</code></td><td>issuer-signed, epoch-ordered set of revoked credential digests</td></tr>
+<tr><td><code>PresentationContext</code></td><td>binds a proof to one audience, action, request, nonce and expiry</td></tr>
+<tr><td><code>AnonymousPresentation</code></td><td>proves possession and selected qualifications for that context</td></tr>
+<tr><td><code>VerifiedEligibility</code></td><td>non-serialisable result produced only after verification</td></tr>
+<tr><td><code>PresentationLedger</code></td><td>consumes a nullifier-context pair and rejects replay</td></tr>
+</tbody></table></div>
+
+<h2 id="privacy">Privacy model</h2>
+<p>The holder generates the subject secret and proves knowledge of the commitment opening at issuance; the issuer does not receive the secret. Qualification leaves are committed in a Merkle root, and a presentation reveals only the leaves the application's policy requires, proving they belong to the signed root. The challenge includes audience, action, request, nonce and expiry, so a transcript for one operation cannot be moved to another.</p>
+<p>A <strong>subject line</strong> is derived from issuer, scope, policy and scope nullifier. It stays stable when the same holder receives a replacement credential under a rotated issuer key, so an application can enforce one line or one limit without learning a legal identity. Different scopes use different nullifier bases and re-randomised commitments. OCLOB uses this to cap one legal entity's concurrent orders; DeCCP uses it to admit a clearing member by subject line rather than by name.</p>
+<div class="note warn">This version is <strong>scope-pseudonymous, not issuer-unlinkable</strong>. An Ed25519-signed commitment is stable inside one credential and may be correlated with the issuer's issuance record. Deployments that need issuance unlinkability need a rerandomisable credential scheme, such as a reviewed BBS+ or CL-signature adapter. That is stated in the README and repeated here because it is the property a reader is most likely to assume.</div>
+
+<h2 id="revocation">Revocation, rotation and replay</h2>
+<ul>
+  <li>Every accepted issuer-key epoch must have a signed status list. A missing or stale list <strong>fails closed</strong>; an older list cannot replace a newer one.</li>
+  <li>Key rotation registers a strictly higher epoch and bounds earlier epochs by a grace instant. A grace instant before the old key's start is the immediate-compromise path. Previously verified application records remain application state; the retired key cannot authorise a new presentation.</li>
+  <li><code>PresentationLedger</code> consumes the pair of scope nullifier and presentation context. Re-randomising the proof does not make the same action reusable. The host must persist this ledger in authenticated storage, because rolling it back re-enables a replay.</li>
+</ul>
+
+<h2 id="boundary">Persistence boundary</h2>
+<p><code>IssuerRegistry</code> cannot be deserialised around its validation; <code>IssuerDirectory</code> restores only through a validated record conversion; credentials, status lists, presentations and contexts are wire data verified before use; and <code>VerifiedEligibility</code> is deliberately not serialisable. It is an output of verification, never a trusted input.</p>
+
+<h2 id="integration">Integration</h2>
+<pre class="mermaid">
+flowchart TB
+    CORE["dekyx-core<br/>credential and presentation verification"]
+    AA["dekyx-aethel<br/>optional artifact binding"]
+    A["Aethel<br/>credit and guarantee eligibility"]
+    C["DeCCP<br/>clearing-member admission"]
+    O["OCLOB, QOMM, others<br/>policy-specific eligibility"]
+    CORE --> AA --> A
+    CORE --> C
+    CORE --> O
+    Z["zkPI / DeFMI"] -. "no direct credential dependency" .-> CORE
+</pre>
+<p>zkPI and DeFMI do not define credentials; a host may require DeKYX eligibility before creating or settling an instruction. The <code>qomm-zkpi</code> issuer module carries its own KYB credential path over the same one-of-many and or-DLEQ gadgets, which predates DeKYX and is the vetting roll described on the <a href="defmi.html#vetting">DeFMI page</a>.</p>
+
+<h2 id="not">What a deployment still has to define</h2>
+<p>Issuer governance, evidence standards, corporate-group resolution, revocation operations, data-retention policy, and jurisdiction-specific KYC/KYB obligations. Cross-issuer anti-Sybil policy requires a shared governance or registry decision outside the crate. The published revision passed test, clippy, fmt and release build on Linux with the locked graph; that is a build gate, not an audit.</p>
+
+<div class="next"><a href="defmi.html">← DeFMI</a><a href="deccp.html">DeCCP: clearing →</a></div>

@@ -1,0 +1,95 @@
+---
+title: QOMM — query-oblivious market making
+description: QOMM prices a request for quote inside a seven-node malicious-secure MPC. Makers' rules are committed, the request is shared, the best quote is proved minimal and settled without being opened. Transport, tournament, audit, differential privacy, placement, and the cost of auditability.
+path: docs/qomm.html
+section: docs
+---
+<h1>QOMM: query-oblivious market making</h1>
+<p class="lede">Quote without disclosing the request, the pricing rule, or the market. Sixteen makers' pricing rules are applied to a request nobody sees, inside a seven-node multiparty computation with an honest majority. One key is opened: the winner and its committed price. Anyone can verify afterwards that it was the minimum of those offered.</p>
+<p class="src">source: qomm/README.md, AUDIT.md, DEPLOYMENT.md, BINDING.md, POSITION.md · MP-SPDZ malicious-shamir, N=7, T=2</p>
+
+<h2 id="problem">The problem it removes</h2>
+<p>An investor wants to sell ten thousand shares and asks sixteen market makers for a price. Fifteen lose, and the fifteen who lost still know who wanted what, which way, how much, and when. That is not an implementation defect; it is what asking for a price costs in any system where asking means telling. QOMM makes asking not mean telling.</p>
+
+<h2 id="does">What it does</h2>
+<pre class="mermaid">
+flowchart TB
+    U["a user's request<br/>asset, size, side"]
+    subgraph transport["fixed cadence, additive shares, relay hops"]
+        REL["every user sends the same bytes<br/>every slot, whether or not they asked"]
+    end
+    subgraph mpc["seven computing nodes, malicious Shamir"]
+        direction TB
+        PRICE["price every maker at once<br/>this is width, and it is free"]
+        GATE["eligibility<br/>one comparison layer"]
+        TOUR["binary tournament<br/>log2(M) comparison layers"]
+        PRICE --> GATE --> TOUR
+    end
+    OUT["one opened key:<br/>the winning price and the winner"]
+    U --> REL --> PRICE
+    TOUR --> OUT
+    NOTE["the trace is the same<br/>whether or not anyone asked"]
+    REL -.- NOTE
+    mpc -.- NOTE
+</pre>
+
+<h3>Transport</h3>
+<p>One message of the same length to each node every slot, whether or not there is an order; in a design that speaks only when it needs to, speaking is itself the announcement. The request is split into one additive share per node before it leaves the device, so a single share is uniform noise. Relay hops hold until the slot boundary and reshuffle. Inside the circuit a secret <code>is_real</code> bit decides only whether the makers' state moves; a real slot and a cover slot have identical round counts (286), identical bytes per party (22.2045 MB) and a wall-clock gap of 0.01 s inside a 0.085 s repeat spread.</p>
+
+<h3>Pricing rules</h3>
+<p>A maker's rule is written in a small expression language. The checker derives, with no proof, the bit width the circuit needs, that the output range is bounded, and the audit obligations; then generates the <code>.mpc</code> program for the MP-SPDZ compiler. The <code>qomm-mpc</code> crate links the engine and reads its own counters, so rounds are broken out by communication channel rather than estimated.</p>
+
+<h3>Audit</h3>
+<p>The quote proof (<code>qomm-proofs/src/quote_proof.rs</code>) instantiates Baum–Damgård–Orlandi: input providers publish Pedersen commitments, and the SPDZ online phase is linear operations an auditor replays on the commitments. What is audited is not "the circuit was evaluated correctly" but a market statement: for each maker i, <code>key_i</code> is the committed policy applied to the committed request, and the opened winner is the smallest of those keys. Minimality plus membership is best execution. 152 ms to prove and 173 ms to verify at four makers; 307 and 350 at eight.</p>
+<p>Node misbehaviour is caught by receipts: every node emits one every slot, so "it did not answer" can be shown to a third party. Fault injection over 7 nodes and 6 slots caught equivocation, omitted makers, stale state and a missing receipt, with zero misses and zero honest nodes accused, and slashed each by the nature of the fault (a double signature is self-contained evidence and heaviest; a missing receipt happens to honest nodes and is lightest).</p>
+
+<h2 id="cost">What auditability costs</h2>
+<p>Everyone in this line pays something to make the outcome checkable, and only two of six systems measured it.</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>what it buys</th><th>measured cost</th></tr></thead>
+<tbody>
+<tr><td>Rivinius et al. 2022</td><td>public verifiability + accountability + robustness</td><td>11× to 20× the online phase against plain SPDZ</td></tr>
+<tr><td><strong>QOMM</strong></td><td>public verifiability</td><td><strong>1.07× wall clock, 2.00× traffic, 1.00× rounds</strong></td></tr>
+</tbody></table></div>
+<p>The gap is where the audit attaches. Rivinius commits to every share of every wire, so the commitment scheme is inside the multiplication. Here the commitment is to a maker's policy, and one proof afterwards shows the mechanism was applied to it, so the MPC only has to run in a wider field: 16-byte elements become 32, and that is the whole 2.00×. Their construction also delivers blame and robustness; this one delivers neither in the deployed engine. Both halves belong in the comparison.</p>
+
+<h2 id="placement">Where the nodes sit decides more than the cryptography</h2>
+<p>The round count is 70, flat, independent of the number of makers and of the number of assets, so the wall clock carries 70 × RTT of pure waiting on whichever link is slowest.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>node placement (M=16, 31 bits)</th><th class="num">one-way delay</th><th class="num">one quote</th></tr></thead>
+<tbody>
+<tr><td>same rack</td><td class="num">0 ms</td><td class="num">0.166 s</td></tr>
+<tr><td>same metro</td><td class="num">1 ms</td><td class="num">0.617 s</td></tr>
+<tr><td>domestic wide area</td><td class="num">5 ms</td><td class="num">1.619 s</td></tr>
+<tr><td>Tokyo to Singapore</td><td class="num">15 ms</td><td class="num">3.876 s</td></tr>
+<tr><td>six near, <strong>one far</strong> (120 ms)</td><td class="num">120 ms</td><td class="num">22.998 s</td></tr>
+<tr><td>all far (120 ms)</td><td class="num">120 ms</td><td class="num">26.148 s</td></tr>
+</tbody></table></div>
+<p class="src">artifacts: placement.json, sites.json · delay proxy on one machine; reproduces round trips, not jitter, loss or clock skew</p>
+<p>Putting the seven nodes in one metro is six times more effective than any stack of cryptographic improvements, and it raises the correlation of collusion, which is governance, not technology. The obvious compromise, six near and one far, costs 86% of moving all seven far: independence cannot be bought inside a committee one node at a time. The linear model that predicted 18 s at 120 ms measured 23 s, a 28% under-prediction at eight times the distance it was validated at, and that miss is recorded.</p>
+<p>Whether 26 s matters is a different question, answered against UniswapX fills: the price drift across two Ethereum blocks (3.6 to 8.6 bp) is the same size as the dispersion the market shows within a single block (4.8 to 7.5 bp). A quote that took 26 s is not distinguishable from an instantaneous one because the price was never that precisely defined, and that is the harshest case available.</p>
+
+<h2 id="dp">What is published is noised</h2>
+<p>A venue publishing exact winning quotes leaks the policy through repetition, so the quote is disclosed under a differential-privacy budget. The production publication path draws its noise inside the seven MP-SPDZ processes and binds the result, the entity-level budget transition and a 3-of-7 certificate in one atomic operation. The mechanism has finite support and states its measured (ε, δ) explicitly (δ 2.5e-4 at support 8) rather than relabelling itself as pure DP. The noise is 92.9% of the rounds: 28 rounds and 63.9 MB against 2 rounds and 0.0022 MB with no mechanism. A cheaper construction (each party drawing a Pólya share at home, 2 rounds, 1.18× the standard deviation) is known and deliberately not implemented.</p>
+<p>What is not noised is the count of settled trades, which is already exact and public on chain. What is secret is the request count: a request that settles nothing leaves no trace, and it is the denominator a maker cannot get any other way. <code>BlockRangeQuery</code> sells distinct-entity counts over a block range at sensitivity 1; on 150,000 UniswapX fills the public fill count explains R² 0.95 to 0.97 of it, and the residual, flow concentration, is what the ε actually buys. Activity is free; concentration is what is for sale.</p>
+
+<h2 id="binding">The gap that is still open</h2>
+<p>A maker deals its policy to seven nodes and is not one of them. The transport layer proves a node received a committed share; nothing proves the node fed that share to MP-SPDZ. The per-party input check now names the node that fed a value other than the one it was dealt, in the circuit, for one extra round and 0.39% more traffic at soundness 2⁻²⁴⁵, after an earlier version of that check was found unsound while writing its proof (a node could choose an error in the kernel of coefficients it could read; the challenge is now drawn after the input phase). A verdict is not a repair: both name, neither prevents. The <a href="security.html#ladder">security page</a> places each mechanism on the accountability ladder.</p>
+
+<h2 id="demo">The demo is seats</h2>
+<p>One screen showing everything is the one presentation that cannot make a claim about who knows what. So the demo hands out seats: a browser holds one role and is sent what that role would see, and the developer console shows the same thing a person without one is shown. The taker seat alone gets a price. The maker seat never sees the order and after a match receives only its own fill. The node seat holds shares and can cheat, and what happens then splits three ways. The observer seat shows everything and says on every frame that it is a view no deployment has.</p>
+<pre><code>cargo run -j 4 --release --manifest-path rust/Cargo.toml -p qomm-harness --bin serve_demo
+http://&lt;host&gt;:8800/?seat=node:3&amp;label=Rin
+http://&lt;host&gt;:8800/?seat=maker:1&amp;label=Ann
+http://&lt;host&gt;:8800/?seat=observer</code></pre>
+
+<h2 id="not">What QOMM does not claim</h2>
+<ul>
+  <li>It is not faster than Prime Match. A quote is 3.6 s at 15 ms RTT and 23 s intercontinental at sixteen makers over four assets; Prime Match runs every 30 minutes at J.P. Morgan with a semi-honest hub. The units differ and the ratio should not be reduced to one number, but on any reading nothing here is faster.</li>
+  <li>It does not make MPC publicly auditable; Baum, Damgård and Orlandi did in 2014. It instantiates their construction.</li>
+  <li>Privacy does not survive three colluding nodes. Correctness of the quote proof survives all seven.</li>
+  <li>There has never been a seven-site deployment. Cross-region figures come from a delay proxy on one machine.</li>
+  <li>The staleness measurement has selection bias: UniswapX fills are the trades that happened.</li>
+</ul>
+
+<div class="next"><a href="deccp.html">← DeCCP</a><a href="oclob.html">OCLOB: oblivious order book →</a></div>

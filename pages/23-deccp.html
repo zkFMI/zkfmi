@@ -1,0 +1,86 @@
+---
+title: DeCCP — decentralized central counterparty
+description: DeCCP is a deterministic clearing and risk state machine. Threshold-governed clearing books, qualification-backed admission, margin, gross-gross to net-net cycles, public and confidential guarantee facilities, a deterministic loss waterfall, and state that advances only against a DeFMI receipt for the exact proposal.
+path: docs/deccp.html
+section: docs
+---
+<h1>DeCCP: decentralized central counterparty</h1>
+<p class="lede">"Central" describes the logical role: obligations are accepted, netted, guaranteed and resolved through one authoritative clearing state. "Decentralized" describes control: material changes require a threshold of independent authorities, and settlement is verified against DeFMI rather than trusted to one operator. The crates do not custody assets and are not, by themselves, a licensed clearing house.</p>
+<p class="src">source: deccp/README.md, defmi/DEFMI.md §4.2 · crates deccp-core, deccp-aethel</p>
+
+<h2 id="flow">Clearing flow</h2>
+<pre class="mermaid">
+flowchart LR
+    G["Threshold authorities"] --> B["Create and govern ClearingBook"]
+    K["DeKYX<br/>qualification proof"] --> M["Admit clearing member"]
+    D1["DeFMI<br/>capital, fund, collateral locks"] --> M
+    M --> O["Accept verified obligations"]
+    Z["zkPI verifier"] --> O
+    O --> N["Compute net positions"]
+    N --> C{"All risk and conservation<br/>checks pass?"}
+    C -->|no| R["Reject without state change"]
+    C -->|yes| S["Settlement proposal"]
+    S --> D2["DeFMI<br/>settle exact proposal"]
+    D2 --> E["Record settlement receipt"]
+    M --> X["Default declaration"]
+    X --> W["Apply loss waterfall"]
+    W --> D2
+</pre>
+<p>DeCCP advances a final clearing or default state only when a DeFMI receipt is bound to the exact proposal or waterfall context. A partial or mismatched receipt cannot finalise anything.</p>
+
+<h2 id="admission">Admission and margin</h2>
+<p>Member admission requires threshold approval, a verified DeKYX eligibility result, and a live DeFMI default-fund lock. DeCCP records a scoped subject line, not a legal name. Capital, default-fund and collateral lock identifiers must be unique, so one external lock cannot back multiple risk positions. Margin changes and material cycle controls are threshold-approved; every net risk debit must fit inside the participant's encumbered margin or the close is rejected.</p>
+
+<h2 id="netting">Three netting modes</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Mode</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td><code>GrossGross</code></td><td>keeps each settlement leg and measures payer risk on a gross basis</td></tr>
+<tr><td><code>GrossNet</code></td><td>nets the designated settlement asset while retaining other gross legs</td></tr>
+<tr><td><code>NetNet</code></td><td>nets every asset across the cycle</td></tr>
+</tbody></table></div>
+<p>For every asset, the sum of net positions must remain zero. The resulting proposal has a canonical digest so the settlement receipt cannot be moved to a different cycle or set of legs. The cryptographic cost of each mode on committed balances is on the <a href="defmi.html#netting">DeFMI page</a>; the finding that matters is that novation is free arithmetically (two multiplications, no proof) and that a cleared cycle's cost stops growing with the number of trades, at <strong>0.53 µs per trade</strong> for the novation itself.</p>
+
+<h2 id="guarantee">Guarantee facilities</h2>
+<p>The public-value path tracks facility capacity, reserved, consumed and individual holds, with compare-and-swap sequence checks so two concurrent requests cannot spend the same remaining capacity. The confidential path stores a coverage commitment and a DeFMI state digest rather than a plaintext amount; reserve, release and claim name the prior sequence and digest, and the DeFMI adapter must verify the hidden amount relation, capacity bound, transition proof and final receipt before DeCCP advances. <code>deccp-aethel</code> maps Aethel guarantee lifecycle events to these transitions without importing Aethel's domain crate.</p>
+
+<h2 id="waterfall">Default waterfall</h2>
+<p>A default case records the triggering evidence, the defaulter's available resources, mutualised layers, the CCP's own contribution and the resulting draws. Resolution requires threshold approval and a DeFMI receipt for the exact waterfall context. On the settlement side the tranche ordering is enforced with a committed product pinned to the identity (<code>draw_k × remaining_{k−1} = 0</code>), at about 11 ms per tranche to build and 1.4 ms to verify, once per default. The CCP's capital sits between the defaulting member's fund contribution and the mutualised pool, where CPMI-IOSCO and EMIR put it.</p>
+
+<h2 id="invariants">Invariants checked on every accepted path</h2>
+<ul>
+  <li>threshold approvals are bound to a canonical operation digest</li>
+  <li>member subject lines, external locks, obligations, facilities and holds are unique in their scope</li>
+  <li>incoming obligations must pass <code>InstructionPort</code>; a non-zero digest alone is not a valid zkPI</li>
+  <li>net positions conserve each asset exactly</li>
+  <li>margin and guarantee reservations cannot exceed available capacity</li>
+  <li>expired, released or consumed holds cannot be claimed again</li>
+  <li>settlement and default receipts must name the exact proposal context</li>
+  <li>invalid operations fail without partially updating state</li>
+</ul>
+
+<h2 id="recovery">Persistence and recovery</h2>
+<p><code>ClearingBook</code> is not directly deserialisable, because unchecked restoration would bypass quorum, qualification and settlement validation. Two recovery models: replay verified operations into a new book, or restore a <code>ClearingSnapshot</code> after validating its canonical digest, authority set, approval and structural invariants. <code>restore_authenticated</code> may be used only when the host storage already commits to the exact snapshot bytes, such as consensus state under a state root; it skips a second snapshot signature, not the structural validation.</p>
+
+<h2 id="ports">Ports</h2>
+<pre class="mermaid">
+flowchart TB
+    DK["DeKYX"] -->|verified eligibility| EP["EligibilityPort"]
+    Z["zkPI"] -->|verified instruction| IP["InstructionPort"]
+    DF["DeFMI"] -->|locks and receipts| DP["DeFmiPort"]
+    EP --> CORE["deccp-core"]
+    IP --> CORE
+    DP --> CORE
+    CORE --> A["deccp-aethel<br/>optional guarantee adapter"]
+</pre>
+<p><code>deccp-core</code> has no dependency on Aethel, DeKYX, zkPI or DeFMI crates. A deployment can replace the credential scheme or the settlement network without weakening DeCCP's internal invariants.</p>
+
+<h2 id="not">What DeCCP does not do</h2>
+<ul>
+  <li>Cross-margining across providers: a position at one clearing provider is not offset against a position at another.</li>
+  <li>Cross-instrument novation: obligation graphs are per asset and a mixed novation is refused rather than netted.</li>
+  <li>Legal novation: arithmetic validity says nothing about validity under the register's rulebook. "A CCP is no longer needed" is on the may-not-claim list.</li>
+  <li>Detecting omission: a house can leave a trade out, though it can no longer invent one. A graph missing an edge is a consistent graph; the tranche is what makes that expensive.</li>
+</ul>
+
+<div class="next"><a href="dekyx.html">← DeKYX</a><a href="qomm.html">QOMM: oblivious RFQ →</a></div>

@@ -1,0 +1,80 @@
+---
+title: Security and trust boundary
+description: Adversaries the zkFMI stack considers, the accountability ladder and where each mechanism sits, what validators verify and what they do not, anonymity as a function of traffic, the post-quantum argument specific to this design, and the list of things not defended.
+path: docs/security.html
+section: docs
+---
+<h1>Security and trust boundary</h1>
+<p class="lede">Public verifiability and robustness are different axes. This stack is publicly verifiable: anyone can check the winner was the minimum and the settlement conserved value. It sits on rung 1 of the accountability ladder in the deployed engine: a deviation is detected and the protocol stops. Saying both halves is the point of this page.</p>
+<p class="src">source: zkpi/ACCOUNTABILITY.md, qomm/BINDING.md, oclob/docs/THREAT_MODEL.md, defmi/ZKPI_WIRE.md, defmi/REVIEW.md</p>
+
+<h2 id="adversaries">Adversaries</h2>
+<ul>
+  <li>An operator or ordering node that reads an order and reorders around it.</li>
+  <li>An MPC node that steals shares, computes the wrong thing, or halts only when the result is unfavourable.</li>
+  <li>A participant that spends the same reservation twice, refuses to settle after seeing the result, or replays.</li>
+  <li>A holder that moves a DeKYX credential to another market or period.</li>
+  <li>A submitter that sends DeFMI a stale root, another market's asset or an altered instruction.</li>
+  <li>An outside observer with the public book, the fills, traffic volume and timing.</li>
+  <li>A party holding a commitment long enough to break the discrete log.</li>
+</ul>
+
+<h2 id="parameters">Committee parameters</h2>
+<div class="kv">
+  <dt>MPC nodes</dt><dd>7, malicious Shamir, honest majority</dd>
+  <dt>privacy threshold</dt><dd>T = 2: three colluding nodes reconstruct</dd>
+  <dt>reconstruction</dt><dd>3 shares</dd>
+  <dt>liveness (deployed engine)</dt><dd>all 7 must respond; "3 can reconstruct" and "3 can continue" are different statements</dd>
+  <dt>instruction signature</dt><dd>3-of-7 FROST over ristretto255</dd>
+  <dt>OCLOB arrival order</dt><dd>5-of-7, at most 2 double-voters; any two five-sets share an honest node</dd>
+  <dt>validators</dt><dd>5 AvalancheGo processes in acceptance; independent verification of every submitted proof</dd>
+</div>
+
+<h2 id="ladder">The accountability ladder</h2>
+<p>Take a protocol where one of the seven nodes deviates. What can the rest of the world end up knowing?</p>
+<div class="table-wrap"><table>
+<thead><tr><th>rung</th><th>what it gives</th><th>needs</th></tr></thead>
+<tbody>
+<tr><td>1. security with abort</td><td>the output is right, or there is no output</td><td>dishonest majority is fine</td></tr>
+<tr><td>2. identifiable abort</td><td>…and the honest parties learn who</td><td>dishonest majority is fine</td></tr>
+<tr><td>3. publicly identifiable abort</td><td>…and so does anybody reading the transcript</td><td>a bulletin board</td></tr>
+<tr><td>4. public accountability</td><td>…and a judge reaches a verdict from the transcript alone</td><td>a bulletin board</td></tr>
+<tr><td>5. robustness</td><td>there is no abort; honest parties get the output regardless</td><td><strong>honest majority</strong></td></tr>
+</tbody></table></div>
+<p>Where each mechanism sits, honestly separated because the repositories once called all of them "attribution":</p>
+<ul>
+  <li><strong>The dealt share: rung 4, at the boundary only.</strong> The maker signs each dealt share, so a node that later claims a different share can be shown to have done so by anyone. Scope is one message, not the protocol.</li>
+  <li><strong>What the node feeds the engine: rung 0 in the transport, now checkable in the circuit.</strong> The per-party input check names the node that fed a value other than the one it was dealt, for one extra round. An earlier version derived its coefficients from commitments a node could read first, and writing the proof found that a node could choose an error in their kernel; the challenge is now drawn after the input phase. A verdict is not a repair.</li>
+  <li><strong>The MPC itself: rung 1.</strong> MP-SPDZ's malicious security means deviation is at least detected. Detected, not attributed, not survived.</li>
+  <li><strong>Robust reconstruction: rung 5, built and run at nine nodes.</strong> At n ≥ 4t+1 the shares are a Reed–Solomon code whose degree-2t product is directly correctable, so a Berlekamp–Welch decoder replaces segmenting, checkpoints and player elimination. Measured on two machines with two independent builds: the correct answer with the culprits named under one and two liars, without stopping, at 18.2 elements per party per multiplication against the 64.2 the deployed engine spends. What is not robust: the preprocessing, the double sharings, the output opening and the input phase. The input phase is the one that matters, and it costs two more institutions.</li>
+  <li><strong>The quote proof is on the other axis.</strong> If it fails you know the answer was wrong. You do not know which node made it wrong, and you do not have an answer.</li>
+</ul>
+
+<h2 id="validators">What validators verify, and do not</h2>
+<p>The product transaction carries the complete submitted evidence. Every Avalanche validator independently checks: the 3-of-7 Ed25519 approval, the typed zkPI, the complete quote proof, both jointly assembled range proofs, the taker's price limit, the asset link, the DvP relation, chain and rail domains, deadline, sequence, previous state root and nullifier, before applying the transition atomically.</p>
+<div class="note stop">Validators do not re-run the private MP-SPDZ transcript, and they do not prove the node-local share-to-proof handoff. That is the remaining committee trust and liveness boundary. Removing it requires a proof of the whole private computation and a separate consensus benchmark. It is written in the wire specification so that no reader mistakes "validators verify everything submitted" for "validators verify everything".</div>
+
+<h2 id="traffic">Anonymity is other people's traffic</h2>
+<p>Two measurements say the same thing from different sides. A note ring with no other settlements around it names its note with certainty at every ring size, because the newest note is the one being spent and no decoy can be newer. An adaptor-signature PvP with one swap in flight names its partner leg with certainty. Both constructions hide you in other people's traffic and neither does anything without it. What differs is the exchange rate: how much traffic each needs to buy a given amount of doubt. The recency-matched decoy rule reaches the nominal 1/R at sixteen settlements of traffic; the per-venue handle reaches 1/k at k swaps in flight. And the PvP observer was given no timing; a real one watching prepares arrive does better.</p>
+
+<h2 id="binding">The commitment that must open many times</h2>
+<p>A maker's policy commitment is not opened once. It sits for the life of the policy and is opened against every quote, and the mechanism is an auction. Rivinius et al. point out that computational binding decays over the life of a commitment: a party who eventually breaks the discrete log can shift another party's input undetectably, and "in an auction, this could be used to reduce other parties' bids". That is this stack's exact shape and it is the strongest argument in the literature for a post-quantum commitment here specifically: it does not need a quantum computer, only enough time.</p>
+<p>The measured alternatives: VOLE-in-the-Head commitments rest on a random oracle only but are one-time (Δ is public after the first opening), and an RFQ cannot queue openings because the coefficients depend on a request that has not arrived; lattice (BDLOP) commitments reopen freely at kilobytes each. The open question, stated on the <a href="prior-art.html#open">prior-art page</a>, is a random-oracle-only commitment over F_p that opens many times.</p>
+
+<h2 id="tee">What is deliberately not in the trust boundary</h2>
+<p>Trusted execution environments. The CPU manufacturer's attestation key, the enclave implementation and microarchitectural side channels are not added to the boundary. OCLOB's threat model says so explicitly against Tesseract-style designs; the same stance holds across the stack.</p>
+
+<h2 id="not">Not defended</h2>
+<ul>
+  <li>Three or more colluding MPC nodes reconstructing secrets.</li>
+  <li>A compromised participant terminal.</li>
+  <li>Inference from the public per-level book: a level with one participant leaks that participant's size through deltas.</li>
+  <li>Inference from published fills: a large order's existence can be guessed.</li>
+  <li>Network-level metadata: IP addresses, connection times, resend intervals, packet counts. No anonymity network is included; the fixed cadence and relay hops hide whether a slot was real, not who is connected.</li>
+  <li>Market manipulation, spoofing, or off-market price manipulation. Cryptography does not adjudicate those.</li>
+  <li>Guaranteed liveness under total node failure or partition. The design fails closed: no plaintext fallback, requests wait in an encrypted durable queue.</li>
+  <li>The sender of a note learning that it was spent.</li>
+  <li>An in-memory rate limiter that resets on restart and does not compose across instances, recorded in the review beside the sentence that called it the only defence.</li>
+</ul>
+
+<div class="next"><a href="measurements.html">← Measurements</a><a href="prior-art.html">Position against prior work →</a></div>

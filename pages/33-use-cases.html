@@ -1,0 +1,76 @@
+---
+title: Use cases beyond RFQ
+description: zkPI and DeFMI are not QOMM parts. Any system that decides a transfer can issue the instruction. Fund subscription and redemption, collateral and margin, two-currency PvP, issuance and coupons, receivables, environmental certificates, insurance payouts, in feasibility order, with prior art named.
+path: docs/use-cases.html
+section: docs
+---
+<h1>Use cases beyond RFQ</h1>
+<p class="lede">QOMM is one upstream system: one that decides a price and issues an instruction. Any other business system that decides who may move what, under which conditions, can put that decision on a zkPI and let DeFMI settle it without reading the inputs. No secret quoting, no MPC pricing, no maker and taker required.</p>
+<p class="src">source: defmi/doc/ja/DEFMI_ZKPI_USE_CASES.md (survey dated 2026-08-30)</p>
+
+<h2 id="when">When the shape fits</h2>
+<p>Three conditions together make a business a fit.</p>
+<ol>
+  <li>Before settlement, eligibility, limits, collateral or contract terms must be checked.</li>
+  <li>The personal data, holdings, amounts or internal decisions used in that check must not be shown to every settlement participant.</li>
+  <li>Once conditions are met, neither leg may execute alone and no instruction may be used twice.</li>
+</ol>
+<pre class="mermaid">
+flowchart LR
+    F["fund administrator<br/>eligibility and units"]
+    C["collateral and risk engine<br/>required margin"]
+    B["bank and sanctions check<br/>authorises a cross-border payment"]
+    R["registrar, issuer, custodian<br/>approves a transfer of rights"]
+    F --> Z["zkPI<br/>carries the decision and its proof"]
+    C --> Z
+    B --> Z
+    R --> Z
+    Z --> D["DeFMI<br/>verifies once, settles once"]
+    D --> A["cash, deposits, securities, units, collateral<br/>two rights updated together"]
+</pre>
+
+<h2 id="ranked">Ranked</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>use</th><th>who issues the zkPI</th><th>nearest prior art</th><th>the difference to test</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>Fund subscription, redemption, capital calls</strong></td><td>transfer agent, fund administrator and KYC provider jointly: eligibility valid, amount within rules and per-investor cap, cash reserved, units available, NAV point fixed</td><td>Project Guardian (MAS) has automated subscription and payment on DLT</td><td>eligibility, individual caps and amounts hidden from settlement participants; a one-time instruction from a separate fund system settled by an operator-less ledger</td></tr>
+<tr><td>2</td><td><strong>Collateral and margin: pledge, substitution, return</strong></td><td>a collateral engine with approved eligibility, haircut and concentration circuits; proves the portfolio covers the requirement without showing it</td><td>tri-party collateral, CCP margin calls</td><td>coverage proved over a secret portfolio; ordering of concurrent calls and per-entity caps in authoritative state</td></tr>
+<tr><td>3</td><td><strong>Interbank and cross-border PvP</strong></td><td>two issuers and two cash reservations bound in one instruction; sanctions and authority checks carried as proofs</td><td>Fnality, Partior, mBridge, Project Agorá</td><td>adaptor-signature PvP with unrelated signatures per ledger; exposure window set by finality, not proofs</td></tr>
+<tr><td>4</td><td>Issuance, redemption, coupons, dividends</td><td>issuer and paying agent</td><td>digital bond programmes (SDX, eWpG registers)</td><td>holder set and amounts hidden; conservation across a corporate action</td></tr>
+<tr><td>5</td><td>Real estate and high-value asset transfer</td><td>registrar and escrow agent</td><td>title tokenisation pilots</td><td>DvP where the register is external and DeFMI mirrors it</td></tr>
+<tr><td>6</td><td>Government and multilateral promissory notes, contributions, subsidies</td><td>treasury and disbursing agent</td><td>—</td><td>conditional disbursement with eligibility hidden</td></tr>
+<tr><td>7</td><td>Receivables and invoice finance</td><td>Aethel-style receivable system</td><td>supply-chain finance platforms</td><td>see the <a href="aethel.html">Aethel page</a></td></tr>
+<tr><td>8</td><td>Environmental and commodity certificates: issue and retire</td><td>registry operator</td><td>carbon registries</td><td>retirement as a one-time nullifier; holder hidden</td></tr>
+<tr><td>9</td><td>Insurance claims and benefit payouts</td><td>insurer and adjudicator</td><td>parametric insurance</td><td>claim conditions proved, claimant data withheld</td></tr>
+</tbody></table></div>
+<p>The first is the most practical product: two things move together, which is DeFMI's DvP unchanged, with few roles. The second is the strongest research topic: coverage proofs over a secret portfolio. The third is the largest long-term business.</p>
+
+<h2 id="cross">Two cross-border scenarios that must not be confused</h2>
+<ul>
+  <li><strong>Intra-group PvP/DvP.</strong> Parent, subsidiaries and an in-house bank share rules and an authority hierarchy, so one participant module can connect accounting, treasury and custody and pass approved instructions to DeFMI. It needs an encrypted durable queue so instructions survive an MPC outage: no local computation instead of MPC, no unproved send, idempotent resend by request id, original order preserved, no automatic extension of expired requests, and a return to fixed cadence with cover slots after recovery so the burst does not announce which requests were real.</li>
+  <li><strong>Independent parties with a stablecoin cash leg.</strong> Seller and buyer share nothing, so internal approval is not a trust basis. Each party's module binds its own KYB and signing authority, its own pre-reserved asset or USDC, the stablecoin's chain, contract, issuer, freeze and finality conditions at trade time, and one transaction id, amount and expiry across both legs. The stablecoin ledger is a swappable cash rail with its own failure state machine (reorg, expiry, issuer freeze), not a configuration change to intra-group settlement.</li>
+</ul>
+
+<h2 id="common">Six problems every upstream has to solve</h2>
+<ol>
+  <li>Whose decision counts: which keys, which quorum, which governance.</li>
+  <li>Making the proved condition and the settled object the same thing.</li>
+  <li>Preventing concurrent instructions from exceeding a shared cap.</li>
+  <li>Aligning failure with an external ledger: which fault breaks atomicity, and refusing to call the broken configuration DvP.</li>
+  <li>Letting only the right party check later: scoped disclosure for dispute, audit and supervision.</li>
+  <li>Defining the legal moment of finality.</li>
+</ol>
+
+<h2 id="novelty">What may be claimed</h2>
+<p>DvP on DLT, tokenised deposits and securities, pre-payment compliance checks, ZK compliance proofs and automated collateral or subscription are each individually not new. The combination to test is: separation of business decision from settlement across different upstreams issuing one instruction type; settlement that does not reconstruct the source data; one-time rights that cannot be reused across instructions; cash, deposits, securities, units, collateral and certificates under one instruction boundary; distributed operation that still preserves issuer, registrar and clearing authority in the proof; and selective after-the-fact verification. "World first" is not claimed; the claim, if any, is the integrated construction and its security definition once the feature-by-feature comparison is finished.</p>
+
+<h2 id="order">Implementation order</h2>
+<ol>
+  <li><strong>Fund subscription and redemption.</strong> Separate keys for issuer, administrator, investor and KYC. Eligibility, subscription cap, cash reservation and issuable units bound to the zkPI; cash notes and unit notes updated together; tests for concurrent over-subscription, expiry, replay and one-leg failure.</li>
+  <li><strong>Collateral and margin.</strong> Eligible collateral, haircuts and concentration limits as approved circuits; coverage proved without showing the portfolio; top-up, substitution, return; ordering of multiple calls and per-entity caps.</li>
+  <li><strong>Two-currency PvP.</strong> Two issuers and two reservations in one zkPI; issuer outage, expiry, restart and resend tests; ISO 20022 mapping in an external adapter so DeFMI's types are not fixed to one bank's message.</li>
+  <li><strong>External ledger connection.</strong> Mock fund, collateral and bank ledgers as independent processes; signed reservations and confirmed receipts; an explicit list of which faults break atomicity.</li>
+</ol>
+<p>What exists today: typed zkPI, signature and proof verification, one-time identifiers, a note ledger that does not publish account names, same-ledger DvP and PvP, issuer authority, pre-reservation and reconciliation. All callable from a non-QOMM upstream. What does not exist: connections to a real fund administrator, CCP, bank, CSD or registrar; external KYC; physical HSMs; seven-site operation; legal finality; third-party audit.</p>
+
+<div class="next"><a href="aethel.html">← Aethel</a><a href="measurements.html">Measurements →</a></div>

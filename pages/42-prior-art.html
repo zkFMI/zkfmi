@@ -1,0 +1,69 @@
+---
+title: Position against prior work
+description: What is new in zkFMI and what is not, stated against the nearest prior work. Baum–Damgård–Orlandi 2014, Baldimtsi et al. 2020, Rivinius et al. 2022, Prime Match 2023, Baum–Zok 2026. Three retracted claims, the composition that is claimed, and four open questions.
+path: docs/prior-art.html
+section: docs
+---
+<h1>Position against prior work</h1>
+<p class="lede">Every mechanism in this stack has a paper behind it, and for most of them the paper is older than the stack. That is not a problem to hide; it is the thing to be precise about. The position is an applied one: no new primitive, no security proof, no better asymptotic. What is claimed is a composition, the measured cost of every link in it, and a small number of findings that only appear once it is built.</p>
+<p class="src">source: defmi/POSITION.md, qomm/POSITION.md · all five papers read from the paper, not the abstract</p>
+
+<h2 id="claim">The claim</h2>
+<blockquote>A request-for-quote market can be run so that no participant, the venue included, learns a maker's pricing policy or the losing quotes, while anyone can verify afterwards that the quote returned was the best of those submitted and that the trade settled at that price. The contribution is the composition and the measured cost of every link in it, including the links that turned out to be unaffordable.</blockquote>
+
+<h2 id="glance">At a glance</h2>
+<p>Every prior work audits "the circuit was evaluated correctly". This audits "this was the best price of those offered", and then carries the same unopened commitment into settlement.</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>2014 Baum–Damgård–Orlandi</th><th>2020 Baldimtsi et al.</th><th>2022 Rivinius et al.</th><th>2023 Prime Match</th><th>2026 Baum–Zok</th><th>here</th></tr></thead>
+<tbody>
+<tr><td>who computes</td><td>dishonest maj.</td><td>dishonest maj. servers</td><td>threshold t of n</td><td>2 parties + hub</td><td>dishonest maj.</td><td><strong>honest maj. T=2/7</strong></td></tr>
+<tr><td>inputs from separate parties</td><td>no</td><td>yes, corruptible</td><td>yes, corruptible</td><td>yes (clients)</td><td>no</td><td><strong>yes</strong></td></tr>
+<tr><td>what the audit gives</td><td>exact</td><td>approximate (spreading relation)</td><td>exact + blame + robustness</td><td>none</td><td>exact</td><td>exact</td></tr>
+<tr><td>commitment rests on</td><td>DLOG</td><td>DLOG, subexp.</td><td>lattice</td><td>—</td><td>random oracle</td><td>DLOG (VOLEitH measured)</td></tr>
+<tr><td>what is audited</td><td>the circuit</td><td>the circuit</td><td>the circuit</td><td>—</td><td>the circuit</td><td><strong>the market mechanism</strong></td></tr>
+<tr><td>private settlement</td><td>no</td><td>no</td><td>no</td><td>no</td><td>no</td><td><strong>yes</strong></td></tr>
+<tr><td>implemented / measured</td><td>partly</td><td>no</td><td>yes</td><td>production</td><td>no</td><td>prototype, measured</td></tr>
+</tbody></table></div>
+<p>Two rows carry the argument. Everything else is a choice of regime, and on most of those axes somebody else is stronger.</p>
+
+<h2 id="retracted">Three claims this does not make</h2>
+<p>Each was claimed in an earlier draft and is retracted.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>retracted claim</th><th>whose it is</th></tr></thead>
+<tbody>
+<tr><td>this makes MPC publicly auditable</td><td>Baum, Damgård, Orlandi, SCN 2014</td></tr>
+<tr><td>VOLE-in-the-Head commitments are a new route to post-quantum auditable MPC</td><td>Baum and Zok, eprint 2026/337, February 2026</td></tr>
+<tr><td>this is the first secure computation deployed in finance</td><td>Prime Match, J.P. Morgan, USENIX Security 2023</td></tr>
+</tbody></table></div>
+
+<h2 id="bdo">Baum, Damgård, Orlandi 2014: where the mechanism comes from</h2>
+<p>Input providers publish Pedersen commitments; the SPDZ online phase is linear openings, so an auditor replays them on the commitments. That is the construction the quote proof instantiates, not a variant. Six differences, two of them cryptographic: the corruption model is honest majority (a weaker assumption that buys an information-theoretic online phase); the input parties are not the computing parties, which is what creates the share-to-engine gap; the field problem is theirs too, and here it has a number (2.00× traffic); the audited statement is a market statement; the output has to settle; and what is published is noised.</p>
+
+<h2 id="bkzz">Baldimtsi, Kiayias, Zacharias, Zhang 2020: separate inputs, weaker guarantee</h2>
+<p>Structurally the nearest: clients provide input, servers compute obliviously, and order-book matching is on their motivating list. They go further on the threat, withstanding subverted servers, CRS and client devices. The price is that correctness stops being exact and they prove it must: only a spreading relation is achievable. An argmin over prices is the opposite of Lipschitz, so the only spreading relation available is trivial. But the threat they defend against is absent here: a market maker is a firm with a machine, and the committed policy is the ground truth the firm is bound by. That is why exact correctness is available here and not to them. No implementation.</p>
+
+<h2 id="rivinius">Rivinius, Reisert, Rausch, Küsters 2022: the strongest argument against this choice</h2>
+<p>Threshold, publicly verifiable, accountable and robust, on lattice commitments, with the measurement everyone else lacks: 11× to 20× the online phase against plain SPDZ. Their appendix argues against exactly what this stack does. Their first argument, that the plaintext space must grow with the commitment's security, is sound for their BGV preprocessing and does not transfer to Shamir, which has no lattice preprocessing; the 2.00× here is the wire format. Their second argument, that computational binding decays over the life of a commitment and an auction is where that bites, is this stack's exact shape and is recorded as the strongest reason for a post-quantum direction. What they have that this does not: accountability and robustness, at their measured cost.</p>
+
+<h2 id="prime">Prime Match 2023: the closest thing running</h2>
+<p>In production at J.P. Morgan. Secure against malicious clients and a semi-honest bank at the hub of a star; here there is no semi-honest party. Their computation is a two-party minimum invoked n² times at about 10 symbols per second, every 30 minutes; ours is a seven-party tournament over M committed policies with range, freshness and inventory checks, at 3.6 s per quote at 15 ms RTT. Nothing here is faster than Prime Match. Their outcome is not third-party auditable, which is the axis this stack is on. Their two-round malicious comparison with no preprocessing is what should be read next.</p>
+
+<h2 id="baumzok">Baum and Zok 2026: the newest, and it takes the idea</h2>
+<p>Replaces 2014's Pedersen commitments with VOLE-in-the-Head, so auditability rests on a random oracle only; UC-secure, post-quantum, no benchmarks. The cryptographic idea is theirs and not claimed here. What exists here is the implementation they lack: on host-a, n=30, 167 committed values, Pedersen proves in 18.6 ms with a 5,440 B proof and VOLEitH in 73.1 ms with 45,616 B, of which 88% is VOLE consistency corrections that are bits over F₂ and 16-byte elements over a 127-bit prime. Their commitments are one-time, and a maker's policy is opened against every quote; the prover refuses a second opening rather than allowing it.</p>
+
+<h2 id="settlement">The settlement leg, which none of the five has</h2>
+<p>Publicly auditable MPC ends when the output is opened, and a quote settled in the clear has leaked everything. Every gadget in zkPI and DeFMI is standard: Pedersen, Bulletproofs, Groth–Kohlweiss, Zcash-style nullifiers, FROST, confidential-transaction balance arithmetic. What is not standard is that the settlement leg is bound to the audited computation: the price commitment the quote proof shows is minimal is the same commitment the quorum signs, the instruction carries, and the ledger's product proof consumes. One value, four proofs, never opened. The nearest published thing is DvP on DLT, which assumes the price is public.</p>
+
+<h2 id="oclob">OCLOB against Rialto, P2DEX, Renegade</h2>
+<p>"A DEX that matches secret orders in MPC" is not new. Rialto handles unit-quantity orders in fixed rounds; P2DEX evaluates fixed-quantity price matching in SPDZ2k with UC security and misbehaving-server compensation that OCLOB lacks; Renegade crosses anonymous orders at midpoint between relayers that see their own orders in plaintext. OCLOB's candidate difference is one state machine combining continuous processing, variable quantity and partial fills, arrival order fixed 5-of-7 before content is opened, a per-level aggregate public book, and pre-authorised settlement through zkPI into DeFMI. A formal novelty claim waits for the security definition.</p>
+
+<h2 id="open">Four questions that would make this a cryptography paper</h2>
+<ol>
+  <li><strong>A publicly verifiable linearly homomorphic commitment over F_p that opens more than once, on a random oracle only.</strong> The sharpest, and the one the measurements point at. Pedersen opens many times on DLOG; BDLOP on SIS at kilobytes; VOLEitH once on a random oracle. The missing row has an application that forces it.</li>
+  <li><strong>Comparison without slack in a field that also holds a group order.</strong> Rabbit removes slack over rings; Prime Match has two-round malicious comparison; neither is stated for seven-party Shamir with a matched field.</li>
+  <li><strong>Public accountability in an honest majority, priced.</strong> The honest-majority number does not appear to exist, and there is a reason to think it is small here. A hypothesis, not a result.</li>
+  <li><strong>Robust reconstruction: built, run, reproduced.</strong> The operative line is n ≥ 4t+1, a decoder suffices, measured at nine nodes on two machines. The remaining non-robust phase is input, and no decoding helps there.</li>
+</ol>
+<p>Two of the five papers were found through a third paper's related-work section rather than a search of our own. That has now happened twice in this project, and it is written down.</p>
+
+<div class="next"><a href="security.html">← Security</a><a href="regulation.html">Regulation →</a></div>
