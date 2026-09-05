@@ -101,7 +101,7 @@ HEAD = """<!doctype html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="{rel}style.css">
-<script>try{{var t=localStorage.getItem('zkfmi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}</script>
+{analytics}<script>try{{var t=localStorage.getItem('zkfmi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}</script>
 </head>
 <body class="{bodyclass}">
 <a class="skip" href="#main">Skip to content</a>
@@ -135,7 +135,7 @@ FOOT = """
       <div>
         <div class="brand small"><span class="mark">zk</span>FMI</div>
         <p>Zero-knowledge financial market infrastructure. A research stack, measured, with its limits written down.</p>
-        <p class="muted">zkfmi.com · site built {date} · content and code MIT.</p>
+        <p class="muted">zkfmi.com · site built {date} · content and code MIT.{analytics_note}</p>
       </div>
       <div>
         <h4>Repositories</h4>
@@ -162,6 +162,18 @@ FOOT = """
 </body>
 </html>
 """
+
+def analytics():
+    """Plausible, enabled only when ZKFMI_PLAUSIBLE_DOMAIN is set (or a raw snippet is given)."""
+    raw = os.environ.get("ZKFMI_ANALYTICS_HTML", "").strip()
+    if raw:
+        return raw + "\n", " · analytics: privacy-preserving, no cookies"
+    domain = os.environ.get("ZKFMI_PLAUSIBLE_DOMAIN", "").strip()
+    if not domain:
+        return "", ""
+    src = os.environ.get("ZKFMI_PLAUSIBLE_SRC", "").strip() or "https://plausible.io/js/script.outbound-links.js"
+    tag = f'<script defer data-domain="{htmlmod.escape(domain)}" src="{htmlmod.escape(src)}"></script>\n'
+    return tag, " · analytics by Plausible: no cookies, no personal data, no cross-site tracking"
 
 def parse(path):
     text = open(path, encoding="utf-8").read()
@@ -234,10 +246,11 @@ def render(meta, chart_map):
     rel = rel_prefix(out_path)
     lang = "ja" if meta["section"] == "ja" else "en"
     body = expand_charts(meta["body"], chart_map)
+    tag, note = analytics()
     head = HEAD.format(
         lang=lang, title=htmlmod.escape(meta["title"]), site=SITE, description=htmlmod.escape(meta["description"]),
         canonical=f"{DOMAIN}/{out_path}" if out_path != "index.html" else DOMAIN + "/",
-        rel=rel, bodyclass=meta["section"], topnav=build_nav(rel, out_path, NAV_TOP), domain=DOMAIN,
+        rel=rel, bodyclass=meta["section"], topnav=build_nav(rel, out_path, NAV_TOP), domain=DOMAIN, analytics=tag,
     )
     if meta["section"] == "docs":
         main = f"""
@@ -254,7 +267,7 @@ def render(meta, chart_map):
     else:
         main = f'\n<main id="main">\n{body}\n</main>\n'
     repos = "".join(f'<li><a href="https://github.com/shukob/{n}" rel="noopener">shukob/{n}</a> <span class="muted">{h} · {d}</span></li>' for n, h, d in REPOS)
-    foot = FOOT.format(rel=rel, repos=repos, date=datetime.date.today().isoformat())
+    foot = FOOT.format(rel=rel, repos=repos, date=datetime.date.today().isoformat(), analytics_note=note)
     return head + main + foot, body
 
 def main():

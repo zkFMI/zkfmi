@@ -52,3 +52,20 @@ re-run the workflow. The workflow writes `public/CNAME` from that variable;
   `docs/measurements.html` and the figures quoted on the landing page.
 - The "not claimed" lists are copied from `REVIEW.md`, `REGULATION.md` §9,
   `STATUS.md` and `THREAT_MODEL.md`. Keep them in step with the code.
+
+## Analytics (Plausible)
+
+Off by default. To enable, create the site `zkfmi.com` in Plausible, then set the
+repository variable `ZKFMI_PLAUSIBLE_DOMAIN` to `zkfmi.com` (Settings → Secrets
+and variables → Actions → Variables) and re-run the workflow. The build then
+emits
+
+    <script defer data-domain="zkfmi.com" src="https://plausible.io/js/script.outbound-links.js"></script>
+
+in every page's `<head>` and a "no cookies" note in the footer. For a
+self-hosted Plausible set `ZKFMI_PLAUSIBLE_SRC` to your instance's script URL.
+If Plausible gives you a different snippet (per-site `pa-…js` scripts), paste it
+verbatim into `ZKFMI_ANALYTICS_HTML` instead; that variable wins when set.
+
+Locally: `ZKFMI_PLAUSIBLE_DOMAIN=zkfmi.com python3 build.py`.
+
