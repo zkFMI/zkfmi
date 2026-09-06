@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160">
+  <defs>
+    <linearGradient id="tokenGrad1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#141d28"/>
+      <stop offset="100%" stop-color="#0c131a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="160" rx="16" fill="#0a0e13"/>
+
+  <!-- Ring Signature Orbit -->
+  <circle cx="80" cy="80" r="50" fill="none" stroke="#2f3f52" stroke-width="1.5"/>
+
+  <!-- Ring Signature Members (7 passive, 1 active signer) -->
+  <circle cx="130" cy="80" r="2.5" fill="#2f3f52"/>
+  <circle cx="115.36" cy="115.36" r="2.5" fill="#2f3f52"/>
+  <circle cx="80" cy="130" r="2.5" fill="#2f3f52"/>
+  <circle cx="44.64" cy="115.36" r="2.5" fill="#2f3f52"/>
+  <circle cx="30" cy="80" r="2.5" fill="#2f3f52"/>
+  <circle cx="44.64" cy="44.64" r="2.5" fill="#2f3f52"/>
+  <circle cx="80" cy="30" r="2.5" fill="#2f3f52"/>
+  <circle cx="115.36" cy="44.64" r="4.5" fill="#f2b880"/>
+
+  <!-- Sealed Hexagonal Commitment Token -->
+  <path d="M 80 48 L 107.71 64 L 107.71 96 L 80 112 L 52.29 96 L 52.29 64 Z" fill="url(#tokenGrad1)" stroke="#5ee0c1" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Closed Padlock Notch -->
+  <path d="M 73.5 77 V 70.5 A 6.5 6.5 0 0 1 86.5 70.5 V 77" fill="none" stroke="#e8eef4" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="69" y="77" width="22" height="17" rx="3.5" fill="#5ee0c1"/>
+  <circle cx="80" cy="83.5" r="2" fill="#0c131a"/>
+  <path d="M 79 84.5 L 81 84.5 L 81.5 89.5 L 78.5 89.5 Z" fill="#0c131a"/>
+
+  <!-- Wordmark -->
+  <text x="170" y="98" font-size="54">
+    <tspan font-family="'JetBrains Mono', ui-monospace, Menlo, monospace" font-weight="600" fill="#5ee0c1">zk</tspan><tspan font-family="'Inter', -apple-system, Helvetica, Arial, sans-serif" font-weight="700" fill="#e8eef4">FMI</tspan>
+  </text>
+</svg>

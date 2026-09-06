@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160">
+  <rect width="480" height="160" rx="16" fill="#0a0e13"/>
+  <g transform="translate(80,80)">
+    <circle r="54" fill="none" stroke="#2f3f52" stroke-width="2"/>
+    <g fill="#2f3f52">
+      <circle cx="0" cy="-54" r="5"/><circle cx="42.2" cy="-33.7" r="5"/><circle cx="52.7" cy="12" r="5"/>
+      <circle cx="23.4" cy="48.7" r="5"/><circle cx="-23.4" cy="48.7" r="5"/><circle cx="-52.7" cy="12" r="5"/><circle cx="-42.2" cy="-33.7" r="5"/>
+    </g>
+    <g fill="#5ee0c1"><circle cx="0" cy="-54" r="5.5"/><circle cx="52.7" cy="12" r="5.5"/><circle cx="-52.7" cy="12" r="5.5"/></g>
+    <path d="M0 -30 L26 -15 L26 15 L0 30 L-26 15 L-26 -15 Z" fill="#10161e" stroke="#e8eef4" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="-9" y="-2" width="18" height="14" rx="2.5" fill="none" stroke="#f2b880" stroke-width="2.5"/>
+    <path d="M-5 -2 v-5 a5 5 0 0 1 10 0 v5" fill="none" stroke="#f2b880" stroke-width="2.5"/>
+  </g>
+  <text x="170" y="98" font-size="54" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-weight="600" fill="#5ee0c1">zk</text>
+  <text x="243" y="98" font-size="54" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-weight="800" fill="#e8eef4" letter-spacing="-1">FMI</text>
+</svg>

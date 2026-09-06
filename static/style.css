@@ -84,7 +84,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-fam
 /* header */
 .hdr { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .hdr .wrap { display: flex; align-items: center; height: 60px; gap: 1.5rem; }
-.brand { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em; color: var(--fg); }
+.brand { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em; color: var(--fg); }
+.brand .logo { width: 26px; height: 26px; flex: none; }
+.brand.small .logo { width: 22px; height: 22px; }
 .brand .mark { color: var(--accent); font-family: var(--mono); font-weight: 600; letter-spacing: 0; }
 .brand.small { font-size: 1rem; margin-bottom: 0.4rem; }
 .topnav { margin-left: auto; display: flex; gap: 1.15rem; }

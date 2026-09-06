@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160">
+  <defs>
+    <linearGradient id="quorumGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5ee0c1" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#5ee0c1" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="160" rx="16" fill="#0a0e13"/>
+
+  <!-- Seven-Node Network Ring -->
+  <circle cx="80" cy="80" r="44" fill="none" stroke="#2f3f52" stroke-width="2"/>
+
+  <!-- 3-of-7 Quorum Subspace Mesh -->
+  <polygon points="80,36 122.9,89.8 37.1,89.8" fill="url(#quorumGrad3)" stroke="#5ee0c1" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <!-- Convergence Rays to Central Secret -->
+  <line x1="80" y1="41.5" x2="80" y2="74.5" stroke="#5ee0c1" stroke-width="2"/>
+  <line x1="41.5" y1="88.9" x2="74.8" y2="81.2" stroke="#5ee0c1" stroke-width="2"/>
+  <line x1="118.5" y1="88.9" x2="85.2" y2="81.2" stroke="#5ee0c1" stroke-width="2"/>
+
+  <!-- Central Reconstructed Point -->
+  <circle cx="80" cy="80" r="7.5" fill="none" stroke="#9bb0ff" stroke-width="1.5" stroke-dasharray="2 2"/>
+  <circle cx="80" cy="80" r="4" fill="#e8eef4"/>
+
+  <!-- Passive Nodes (4) -->
+  <circle cx="114.4" cy="52.6" r="3.5" fill="#0a0e13" stroke="#2f3f52" stroke-width="2"/>
+  <circle cx="99.1" cy="119.6" r="3.5" fill="#0a0e13" stroke="#2f3f52" stroke-width="2"/>
+  <circle cx="60.9" cy="119.6" r="3.5" fill="#0a0e13" stroke="#2f3f52" stroke-width="2"/>
+  <circle cx="45.6" cy="52.6" r="3.5" fill="#0a0e13" stroke="#2f3f52" stroke-width="2"/>
+
+  <!-- Highlighted Quorum Nodes (3) -->
+  <circle cx="80" cy="36" r="5.5" fill="#5ee0c1"/>
+  <circle cx="122.9" cy="89.8" r="5.5" fill="#5ee0c1"/>
+  <circle cx="37.1" cy="89.8" r="5.5" fill="#5ee0c1"/>
+
+  <!-- Wordmark -->
+  <text x="170" y="98" font-size="54">
+    <tspan font-family="'JetBrains Mono', ui-monospace, Menlo, monospace" font-weight="600" fill="#5ee0c1">zk</tspan><tspan font-family="'Inter', -apple-system, Helvetica, Arial, sans-serif" font-weight="700" fill="#e8eef4">FMI</tspan>
+  </text>
+</svg>

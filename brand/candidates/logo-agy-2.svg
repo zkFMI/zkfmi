@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160">
+  <defs>
+    <linearGradient id="lockGrad2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#182330"/>
+      <stop offset="100%" stop-color="#0c131a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="160" rx="16" fill="#0a0e13"/>
+
+  <!-- Leg 1: Delivery (Securities Asset - Teal) -->
+  <circle cx="114" cy="48" r="3.5" fill="#5ee0c1"/>
+  <line x1="114" y1="48" x2="46" y2="112" stroke="#5ee0c1" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 58 112 L 46 112 L 46 100" fill="none" stroke="#5ee0c1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Leg 2: Payment (Settlement Cash - Amber) -->
+  <circle cx="46" cy="48" r="3.5" fill="#f2b880"/>
+  <line x1="46" y1="48" x2="114" y2="112" stroke="#f2b880" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 102 112 L 114 112 L 114 100" fill="none" stroke="#f2b880" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Central Atomic Lock (Encrypted Settlement Junction) -->
+  <path d="M 72 69 V 61 C 72 55 88 55 88 61 V 69" fill="none" stroke="#9bb0ff" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="63" y="69" width="34" height="26" rx="5" fill="url(#lockGrad2)" stroke="#e8eef4" stroke-width="2.5"/>
+  <circle cx="80" cy="79.5" r="2.2" fill="#5ee0c1"/>
+  <path d="M 78.9 80.5 L 81.1 80.5 L 81.6 85.5 L 78.4 85.5 Z" fill="#5ee0c1"/>
+
+  <!-- Wordmark -->
+  <text x="170" y="98" font-size="54">
+    <tspan font-family="'JetBrains Mono', ui-monospace, Menlo, monospace" font-weight="600" fill="#5ee0c1">zk</tspan><tspan font-family="'Inter', -apple-system, Helvetica, Arial, sans-serif" font-weight="700" fill="#e8eef4">FMI</tspan>
+  </text>
+</svg>

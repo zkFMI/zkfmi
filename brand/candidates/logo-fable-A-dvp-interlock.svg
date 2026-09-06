@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160">
+  <rect width="480" height="160" rx="16" fill="#0a0e13"/>
+  <g transform="translate(80,80)">
+<circle cx="-18" cy="0" r="32" fill="none" stroke="#f2b880" stroke-width="3"/>
+<circle cx="18" cy="0" r="32" fill="none" stroke="#9bb0ff" stroke-width="3"/>
+<path d="M-18 -32 l-6 -7 M-18 -32 l-7 6" fill="none" stroke="#f2b880" stroke-width="3" stroke-linecap="round"/>
+<path d="M18 32 l6 7 M18 32 l7 -6" fill="none" stroke="#9bb0ff" stroke-width="3" stroke-linecap="round"/>
+<polygon points="0.0,-15.0 13.0,-7.5 13.0,7.5 0.0,15.0 -13.0,7.5 -13.0,-7.5" fill="#10161e" stroke="#5ee0c1" stroke-width="2.5" stroke-linejoin="round"/>
+<circle r="3.5" fill="#5ee0c1"/></g>
+  <text x="170" y="98" font-size="54" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-weight="600" fill="#5ee0c1">zk</text>
+  <text x="243" y="98" font-size="54" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-weight="800" fill="#e8eef4" letter-spacing="-1">FMI</text>
+</svg>
