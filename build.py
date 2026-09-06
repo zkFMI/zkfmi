@@ -48,13 +48,13 @@ NAV_DOCS = [
         ("DeKYX — eligibility", "docs/dekyx.html"),
         ("DeCCP — clearing", "docs/deccp.html"),
     ]),
-    ("Venues and upstream", [
+    ("Venues and upstreams", [
         ("QOMM — oblivious RFQ", "docs/qomm.html"),
         ("OCLOB — oblivious order book", "docs/oclob.html"),
         ("Aethel — receivables", "docs/aethel.html"),
         ("Use cases beyond RFQ", "docs/use-cases.html"),
     ]),
-    ("Deep dives", [
+    ("Deep dives (RFQ venue)", [
         ("Binding computed to committed", "docs/binding.html"),
         ("Audit machinery", "docs/audit.html"),
         ("Accountability and robustness", "docs/accountability.html"),
@@ -79,6 +79,7 @@ REPOS = [
     ("deccp", "d1b6592", "2026-09-06"),
     ("aethel", "8a1660d", "2026-09-06"),
     ("zkfmi-crypto", "f889df3", "2026-09-06"),
+    ("zkfmi", "site", "2026-09-07"),
 ]
 
 HEAD = """<!doctype html>

@@ -55,8 +55,9 @@ flowchart LR
   <li><strong>Every upstream is replaceable.</strong> QOMM was built first, but a fund administrator, a collateral engine or a bank's sanctions check can issue the same instruction type. The <a href="use-cases.html">use-cases page</a> orders those by feasibility.</li>
 </ul>
 
-<h2 id="flow">One trade, end to end</h2>
-<p>The QOMM path is the most complete, so it is the one traced here. OCLOB replaces the pricing step with matching; the instruction and settlement steps are the same.</p>
+<h2 id="flow">One settlement, end to end</h2>
+<p>Two upstreams are traced. The first is the RFQ venue, because it is the most complete path built so far and exercises every proof. The second is a fund administrator, which has no MPC and no auction and reaches the same settlement layer with the same instruction type; the <a href="use-cases.html">use-cases page</a> ranks it as the first product. OCLOB replaces the pricing step of the first with matching; everything from the instruction onward is shared.</p>
+<h3>Through the RFQ venue</h3>
 <pre class="mermaid">
 sequenceDiagram
     autonumber
@@ -78,6 +79,26 @@ sequenceDiagram
     V-->>T: height, receipt, state root before and after
 </pre>
 
+<h3>Through a fund administrator</h3>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant I as Investor
+    participant K as KYC provider (DeKYX)
+    participant F as Fund administrator
+    participant Q as Issuing quorum
+    participant V as DeFMI validators
+    I->>K: prove eligibility for this fund (scope, cap, expiry)
+    K-->>F: verified eligibility, subject line only
+    I->>F: subscription request; cash reserved as a committed note
+    F->>F: check cap, units available, NAV point
+    F->>Q: decision as a typed instruction: cash leg, unit leg, deadline, nonce
+    Q->>V: zkPI with range proofs and quorum signature
+    V->>V: verify; issue units and move cash atomically, or neither
+    V-->>I: receipt and state root
+</pre>
+<p>Nothing in the settlement layer knows whether the instruction came from an auction or a subscription form. That is the point of the design, and it is why the crate names below are misleading.</p>
+
 <h2 id="secrets">Who holds which secret</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>Secret</th><th>Held by</th><th>Seen by settlement?</th><th>Mechanism</th></tr></thead>
@@ -94,7 +115,7 @@ sequenceDiagram
 </tbody></table></div>
 
 <h2 id="repos">Repositories and crates</h2>
-<p>Seven repositories. The first three were generated from one shared research tree, which is why their layout is regular; the other four are standalone crate workspaces with explicit ports.</p>
+<p>Eight repositories. The first three were generated from one shared research tree, which is why their layout is regular and why several crates still carry a <code>qomm-</code> prefix: QOMM was the first venue built on the stack, and the ledger, the instruction and the zero-knowledge gadgets were named after it before they were separated. The prefix is historical, not a dependency; a consolidation into single-owner crates named by layer is planned. The other repositories are standalone workspaces with explicit ports.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Repository</th><th>Role</th><th>Principal crates</th><th>Depends on</th></tr></thead>
 <tbody>
@@ -105,6 +126,7 @@ sequenceDiagram
 <tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>eligibility credentials</td><td><code>dekyx-core</code>, <code>dekyx-aethel</code></td><td>none</td></tr>
 <tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>clearing state machine</td><td><code>deccp-core</code>, <code>deccp-aethel</code></td><td>none (ports)</td></tr>
 <tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and seven siblings</td><td>dekyx</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>shared primitives and the post-quantum migration</td><td>in progress</td><td>none</td></tr>
 </tbody></table></div>
 
 <h2 id="primitives">Cryptographic primitives, used not rewritten</h2>

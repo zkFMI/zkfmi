@@ -82,15 +82,15 @@ section: top
     <div class="stat"><b>7.0 ms</b><span>to settle one DvP on 64-bit Bulletproof rails, one core</span></div>
     <div class="stat"><b>3,424 B</b><span>settlement package on the wire at that width</span></div>
     <div class="stat"><b>217 / s</b><span>settlements verified by one node on 8 workers</span></div>
-    <div class="stat"><b>1.07×</b><span>wall-clock cost of making the RFQ auditable (2.00× traffic)</span></div>
+    <div class="stat"><b>96 B</b><span>proof that the ledger agrees with an external register, any size</span></div>
     <div class="stat"><b>5 validators</b><span>non-EVM Avalanche L1, state roots agree across a restart</span></div>
   </div>
 </div>
 
 <section class="block">
   <div class="wrap">
-    <h2>One value, four proofs, never opened</h2>
-    <p>A request for quote is priced inside a seven-node multiparty computation. The winning price leaves as a Pedersen commitment. The same commitment is what the quote proof shows is minimal, what the quorum signs, what the payment instruction carries, and what the ledger's product proof consumes. The trade clears at a price nobody in the pipeline learns.</p>
+    <h2>Decide anywhere, instruct once, settle without reading</h2>
+    <p>Whatever decides a transfer, a quoting venue, an order book, a fund administrator, a collateral engine, a bank's checks, puts its decision on one sealed instruction. The settlement layer verifies the instruction's proofs and moves both legs, or neither, without learning what was decided. The worked example on this site is a request for quote: the winning price leaves the venue as a commitment, the same commitment is proved minimal, signed by the quorum, carried by the instruction and consumed by the ledger's product proof. One value, four proofs, never opened. Fund subscription, collateral calls and two-currency payments take the same path with a different upstream.</p>
     <div class="three">
       <div class="col h">
         <h3>What settlement never reads</h3>
@@ -129,14 +129,14 @@ section: top
 <section class="block">
   <div class="wrap">
     <h2>The stack</h2>
-    <p>Seven repositories, one shared research tree. Each is self-contained: its tests, locks, measurements and source do not need the others' working trees. They compose through explicit ports, not shared state.</p>
+    <p>The protocol core is the instruction and the ledger, with eligibility and clearing beside them. Venues and other upstream systems sit above and are interchangeable. Eight repositories under the zkFMI organisation, composed through explicit ports rather than shared state.</p>
     <div class="grid">
       <a class="card proved" href="docs/zkpi.html"><div class="tag">instruction</div><h3>zkPI</h3><p>Zero-knowledge payment instruction. A venue's decision, provable without the inputs that produced it: committed amount, price and asset, a nullifier, a deadline, a FROST quorum signature, two threshold range proofs. 9,726 bytes on the wire.</p></a>
       <a class="card proved" href="docs/defmi.html"><div class="tag">settlement</div><h3>DeFMI</h3><p>Decentralized financial market infrastructure. Delivery versus payment and payment versus payment over committed balances, notes with ring signatures, asset tags, netting, a default waterfall, reconciliation against a book of record. Runs as a dedicated non-EVM Avalanche L1.</p></a>
-      <a class="card hidden" href="docs/qomm.html"><div class="tag">venue</div><h3>QOMM</h3><p>Query-oblivious market making. Sixteen makers' pricing rules applied to a request nobody sees, inside MP-SPDZ. The best quote is proved minimal and settled without being opened. Differential privacy on what is published.</p></a>
-      <a class="card hidden" href="docs/oclob.html"><div class="tag">venue</div><h3>OCLOB</h3><p>Oblivious continuous limit order book. Orders are split at the participant and delivered encrypted to seven nodes. A 5-of-7 committee fixes arrival order before matching. Price-time priority inside MPC. The public book is aggregate depth per tick only.</p></a>
       <a class="card checked" href="docs/dekyx.html"><div class="tag">eligibility</div><h3>DeKYX</h3><p>Decentralized know-your-X. Anonymous presentations that prove only the qualifications one action needs, bound to audience, action, nonce and expiry. Scope-specific nullifiers, signed revocation lists, key rotation. Pseudonymous per scope, not yet issuer-unlinkable.</p></a>
       <a class="card checked" href="docs/deccp.html"><div class="tag">clearing</div><h3>DeCCP</h3><p>Decentralized central counterparty. Threshold-governed clearing books, gross-gross to net-net cycles, margin, confidential guarantee facilities, a deterministic loss waterfall. Advances state only against a DeFMI receipt for the exact proposal. Novation costs 0.53 µs a trade.</p></a>
+      <a class="card hidden" href="docs/qomm.html"><div class="tag">venue</div><h3>QOMM</h3><p>Query-oblivious market making. Sixteen makers' pricing rules applied to a request nobody sees, inside MP-SPDZ. The best quote is proved minimal and settled without being opened. Differential privacy on what is published.</p></a>
+      <a class="card hidden" href="docs/oclob.html"><div class="tag">venue</div><h3>OCLOB</h3><p>Oblivious continuous limit order book. Orders are split at the participant and delivered encrypted to seven nodes. A 5-of-7 committee fixes arrival order before matching. Price-time priority inside MPC. The public book is aggregate depth per tick only.</p></a>
       <a class="card checked" href="docs/aethel.html"><div class="tag">upstream</div><h3>Aethel</h3><p>Programmable payment-stream receivables. A signed payment stream becomes a financeable receivable; independent providers supply credit decisions, guarantees, funding and servicing through scoped capabilities. Settles by issuing a typed zkPI.</p></a>
       <a class="card" href="docs/use-cases.html"><div class="tag">beyond rfq</div><h3>Other upstreams</h3><p>zkPI and DeFMI are not QOMM parts. Fund subscription and redemption, collateral and margin calls, two-currency PvP, issuance and coupons, receivables, environmental certificates. Any system that decides may issue the instruction.</p></a>
     </div>
