@@ -34,24 +34,14 @@ Pages on every push to `main` (Settings → Pages → Source: GitHub Actions).
 The site is served at `https://zkfmi.com/ (the org project URL is https://zkfmi.github.io/zkfmi/ until the domain is bound)` until a custom domain
 is configured.
 
-To switch to zkfmi.com: point DNS at GitHub Pages (A records
-185.199.108.153 / .109.153 / .110.153 / .111.153 for the apex, and a CNAME
-`www → shukob.github.io`), then set the repository variable `ZKFMI_CNAME` to
-`zkfmi.com` (Settings → Secrets and variables → Actions → Variables) and
-re-run the workflow. The workflow writes `public/CNAME` from that variable;
-`CNAME.example` is the reference value. Any other static host serves
-`public/` unchanged.
+The custom domain is a repository setting, not a file: Pages sites published
+from Actions ignore `CNAME`. It was bound with
 
-## Editing
+    gh api -X PUT repos/zkFMI/zkfmi/pages -f cname=zkfmi.com
 
-- Page order in the sidebar is in `build.py` (`NAV_DOCS`); file names in
-  `pages/` only order the build.
-- Headings `<h2 id="...">` in docs pages feed the on-page table of contents.
-- Numbers on the site come from the repositories' `artifacts/*.json` and the
-  generated `DEFMI.md` / `AUDIT.md`. When those regenerate, update
-  `docs/measurements.html` and the figures quoted on the landing page.
-- The "not claimed" lists are copied from `REVIEW.md`, `REGULATION.md` §9,
-  `STATUS.md` and `THREAT_MODEL.md`. Keep them in step with the code.
+DNS: A records 185.199.108.153 / .109.153 / .110.153 / .111.153 for the apex,
+and a CNAME `www -> zkfmi.github.io`. The `ZKFMI_CNAME` variable only makes the
+workflow write `public/CNAME` for other static hosts; GitHub does not read it.
 
 ## Analytics (Plausible)
 
