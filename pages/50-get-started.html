@@ -8,11 +8,11 @@ section: docs
 <p class="lede">Everything is Rust with checked-in lock files. Library tests run anywhere Rust does. The network gates need Linux, an explicitly supplied AvalancheGo, and for the MPC paths an official MP-SPDZ checkout. The scripts never download an external binary for you.</p>
 
 <h2 id="clone">Clone and test</h2>
-<pre><code>git clone https://github.com/shukob/defmi.git
+<pre><code>git clone https://github.com/zkFMI/defmi.git
 cd defmi/rust
 cargo test -j 4 --locked --workspace</code></pre>
 <p>The same command works in <code>zkpi</code> and <code>qomm</code>. The standalone crates use the four-gate form:</p>
-<pre><code>git clone https://github.com/shukob/dekyx.git   # or deccp, aethel
+<pre><code>git clone https://github.com/zkFMI/dekyx.git   # or deccp, aethel
 cd dekyx
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -30,7 +30,7 @@ qomm-zkpi-verify --self-test</code></pre>
 <pre><code>cargo build --release --manifest-path rust/Cargo.toml -p qomm-avalanche-vm -p qomm-harness
 # launchers and configuration under avalanche/defmivm/
 cargo run --release --manifest-path rust/Cargo.toml -p qomm-harness --bin run_avalanche_l1_acceptance</code></pre>
-<p>The run writes <code>artifacts/avalanche_l1_acceptance.json</code>. The <a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">enterprise PoC guide</a> (Japanese) walks through pinning sources, building the VM, launching the network, the trade scenarios, the QOMM path with no extra signature, the mandatory rejection and fault tests, the evidence to retain, and the pass criteria, then continues into hardware sizing, process separation, network design, genesis, key management, backup, monitoring and fault injection for a company-run evaluation.</p>
+<p>The run writes <code>artifacts/avalanche_l1_acceptance.json</code>. The <a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">enterprise PoC guide</a> (Japanese) walks through pinning sources, building the VM, launching the network, the trade scenarios, the QOMM path with no extra signature, the mandatory rejection and fault tests, the evidence to retain, and the pass criteria, then continues into hardware sizing, process separation, network design, genesis, key management, backup, monitoring and fault injection for a company-run evaluation.</p>
 
 <h2 id="demo">Try the QOMM seat demo</h2>
 <pre><code>cd qomm
@@ -57,8 +57,8 @@ make audit-doc      # AUDIT.md likewise</code></pre>
 
 <h2 id="poc">Enterprise PoC guides</h2>
 <ul>
-  <li><a href="https://github.com/shukob/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI</a>: installation, role separation, failure cases, evidence, acceptance, and 41 sections of operational guidance.</li>
-  <li><a href="https://github.com/shukob/qomm/blob/main/docs/ENTERPRISE_POC_JA.md">QOMM</a>, <a href="https://github.com/shukob/dekyx/blob/main/docs/ENTERPRISE_POC_JA.md">DeKYX</a>, <a href="https://github.com/shukob/deccp/blob/main/docs/ENTERPRISE_POC_JA.md">DeCCP</a>, <a href="https://github.com/shukob/aethel/blob/main/docs/ENTERPRISE_POC_JA.md">Aethel</a>, <a href="https://github.com/shukob/oclob/blob/main/docs/POC_GUIDE_JA.md">OCLOB</a>.</li>
+  <li><a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI</a>: installation, role separation, failure cases, evidence, acceptance, and 41 sections of operational guidance.</li>
+  <li><a href="https://github.com/zkFMI/qomm/blob/main/docs/ENTERPRISE_POC_JA.md">QOMM</a>, <a href="https://github.com/zkFMI/dekyx/blob/main/docs/ENTERPRISE_POC_JA.md">DeKYX</a>, <a href="https://github.com/zkFMI/deccp/blob/main/docs/ENTERPRISE_POC_JA.md">DeCCP</a>, <a href="https://github.com/zkFMI/aethel/blob/main/docs/ENTERPRISE_POC_JA.md">Aethel</a>, <a href="https://github.com/zkFMI/oclob/blob/main/docs/POC_GUIDE_JA.md">OCLOB</a>.</li>
 </ul>
 <p>All are in Japanese. They assume synthetic assets, disposable keys and a network not exposed to the internet, and they say which evidence to keep so that a later auditor can check the run rather than take the word for it.</p>
 

@@ -98,13 +98,13 @@ sequenceDiagram
 <div class="table-wrap"><table>
 <thead><tr><th>Repository</th><th>Role</th><th>Principal crates</th><th>Depends on</th></tr></thead>
 <tbody>
-<tr><td><a href="https://github.com/shukob/zkpi">zkpi</a></td><td>instruction and proof gadgets</td><td><code>qomm-zk</code>, <code>qomm-zkpi</code>, <code>qomm-proofs</code></td><td>curve25519-dalek, bulletproofs, frost-ristretto255</td></tr>
-<tr><td><a href="https://github.com/shukob/defmi">defmi</a></td><td>settlement ledger and Avalanche VM</td><td><code>qomm-defmi</code>, <code>qomm-avalanche-vm</code>, <code>zkpi-defmi-sdk</code>, <code>qomm-harness</code></td><td>aethel, deccp</td></tr>
-<tr><td><a href="https://github.com/shukob/qomm">qomm</a></td><td>oblivious RFQ venue</td><td><code>qomm-dsl</code>, <code>qomm-mpc</code>, <code>qomm-transport</code>, <code>qomm-audit</code>, <code>qomm-law</code></td><td>MP-SPDZ (external)</td></tr>
-<tr><td><a href="https://github.com/shukob/oclob">oclob</a></td><td>oblivious order book</td><td><code>oclob-core</code>, <code>oclob-edge</code>, <code>oclob-node</code>, <code>oclob-ordering</code>, <code>oclob-mpc</code>, <code>oclob-settlement</code></td><td>dekyx, zkPI/DeFMI SDK, MP-SPDZ</td></tr>
-<tr><td><a href="https://github.com/shukob/dekyx">dekyx</a></td><td>eligibility credentials</td><td><code>dekyx-core</code>, <code>dekyx-aethel</code></td><td>none</td></tr>
-<tr><td><a href="https://github.com/shukob/deccp">deccp</a></td><td>clearing state machine</td><td><code>deccp-core</code>, <code>deccp-aethel</code></td><td>none (ports)</td></tr>
-<tr><td><a href="https://github.com/shukob/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and seven siblings</td><td>dekyx</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>instruction and proof gadgets</td><td><code>qomm-zk</code>, <code>qomm-zkpi</code>, <code>qomm-proofs</code></td><td>curve25519-dalek, bulletproofs, frost-ristretto255</td></tr>
+<tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>settlement ledger and Avalanche VM</td><td><code>qomm-defmi</code>, <code>qomm-avalanche-vm</code>, <code>zkpi-defmi-sdk</code>, <code>qomm-harness</code></td><td>aethel, deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>oblivious RFQ venue</td><td><code>qomm-dsl</code>, <code>qomm-mpc</code>, <code>qomm-transport</code>, <code>qomm-audit</code>, <code>qomm-law</code></td><td>MP-SPDZ (external)</td></tr>
+<tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>oblivious order book</td><td><code>oclob-core</code>, <code>oclob-edge</code>, <code>oclob-node</code>, <code>oclob-ordering</code>, <code>oclob-mpc</code>, <code>oclob-settlement</code></td><td>dekyx, zkPI/DeFMI SDK, MP-SPDZ</td></tr>
+<tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>eligibility credentials</td><td><code>dekyx-core</code>, <code>dekyx-aethel</code></td><td>none</td></tr>
+<tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>clearing state machine</td><td><code>deccp-core</code>, <code>deccp-aethel</code></td><td>none (ports)</td></tr>
+<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and seven siblings</td><td>dekyx</td></tr>
 </tbody></table></div>
 
 <h2 id="primitives">Cryptographic primitives, used not rewritten</h2>

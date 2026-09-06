@@ -71,13 +71,14 @@ NAV_DOCS = [
 ]
 
 REPOS = [
-    ("defmi", "3c83418", "2026-09-05"),
-    ("zkpi", "62a4c42", "2026-09-04"),
-    ("qomm", "27299a1", "2026-09-04"),
-    ("oclob", "e43d901", "2026-09-05"),
-    ("dekyx", "67eb59a", "2026-09-04"),
-    ("deccp", "3660eba", "2026-09-04"),
-    ("aethel", "96b7e16", "2026-09-04"),
+    ("defmi", "2694a14", "2026-09-06"),
+    ("zkpi", "faf5772", "2026-09-06"),
+    ("qomm", "b8a82c2", "2026-09-06"),
+    ("oclob", "1a97383", "2026-09-06"),
+    ("dekyx", "cf8255a", "2026-09-06"),
+    ("deccp", "d1b6592", "2026-09-06"),
+    ("aethel", "8a1660d", "2026-09-06"),
+    ("zkfmi-crypto", "f889df3", "2026-09-06"),
 ]
 
 HEAD = """<!doctype html>
@@ -110,7 +111,7 @@ HEAD = """<!doctype html>
     <a class="brand" href="{rel}index.html"><span class="mark">zk</span>FMI</a>
     <nav class="topnav" aria-label="Primary">
       {topnav}
-      <a class="gh" href="https://github.com/shukob" rel="noopener">GitHub</a>
+      <a class="gh" href="https://github.com/zkFMI" rel="noopener">GitHub</a>
     </nav>
     <div class="tools">
       <button class="search-btn" type="button" aria-label="Search (press /)" data-search-open><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search</span><kbd>/</kbd></button>
@@ -266,7 +267,7 @@ def render(meta, chart_map):
 """
     else:
         main = f'\n<main id="main">\n{body}\n</main>\n'
-    repos = "".join(f'<li><a href="https://github.com/shukob/{n}" rel="noopener">shukob/{n}</a> <span class="muted">{h} · {d}</span></li>' for n, h, d in REPOS)
+    repos = "".join(f'<li><a href="https://github.com/zkFMI/{n}" rel="noopener">shukob/{n}</a> <span class="muted">{h} · {d}</span></li>' for n, h, d in REPOS)
     foot = FOOT.format(rel=rel, repos=repos, date=datetime.date.today().isoformat(), analytics_note=note)
     return head + main + foot, body
 

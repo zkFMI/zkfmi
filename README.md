@@ -31,7 +31,7 @@ python3 -m http.server 8080 --directory public
 
 `.github/workflows/pages.yml` builds `public/` and publishes it to GitHub
 Pages on every push to `main` (Settings → Pages → Source: GitHub Actions).
-The site is served at `https://shukob.github.io/zkfmi/` until a custom domain
+The site is served at `https://zkfmi.com/ (the org project URL is https://zkfmi.github.io/zkfmi/ until the domain is bound)` until a custom domain
 is configured.
 
 To switch to zkfmi.com: point DNS at GitHub Pages (A records
