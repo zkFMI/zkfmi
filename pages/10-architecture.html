@@ -90,7 +90,7 @@ sequenceDiagram
     participant V as DeFMI validators
     I->>K: prove eligibility for this fund (scope, cap, expiry)
     K-->>F: verified eligibility, subject line only
-    I->>F: subscription request; cash reserved as a committed note
+    I->>F: subscription request, cash reserved as a committed note
     F->>F: check cap, units available, NAV point
     F->>Q: decision as a typed instruction: cash leg, unit leg, deadline, nonce
     Q->>V: zkPI with range proofs and quorum signature
