@@ -108,7 +108,7 @@ HEAD = """<!doctype html>
 <a class="skip" href="#main">Skip to content</a>
 <header class="hdr">
   <div class="wrap">
-    <a class="brand" href="{rel}index.html"><svg class="logo" viewBox="0 0 140 140" aria-hidden="true"><g transform="translate(70,70)"><circle cx="-18" cy="0" r="32" fill="none" stroke="var(--accent-2)" stroke-width="7"/><circle cx="18" cy="0" r="32" fill="none" stroke="var(--accent-3)" stroke-width="7"/><polygon points="0,-17 14.7,-8.5 14.7,8.5 0,17 -14.7,8.5 -14.7,-8.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="4" stroke-linejoin="round"/></g></svg><span class="mark">zk</span>FMI</a>
+    <a class="brand" href="{rel}index.html"><svg class="logo" width="26" height="26" viewBox="0 0 140 140" aria-hidden="true"><g transform="translate(70,70)"><circle cx="-18" cy="0" r="32" fill="none" stroke="var(--accent-2)" stroke-width="7"/><circle cx="18" cy="0" r="32" fill="none" stroke="var(--accent-3)" stroke-width="7"/><polygon points="0,-17 14.7,-8.5 14.7,8.5 0,17 -14.7,8.5 -14.7,-8.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="4" stroke-linejoin="round"/></g></svg><span class="mark">zk</span>FMI</a>
     <nav class="topnav" aria-label="Primary">
       {topnav}
       <a class="gh" href="https://github.com/zkFMI" rel="noopener">GitHub</a>
@@ -134,7 +134,7 @@ FOOT = """
   <div class="wrap">
     <div class="cols">
       <div>
-        <div class="brand small"><svg class="logo" viewBox="0 0 140 140" aria-hidden="true"><g transform="translate(70,70)"><circle cx="-18" cy="0" r="32" fill="none" stroke="var(--accent-2)" stroke-width="7"/><circle cx="18" cy="0" r="32" fill="none" stroke="var(--accent-3)" stroke-width="7"/><polygon points="0,-17 14.7,-8.5 14.7,8.5 0,17 -14.7,8.5 -14.7,-8.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="4" stroke-linejoin="round"/></g></svg><span class="mark">zk</span>FMI</div>
+        <div class="brand small"><svg class="logo" width="26" height="26" viewBox="0 0 140 140" aria-hidden="true"><g transform="translate(70,70)"><circle cx="-18" cy="0" r="32" fill="none" stroke="var(--accent-2)" stroke-width="7"/><circle cx="18" cy="0" r="32" fill="none" stroke="var(--accent-3)" stroke-width="7"/><polygon points="0,-17 14.7,-8.5 14.7,8.5 0,17 -14.7,8.5 -14.7,-8.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="4" stroke-linejoin="round"/></g></svg><span class="mark">zk</span>FMI</div>
         <p>Zero-knowledge financial market infrastructure. A research stack, measured, with its limits written down.</p>
         <p class="muted">zkfmi.com · site built {date} · content and code MIT.{analytics_note}</p>
       </div>
