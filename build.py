@@ -102,7 +102,7 @@ HEAD = """<!doctype html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="{rel}style.css">
-{analytics}<script>try{{var t=localStorage.getItem('zkfmi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}</script>
+{analytics}<script>try{{var t=localStorage.getItem('zkfmi-theme');if(t)document.documentElement.setAttribute('data-theme',t);var h=document.documentElement;h.classList.add(localStorage.getItem('zkfmi-toc')==='open'?'toc-open':'toc-closed');if(localStorage.getItem('zkfmi-side')==='closed')h.classList.add('side-closed');}}catch(e){{document.documentElement.classList.add('toc-closed');}}</script>
 </head>
 <body class="{bodyclass}">
 <a class="skip" href="#main">Skip to content</a>
@@ -204,7 +204,7 @@ def build_nav(rel, current, items):
     return "\n      ".join(out)
 
 def build_sidebar(rel, current):
-    parts = ['<nav class="side" aria-label="Documentation">', '<button type="button" class="side-toggle" aria-expanded="false" data-side-toggle>Documentation menu <span aria-hidden="true">▾</span></button>', '<div class="side-body">']
+    parts = ['<nav class="side" aria-label="Documentation">', '<button type="button" class="side-toggle" aria-expanded="false" data-side-toggle>Documentation menu <span aria-hidden="true">▾</span></button>', '<button type="button" class="rail-toggle side-rail" data-collapse="side" aria-label="Collapse or expand the documentation menu" title="Collapse menu"><span class="ico">◂</span><span class="lbl">Docs</span></button>', '<div class="side-body">']
     for group, items in NAV_DOCS:
         parts.append(f'<h5>{group}</h5><ul>')
         for label, href in items:
@@ -222,7 +222,7 @@ def toc(body):
     if len(heads) < 2:
         return ""
     items = "".join(f'<li><a href="#{i}">{strip_tags(t)}</a></li>' for i, t in heads)
-    return f'<nav class="toc" aria-label="On this page"><h5>On this page</h5><ul>{items}</ul></nav>'
+    return f'<nav class="toc" aria-label="On this page"><button type="button" class="rail-toggle toc-rail" data-collapse="toc" aria-label="Collapse or expand the table of contents" title="On this page"><span class="ico">▸</span><span class="lbl">On this page</span></button><div class="toc-body"><h5>On this page</h5><ul>{items}</ul></div></nav>'
 
 def expand_charts(body, chart_map):
     def rep(m):

@@ -21,6 +21,22 @@
     st.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 
+  // ---- collapsible side columns (docs); state persisted per browser
+  document.querySelectorAll('[data-collapse]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var which = b.getAttribute('data-collapse');
+      if (which === 'toc') {
+        var open = root.classList.contains('toc-open');
+        root.classList.toggle('toc-open', !open); root.classList.toggle('toc-closed', open);
+        try { localStorage.setItem('zkfmi-toc', open ? 'closed' : 'open'); } catch (e) {}
+      } else {
+        var closed = root.classList.toggle('side-closed');
+        try { localStorage.setItem('zkfmi-side', closed ? 'closed' : 'open'); } catch (e) {}
+      }
+      setTimeout(fitDiagrams, 200);
+    });
+  });
+
   // ---- theme toggle (persisted per browser; system preference otherwise)
   var tb = document.querySelector('[data-theme-toggle]');
   if (tb) tb.addEventListener('click', function () {
