@@ -94,7 +94,7 @@ sequenceDiagram
     F->>F: check cap, units available, NAV point
     F->>Q: decision as a typed instruction: cash leg, unit leg, deadline, nonce
     Q->>V: zkPI with range proofs and quorum signature
-    V->>V: verify; issue units and move cash atomically, or neither
+    V->>V: verify, then issue units and move cash atomically, or neither
     V-->>I: receipt and state root
 </pre>
 <p>Nothing in the settlement layer knows whether the instruction came from an auction or a subscription form. That is the point of the design, and it is why the crate names below are misleading.</p>
