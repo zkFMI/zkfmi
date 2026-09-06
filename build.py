@@ -267,7 +267,7 @@ def render(meta, chart_map):
 """
     else:
         main = f'\n<main id="main">\n{body}\n</main>\n'
-    repos = "".join(f'<li><a href="https://github.com/zkFMI/{n}" rel="noopener">shukob/{n}</a> <span class="muted">{h} · {d}</span></li>' for n, h, d in REPOS)
+    repos = "".join(f'<li><a href="https://github.com/zkFMI/{n}" rel="noopener">zkFMI/{n}</a> <span class="muted">{h} · {d}</span></li>' for n, h, d in REPOS)
     foot = FOOT.format(rel=rel, repos=repos, date=datetime.date.today().isoformat(), analytics_note=note)
     return head + main + foot, body
 
