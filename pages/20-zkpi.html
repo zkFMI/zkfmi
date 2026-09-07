@@ -83,10 +83,10 @@ flowchart LR
 
 <h2 id="vectors">Checking an implementation</h2>
 <p>Vectors live in <code>artifacts/zkpi_vectors/</code>: one accepted instruction per wire version and five damaged forms of each. The accepted vector must <strong>decode and re-encode to the same bytes</strong>. That is stronger than "it parsed": an implementation that dropped a field and re-derived it would pass the second test and fail the first, and the first is what decides whether two venues settle the same instruction.</p>
-<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
-qomm-zkpi-verify --self-test                       # issue v2, encode, decode, verify
-qomm-zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
-qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
+<pre><code>zkpi-verify --check-vectors artifacts/zkpi_vectors
+zkpi-verify --self-test                       # issue v2, encode, decode, verify
+zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
+zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
 <p>Exit 0 accepts, 1 rejects, 2 could not be asked. Without a quorum key the tool checks the layout and says that is a parse and not a verification. A tool that printed "ok" for a well-formed unsigned instruction would be worse than none.</p>
 
 <h2 id="where">Where it runs, and why not elsewhere</h2>
@@ -116,7 +116,7 @@ qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says
 <p>Compute units are counted by the virtual machine rather than timed, so those figures are reproducible to the unit and carry a toolchain label instead of a host label. The bottleneck is the field, not the curve, and that settled the question in favour of a VM where the verifier is native Rust.</p>
 
 <h2 id="handles">Handles: the property that was prose until it was code</h2>
-<p>The design always said a firm's handle is derived per venue, so that one firm is two unrelated points. The first library offered no way to derive them, so the obvious integration used one name everywhere, and the payment-versus-payment unlinkability measurement showed an observer joining the legs with probability 1.000 at every swap count. <code>qomm_zkpi::handles</code> now derives them from one seed, and the test beside it runs the scheme that suggests itself first (one secret scaled by a public per-venue factor) and shows it is publicly linkable. With derived handles the observer falls to 1/k and stays there. Nothing about the cryptography changed between those two rows; only the names did.</p>
+<p>The design always said a firm's handle is derived per venue, so that one firm is two unrelated points. The first library offered no way to derive them, so the obvious integration used one name everywhere, and the payment-versus-payment unlinkability measurement showed an observer joining the legs with probability 1.000 at every swap count. <code>zkpi::handles</code> now derives them from one seed, and the test beside it runs the scheme that suggests itself first (one secret scaled by a public per-venue factor) and shows it is publicly linkable. With derived handles the observer falls to 1/k and stays there. Nothing about the cryptography changed between those two rows; only the names did.</p>
 
 <h2 id="not">What zkPI does not do</h2>
 <ul>

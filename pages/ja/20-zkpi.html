@@ -83,10 +83,10 @@ flowchart LR
 
 <h2 id="vectors">実装を確かめる</h2>
 <p>テストベクタは <code>artifacts/zkpi_vectors/</code> にある。wire のバージョンごとに、受理される指図 1 件と、それを 5 通りに壊したものが入っている。受理されるベクタは、<strong>復号して再符号化したとき、元と同じバイト列に戻る</strong>必要がある。これは「パースできた」よりも厳しい条件である。あるフィールドを捨てて再導出する実装は、パースの試験には通るが、この往復の試験には落ちる。二つの市場が同じ指図を決済できるかを決めるのは、この往復の試験である。</p>
-<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
-qomm-zkpi-verify --self-test                       # issue v2, encode, decode, verify
-qomm-zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
-qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
+<pre><code>zkpi-verify --check-vectors artifacts/zkpi_vectors
+zkpi-verify --self-test                       # issue v2, encode, decode, verify
+zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
+zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
 <p>終了コードは、0 が受理、1 が拒否、2 が判定できなかったことを表す。定足数の鍵を渡さなければ、ツールは配置だけを確かめる。そのときは「これはパースであって検証ではない」と出力する。形式が整っただけの未署名の指図に「ok」と出すツールは、無い方がましである。</p>
 
 <h2 id="where">どこで動くか、なぜ他では動かないか</h2>
@@ -116,7 +116,7 @@ qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says
 <p>計算単位は時間を測った値ではなく、仮想機械が数えた値である。そのため上の数値は単位まで正確に再現でき、計測したホストの名前ではなくツールチェーンの版で記録できる。ボトルネックは曲線ではなく体（スカラーの演算）にあった。これで結論は出た。検証器をネイティブの Rust で動かせる VM を採る。</p>
 
 <h2 id="handles">handle: 文書にはあってコードになかった性質</h2>
-<p>設計書は最初から、法人の handle は市場ごとに導出し、一つの法人が市場ごとに無関係な点になると書いていた。しかし最初のライブラリには handle を導出する手段がなかった。そのまま組み込むと、一つの名前をどこでも使うことになる。PvP（通貨同士の同時決済）の連結不能性を計測すると、観察者はスワップの回数がいくつでも確率 1.000 で両脚を結び付けられた。いまは <code>qomm_zkpi::handles</code> が一つの seed から handle を導出する。その隣に置いた試験では、最初に思いつく方式（一つの秘密に市場ごとの公開係数を掛ける）も試し、それが公開情報だけで連結できることを示している。導出した handle を使うと、観察者が当てる確率は 1/k に落ち、そこから上がらない。計測表のこの二つの行の間で、暗号は何も変わっていない。変わったのは名前の付け方だけである。</p>
+<p>設計書は最初から、法人の handle は市場ごとに導出し、一つの法人が市場ごとに無関係な点になると書いていた。しかし最初のライブラリには handle を導出する手段がなかった。そのまま組み込むと、一つの名前をどこでも使うことになる。PvP（通貨同士の同時決済）の連結不能性を計測すると、観察者はスワップの回数がいくつでも確率 1.000 で両脚を結び付けられた。いまは <code>zkpi::handles</code> が一つの seed から handle を導出する。その隣に置いた試験では、最初に思いつく方式（一つの秘密に市場ごとの公開係数を掛ける）も試し、それが公開情報だけで連結できることを示している。導出した handle を使うと、観察者が当てる確率は 1/k に落ち、そこから上がらない。計測表のこの二つの行の間で、暗号は何も変わっていない。変わったのは名前の付け方だけである。</p>
 
 <h2 id="not">zkPI がしないこと</h2>
 <ul>

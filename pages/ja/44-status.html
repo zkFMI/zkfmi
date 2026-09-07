@@ -15,7 +15,7 @@ section: docs
 <div class="table-wrap"><table>
 <thead><tr><th>部品</th><th>状態</th><th>対象とするゲート</th><th>残っていること</th></tr></thead>
 <tbody>
-<tr><td>zkPI v2 の wire 形式、テストベクタ、検証器</td><td><span class="pill ok">実装済み · ベクタ固定</span></td><td><code>qomm-zkpi-verify --check-vectors</code>。デコードして再エンコードしたバイト列の同一性</td><td>テストベクタに対する、独立した第二の実装</td></tr>
+<tr><td>zkPI v2 の wire 形式、テストベクタ、検証器</td><td><span class="pill ok">実装済み · ベクタ固定</span></td><td><code>zkpi-verify --check-vectors</code>。デコードして再エンコードしたバイト列の同一性</td><td>テストベクタに対する、独立した第二の実装</td></tr>
 <tr><td>DeFMI 台帳: 口座、note（金額を隠した残高の単位）、tag、ネッティング、PvP、照合、閲覧、審査証明</td><td><span class="pill ok">実装済み · 計測済み</span></td><td><code>cargo test --locked --workspace</code>。全表を JSON から再生成</td><td>受付・担保差入・限度・支払を一つの原子的操作にまとめる。L1 上の本番用 note レール（OCLOB はまだ commitment 口座を使っている）</td></tr>
 <tr><td>Bulletproof バックエンド</td><td><span class="pill ok">実装済み · host-a で計測済み</span></td><td>rust_bench.json</td><td>昇格の前に、両バックエンドを同じ 1 台のホストで再計測</td></tr>
 <tr><td>Avalanche L1、Rust VM、検証者 5 台</td><td><span class="pill ok">受入済み · ホスト 1 台</span></td><td>run_avalanche_l1_acceptance。高さ 53–54 での QOMM 全経路</td><td>独立したホストと運営者、WAN、reorg（チェーンの巻き戻し）の試験、HSM 鍵、公開ネットワークで動かす準備</td></tr>

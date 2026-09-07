@@ -15,7 +15,7 @@ section: docs
 <div class="table-wrap"><table>
 <thead><tr><th>component</th><th>state</th><th>gate that covers it</th><th>what remains</th></tr></thead>
 <tbody>
-<tr><td>zkPI v2 wire, vectors, verifier</td><td><span class="pill ok">built · vectors fixed</span></td><td><code>qomm-zkpi-verify --check-vectors</code>; decode/re-encode byte identity</td><td>independent second implementation against the vectors</td></tr>
+<tr><td>zkPI v2 wire, vectors, verifier</td><td><span class="pill ok">built · vectors fixed</span></td><td><code>zkpi-verify --check-vectors</code>; decode/re-encode byte identity</td><td>independent second implementation against the vectors</td></tr>
 <tr><td>DeFMI ledger: accounts, notes, tags, netting, PvP, reconciliation, viewing, vetting</td><td><span class="pill ok">built · measured</span></td><td><code>cargo test --locked --workspace</code>; every table regenerated from JSON</td><td>atomic admit-pledge-limit-pay; production note rail on the L1 (OCLOB still uses commitment accounts)</td></tr>
 <tr><td>Bulletproof backend</td><td><span class="pill ok">built · measured on host-a</span></td><td>rust_bench.json</td><td>rerun both backends on one host before promotion</td></tr>
 <tr><td>Avalanche L1, Rust VM, 5 validators</td><td><span class="pill ok">accepted · 1 host</span></td><td>run_avalanche_l1_acceptance; QOMM full path at heights 53–54</td><td>independent hosts and operators, WAN, reorg tests, HSM keys, public-network readiness</td></tr>

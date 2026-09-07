@@ -21,14 +21,14 @@ cargo build --workspace --release --locked</code></pre>
 <p>There is no <code>rust-toolchain.toml</code>; record <code>rustc --version</code> at the start of an evaluation and pin it across build machines. The integration Docker build currently references Rust 1.97.1.</p>
 
 <h2 id="vectors">Check the instruction vectors</h2>
-<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
-qomm-zkpi-verify --self-test</code></pre>
+<pre><code>zkpi-verify --check-vectors artifacts/zkpi_vectors
+zkpi-verify --self-test</code></pre>
 <p class="muted">Binaries and packages keep the historical <code>qomm-</code> prefix until the crate consolidation lands; the commands on this page are the ones that run today.</p>
 <p>Exit 0 accepts, 1 rejects, 2 could not be asked. The accepted vector must decode and re-encode to the same bytes. Regenerate vectors with <code>--vectors &lt;dir&gt;</code> only when the format changes, never because a check disagreed.</p>
 
 <h2 id="l1">Run the five-validator L1 gate</h2>
 <p>From <code>defmi/</code>, with AvalancheGo and avalanche-network-runner supplied at approved versions:</p>
-<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p qomm-avalanche-vm -p qomm-harness
+<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p defmi-avalanche-vm -p qomm-harness
 # launchers and configuration under avalanche/defmivm/
 cargo run --release --manifest-path rust/Cargo.toml -p qomm-harness --bin run_avalanche_l1_acceptance</code></pre>
 <p>The run writes <code>artifacts/avalanche_l1_acceptance.json</code>. The <a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">enterprise PoC guide</a> (Japanese) walks through pinning sources, building the VM, launching the network, the trade scenarios, the QOMM path with no extra signature, the mandatory rejection and fault tests, the evidence to retain, and the pass criteria, then continues into hardware sizing, process separation, network design, genesis, key management, backup, monitoring and fault injection for a company-run evaluation.</p>

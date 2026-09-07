@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>Cryptography in use</h1>
 <p class="lede">The component pages say what each part guarantees. This page says how, at the level of which group, which generator, which transcript label, which equation the verifier checks and how many bytes cross the wire. Everything here was read from the code on 2026-09-07, with the file named, and where the code and the older design documents disagree the code is reported and the disagreement listed at the end.</p>
-<p class="src">source: zkpi/rust/qomm-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs; on defmi main until 2026-09-07) · defmi/rust/qomm-defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · qomm-zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · locked versions from Cargo.lock</p>
+<p class="src">source: zkpi/rust/zkfmi-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs; on defmi main until 2026-09-07) · defmi/rust/defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · locked versions from Cargo.lock</p>
 
 <div class="note">Nothing on this page is a new primitive. The stack composes audited or well-studied constructions, ristretto255 arithmetic, Pedersen commitments, Schnorr-type sigma protocols, Bulletproofs, Groth–Kohlweiss and Triptych one-of-many proofs, FROST, Shamir sharing in MP-SPDZ, and now ML-DSA and ML-KEM hybrids, and the interest is in what is bound to what. The <a href="security.html">security page</a> has the adversary and the trust boundary; this page has the equations.</div>
 
@@ -198,7 +198,7 @@ c = H_512("DEKYX:ANONYMOUS-PRESENTATION:v1" || credential || context || nullifie
 <div class="table-wrap"><table>
 <thead><tr><th>document says</th><th>code does</th><th>where</th></tr></thead>
 <tbody>
-<tr><td>the note ring is a Groth–Kohlweiss proof that one of the ring holds this serial</td><td>version 2 uses Triptych with an unlinkable linking tag; Groth–Kohlweiss remains for asset-tag membership and vetting</td><td>DEFMI.md §5 vs <code>qomm-defmi/src/note_membership.rs</code></td></tr>
+<tr><td>the note ring is a Groth–Kohlweiss proof that one of the ring holds this serial</td><td>version 2 uses Triptych with an unlinkable linking tag; Groth–Kohlweiss remains for asset-tag membership and vetting</td><td>DEFMI.md §5 vs <code>defmi/src/note_membership.rs</code></td></tr>
 <tr><td>a note is one point <code>C = g^S · A_a^v · h^r</code></td><td>the one-time point and the value commitment are published separately; the note's identity is a SHA-256 of the body</td><td>DEFMI.md §5, <code>notes.rs</code> header vs <code>notes.rs</code> struct</td></tr>
 <tr><td>the nullifier is derived from the serial and published on spend</td><td>the spend publishes the Triptych linking tag <code>U·S⁻¹</code>, never <code>g·S</code></td><td><code>note_membership.rs</code>, review finding N2</td></tr>
 <tr><td>the settlement proof is a bit decomposition of the balance range</td><td>every production range proof is a Bulletproof; bit decomposition is the measured baseline and the threshold form</td><td>DEFMI.md §2 vs <code>ledger.rs</code>, <code>notes.rs</code>, <code>netting.rs</code></td></tr>

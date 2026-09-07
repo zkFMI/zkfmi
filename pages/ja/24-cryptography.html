@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>暗号技術の使い方</h1>
 <p class="lede">各部品のページは、その部品が何を保証するかを述べる。このページは、それをどう実現しているかを述べる。どの群と生成元を使い、どのトランスクリプト・ラベルを付け、検証器がどの等式を検査し、wire 上を何バイトが流れるか、という水準で書く。ここに書いたことはすべて 2026-09-07 にコードから読み取り、ファイル名を挙げてある。コードと古い設計文書が食い違う箇所ではコードの側を報告し、食い違いは末尾に一覧にした。</p>
-<p class="src">出典: zkpi/rust/qomm-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs。2026-09-07 までは defmi の main にあった) · defmi/rust/qomm-defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · qomm-zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · 版は Cargo.lock で固定したもの</p>
+<p class="src">出典: zkpi/rust/zkfmi-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs。2026-09-07 までは defmi の main にあった) · defmi/rust/defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · 版は Cargo.lock で固定したもの</p>
 
 <div class="note">このページにあるものは、どれも新しいプリミティブではない。スタックは、監査済みか十分に研究された構成を組み合わせている。ristretto255 の算術、Pedersen commitment（値を隠したまま固定する仕組み）、Schnorr 型のシグマ・プロトコル、Bulletproofs、Groth–Kohlweiss と Triptych の one-of-many 証明、FROST、MP-SPDZ 上の Shamir 秘密分散、そして今は ML-DSA と ML-KEM のハイブリッドである。関心があるのは、何が何に束縛されているかである。<a href="security.html">安全性のページ</a>には攻撃者と信頼境界を書いた。このページには等式を書く。</div>
 
@@ -198,7 +198,7 @@ c = H_512("DEKYX:ANONYMOUS-PRESENTATION:v1" || credential || context || nullifie
 <div class="table-wrap"><table>
 <thead><tr><th>文書の記述</th><th>コードの動作</th><th>場所</th></tr></thead>
 <tbody>
-<tr><td>note の ring は、ring のうち一つがこの serial を持つことの Groth–Kohlweiss 証明である</td><td>バージョン 2 は連結不能な linking tag を持つ Triptych を使う。Groth–Kohlweiss は asset tag の所属と審査証明に残る</td><td>DEFMI.md §5 対 <code>qomm-defmi/src/note_membership.rs</code></td></tr>
+<tr><td>note の ring は、ring のうち一つがこの serial を持つことの Groth–Kohlweiss 証明である</td><td>バージョン 2 は連結不能な linking tag を持つ Triptych を使う。Groth–Kohlweiss は asset tag の所属と審査証明に残る</td><td>DEFMI.md §5 対 <code>defmi/src/note_membership.rs</code></td></tr>
 <tr><td>note は一つの点 <code>C = g^S · A_a^v · h^r</code> である</td><td>使い捨ての点と値の commitment は別々に公開する。note の識別子は本体の SHA-256 である</td><td>DEFMI.md §5、<code>notes.rs</code> のヘッダ 対 <code>notes.rs</code> の構造体</td></tr>
 <tr><td>nullifier は serial から導出し、支出時に公開する</td><td>支出は Triptych の linking tag <code>U·S⁻¹</code> を公開し、<code>g·S</code> は決して公開しない</td><td><code>note_membership.rs</code>、レビュー所見 N2</td></tr>
 <tr><td>決済の証明は残高範囲のビット分解である</td><td>本番の範囲証明はすべて Bulletproof である。ビット分解は計測済みの比較基準と、閾値形に残る</td><td>DEFMI.md §2 対 <code>ledger.rs</code>、<code>notes.rs</code>、<code>netting.rs</code></td></tr>

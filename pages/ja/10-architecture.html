@@ -129,7 +129,7 @@ sequenceDiagram
 <tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と、同じ並びの crate 7 つ</td><td>zkpi、defmi、qomm、dekyx、deccp</td></tr>
 <tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td>進行中</td><td>なし</td></tr>
 </tbody></table></div>
-<details><summary>現在のマニフェスト上のパッケージ名</summary><p>統合が済むまで、上の層の名前は次のパッケージに対応する。<code>zkfmi-zk</code> は <code>qomm-zk</code>、<code>zkpi</code> は <code>qomm-zkpi</code>、<code>zkpi-proofs</code> は <code>qomm-proofs</code>、<code>defmi</code> は <code>qomm-defmi</code>、<code>defmi-avalanche-vm</code> は <code>qomm-avalanche-vm</code>、各リポジトリの <code>defmi-harness</code> は <code>qomm-harness</code> である。このサイトのコマンドは、いま動く名前で書いてある。統合の計画と、その前に行う重複コピーの照合は、各リポジトリの crate 配置の覚書に書いてある。</p></details>
+<details><summary>現在のマニフェスト上のパッケージ名</summary><p>2026-09-07 から、上の層の名前はそのままパッケージ名である。例外は三つ。<code>zkpi-proofs</code> はまだ <code>qomm-proofs</code> で、委員会側の通信もまだ <code>qomm-transport</code> である。どちらも市場側の半分を含んでいて、crate を分割するときに qomm へ戻す。分割はモジュールのパスを変えるので、最後に行う。Avalanche VM のパッケージは <code>defmi-avalanche-vm</code> だが、バイナリは起動スクリプトが期待する <code>qomm-avalanche-vm</code> という名前のままである。このサイトのコマンドは、いま動く名前で書いてある。計画は各リポジトリの crate 配置の覚書に書いてある。</p></details>
 
 <h2 id="primitives">暗号プリミティブは書き直さず使う</h2>
 <p>すべて ristretto255 という曲線の上に作る。曲線の演算、範囲証明、閾値署名は監査済みの crate から借りる。このプロジェクトが自分で書いたのは、その上に載せたシグマ・プロトコル（知識の証明の基本形）のガジェット（部品）である。</p>
