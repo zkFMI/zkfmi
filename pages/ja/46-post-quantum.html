@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>耐量子化への移行</h1>
 <p class="lede">この移行は、古典方式と耐量子方式を組にして使う（ハイブリッド）。どちらか一方でも検証に通らなければ受理しない（fail-closed）。資金を守る古典の署名と鍵交換のすべてに、耐量子の相方を付ける。両方の検証が通ったときだけ受理する。古典方式しか出せない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にある。2026-09-06 に、ホスト 1 台でのネイティブ受入を通過した。2026-09-07 には、零関係の開封証明（commitment の値が 0 であることを示す開封）の修正を取り込んだ後にもう一度通過した。同じ 2026-09-07 に、スタック側の crate（Rust のライブラリ単位）を zkPI へ移し、DeFMI と QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の rev（git のリビジョン）で固定した。その結果、8 リポジトリすべての <code>main</code> が受入済みの状態になった。</p>
-<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · 2026-09-08 時点の状況</p>
+<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · 2026-09-08（夕方）時点の状況</p>
 
 <h2 id="status">状況の一覧</h2>
 <div class="table-wrap"><table>
@@ -17,7 +17,7 @@ section: docs
 <tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>ネイティブ実行を 2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）に行った。シナリオは市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
 <tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill ok">完了 · 2026-09-07</span></td><td>通信、MPC エンジン、監査、DSL、シミュレータ、計測の各 crate を zkPI に移し、DeFMI ⇄ QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の git rev で固定し、隣の checkout を重ねる overlay は使わない。9 ワークスペースすべてが lock 固定の検査を通り、固定後の配置でネイティブ受入も通った。8 つの <code>main</code> がすべて受入済みの状態を持つ。<a href="architecture.html#repos">全体構成ページ</a>を参照。</td></tr>
 <tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
-<tr><td>性能比較</td><td><span class="pill part">計測済み · 1 ホスト · 1 回</span></td><td>基本演算は 2026-09-07 に、公開していた OCLOB の二つの画像で端から端までを 2026-09-08 に計測。注文 1 件あたり、板に残る注文で +56 ms、約定する注文で +74 ms（中央値）、p95 では +16 ms と +76 ms。計画の目標は p95 で 5 ms。詳細は下</td></tr>
+<tr><td>性能比較</td><td><span class="pill ok">計測済み · 1 ホスト · 2 回</span></td><td>基本演算は 2026-09-07 に、公開していた OCLOB の画像で端から端までを 2026-09-08 に計測。最初のハイブリッド画像は注文 1 件あたり、板に残る注文で +56 ms、約定する注文で +74 ms（中央値）。エンジン受領証の検査をプロセスごと 1 回にし、7 プロセスを回をまたいで維持したあとは、ハイブリッド画像が従来版より 177 ms と 202 ms 速い。詳細は下</td></tr>
 <tr><td>独立した運営者、WAN、HSM、FIPS 認証、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録は、これらをいずれも未実施と記している</td></tr>
 </tbody></table></div>
 
@@ -66,9 +66,11 @@ section: docs
 <tbody>
 <tr><td>板に残る maker 注文（約定なし）</td><td class="num">1,211.6 ms</td><td class="num">1,268.0 ms</td><td class="num">+56.4 ms（+4.7%）</td><td class="num">+16.3 ms</td></tr>
 <tr><td>約定して決済まで進む taker 注文</td><td class="num">1,707.2 ms</td><td class="num">1,781.0 ms</td><td class="num">+73.8 ms（+4.3%）</td><td class="num">+76.3 ms</td></tr>
+<tr><td>板に残る maker 注文、常駐の実行器にしたハイブリッド版（同日の 2 回目）</td><td class="num">1,195.5 ms</td><td class="num">1,018.5 ms</td><td class="num">−177.1 ms（−14.8%）</td><td class="num">−229.1 ms</td></tr>
+<tr><td>約定して決済まで進む taker 注文、常駐の実行器にしたハイブリッド版</td><td class="num">1,707.2 ms</td><td class="num">1,505.4 ms</td><td class="num">−201.8 ms（−11.8%）</td><td class="num">−196.3 ms</td></tr>
 </tbody></table></div>
 <p>増えた時間の内訳。注文ごとに 7 つの MP-SPDZ プロセスを起動し直し、各プロセスは相互認証つきの TLS 接続を 12 本張るので、1 回で 42 回のハンドシェイクが起きる。同じ OpenSSL 3.5.5 でループバック上のハンドシェイク 1 回を測ると、従来版が使っていた RSA-2048 証明書で 1.07 ms、Ed25519 証明書で 0.56 ms、ML-DSA-65 証明書と X25519MLKEM768 で 2.19 ms だった。OpenSSL 3.5.5 の ML-DSA-65 署名は 1 回 0.69 ms で、これが最も大きい項であり、1 回あたりおよそ +13 ms になる。ハイブリッド版はさらに、45 MB のエンジンのバイナリを毎回読み直して .pqc-tls.sha256 の受領証と照合しており、これに約 35 ms かかる。この検査は移行で加えたもので、MPC の計時が始まる前に動く。ハイブリッドのアプリ署名（計画 1 件、参加者の受領証 7 件、ノードの受領証 1 件、遷移の証明 5 件、3 ノードの定足数）は見積もりで 10〜20 ms を足す。残る 30〜40 ms は暗号以外のビルド差で、今回は分けていない。</p>
-<p>計画の目標に対して。この経路の処理量は従来の 95.5% と 95.9% で、目標の 95% を半ポイント上回る。追加の遅延は p95 で 16 ms と 76 ms で、目標の 5 ms を満たしていない。実行前に書いた予測は差を −10〜+5 ms と見ていて、二つの点で外れた。エンジン受領証の検査を起動時の 1 回だけと思っていたこと、ML-DSA-65 の署名が RSA-2048 の署名より速いと見ていたことである。OpenSSL 3.5.5 では 0.69 ms 対 0.27 ms で逆になる。エンジンのハッシュ検査を 1 回ごとではなくプロセスごとに 1 回にすれば約 35 ms 戻る。7 つのプロセスを回をまたいで維持すれば、42 回のハンドシェイクが両方の版から消える。どちらもまだ行っていない。</p>
+<p>計画の目標に対して。この経路の処理量は従来の 95.5% と 95.9% で、目標の 95% を半ポイント上回る。追加の遅延は p95 で 16 ms と 76 ms で、目標の 5 ms を満たしていない。実行前に書いた予測は差を −10〜+5 ms と見ていて、二つの点で外れた。エンジン受領証の検査を起動時の 1 回だけと思っていたこと、ML-DSA-65 の署名が RSA-2048 の署名より速いと見ていたことである。OpenSSL 3.5.5 では 0.69 ms 対 0.27 ms で逆になる。この二つは同じ日のうちに直した。エンジンのバイナリはプロセスごとに 1 回だけハッシュし、回ごとにはファイルの識別情報で確かめる。デモの実行器は 7 つのプロセスを回をまたいで維持し、各回の入力を名前付きパイプで渡す（ネイティブ受入の 7 プロセス構成は今も回ごとに起動する）。表の 2 回目の行がその結果で、ハイブリッド画像は従来版より注文 1 件あたり 177 ms と 202 ms 速くなり、計画の目標は二つとも、公開していた従来版に対して満たした。同じ実行器を載せた従来版なら、ハイブリッドのアプリ署名の分だけ、見積もりで 10〜20 ms さらに速いはずである。実行前に書いた予測はもっと大きな短縮（1 回あたり 300 ms 以上。実測は 250 と 276）を見込んでいて外れた。プロセスの起動、接続の確立、受領証のハッシュで約 250 ms、残る 500 ms は回路そのものの前処理とオンライン段階で、MP-SPDZ はこれをループの中でも回ごとに生成する。</p>
 
 <h2 id="phases">計画と、各フェーズの現在地</h2>
 <div class="table-wrap"><table>
@@ -95,7 +97,7 @@ section: docs
 
 <h2 id="classical">古典のまま残るもの、その理由</h2>
 <p>この移行が扱うのは署名と鍵交換である。決済層が依拠するゼロ知識の関係式は扱わない。まだ扱えないからである。Pedersen commitment、Bulletproofs の範囲証明、one-of-many ring、quote proof、指図への FROST 閾値署名は、いずれも離散対数の困難さに立っている。議論の全体は<a href="binding.html#pq">束縛のページ</a>にある。要点は次のとおり。commitment の秘匿（hiding）は無条件で、量子計算機を持つ敵にも耐える。束縛（binding）は耐えない。それが最初に効いてくる場所は、メイカーのポリシー commitment である。この commitment は、ポリシーの有効期間中すべての見積に対して開かれる。VOLE-in-the-Head の commitment は実装して計測した。広い体の上で Pedersen の 5.9× から 11× のコストで、しかも一回しか開けない。格子 commitment は Shamir の再構成を壊す。未解決の問いは、ランダムオラクルだけに依拠し、何度でも開ける commitment があるか、である。それが存在するまで、このスタックの耐量子の保証は「誰が署名したか」「誰がチャネルを読めるか」についてのものであり、証明についてのものではない。</p>
-<p>他にも小さな点が二つ、ブランチ上で古典のまま残る。FROST の自己署名は、追加した耐量子鍵を覆っていない（ノード別の ML-DSA 承認は FROST の内側ではなく隣に置いてある）。また、コンセンサスの外にある閲覧の許可と支出の開示は移行していない。</p>
+<p>小さな点が二つ、2026-09-08 に片付いた。FROST の身元の自己署名は両方の半分ともノードのハイブリッド公開鍵（発行用）を覆うようになった（身元の本文 v3、名簿と確認のダイジェストにも含む）。DeFMI の閲覧の許可と支出の開示は、ハイブリッド方式で署名する（閲覧ドメイン v3。片方だけ、または入れ替えた署名は拒否）。ノード別の ML-DSA 承認は今も FROST の内側ではなく隣に置いてある。これは計画どおりの設計で、二つは別々に検証する。</p>
 
 <h2 id="limits">根拠の限界</h2>
 <ul>
