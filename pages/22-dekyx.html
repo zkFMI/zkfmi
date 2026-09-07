@@ -70,7 +70,7 @@ flowchart TB
     CORE --> O
     Z["zkPI / DeFMI"] -. "no direct credential dependency" .-> CORE
 </pre>
-<p>zkPI and DeFMI do not define credentials; a host may require DeKYX eligibility before creating or settling an instruction. The <code>qomm-zkpi</code> issuer module carries its own KYB credential path over the same one-of-many and or-DLEQ gadgets, which predates DeKYX and is the vetting roll described on the <a href="defmi.html#vetting">DeFMI page</a>.</p>
+<p>zkPI and DeFMI do not define credentials; a host may require DeKYX eligibility before creating or settling an instruction. The instruction crate's issuer module carries its own KYB credential path over the same one-of-many and or-DLEQ gadgets, which predates DeKYX and is the vetting roll described on the <a href="defmi.html#vetting">DeFMI page</a>.</p>
 
 <h2 id="not">What a deployment still has to define</h2>
 <p>Issuer governance, evidence standards, corporate-group resolution, revocation operations, data-retention policy, and jurisdiction-specific KYC/KYB obligations. Cross-issuer anti-Sybil policy requires a shared governance or registry decision outside the crate. The published revision passed test, clippy, fmt and release build on Linux with the locked graph; that is a build gate, not an audit.</p>

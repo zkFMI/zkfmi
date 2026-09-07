@@ -70,7 +70,7 @@ flowchart TB
     CORE --> O
     Z["zkPI / DeFMI"] -. "クレデンシャルへの直接依存なし" .-> CORE
 </pre>
-<p>zkPI と DeFMI はクレデンシャルを定義しない。ホストは、指図の作成や決済の前に DeKYX の資格を要求してよい。<code>qomm-zkpi</code> の issuer モジュールは、同じ one-of-many と or-DLEQ のガジェット上に独自の KYB クレデンシャル経路を持つ。これは DeKYX より前からあるもので、<a href="defmi.html#vetting">DeFMI のページ</a>で述べる審査証明（vetting）済みの名簿である。</p>
+<p>zkPI と DeFMI はクレデンシャルを定義しない。ホストは、指図の作成や決済の前に DeKYX の資格を要求してよい。指図 crate の issuer モジュールは、同じ one-of-many と or-DLEQ のガジェット上に独自の KYB クレデンシャル経路を持つ。これは DeKYX より前からあるもので、<a href="defmi.html#vetting">DeFMI のページ</a>で述べる審査証明（vetting）済みの名簿である。</p>
 
 <h2 id="not">配置側がなお定めなければならないこと</h2>
 <p>発行者の統治、証拠の基準、企業グループの名寄せ、失効の運用、データ保持方針、法域ごとの KYC/KYB 義務。発行者をまたぐ Sybil 対策の方針は、crate の外で共有の統治か登録簿の決定を必要とする。公開した rev は、固定した依存グラフのもとで Linux 上の test、clippy、fmt、release ビルドを通過した。これはビルドの gate であって監査ではない。</p>

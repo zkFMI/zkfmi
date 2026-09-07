@@ -23,6 +23,7 @@ cargo build --workspace --release --locked</code></pre>
 <h2 id="vectors">指図のテストベクタを検査する</h2>
 <pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
 qomm-zkpi-verify --self-test</code></pre>
+<p class="muted">バイナリとパッケージの名前は、crate の統合が済むまで歴史的な <code>qomm-</code> 接頭辞を保つ。このページのコマンドは、いま動く名前で書いてある。</p>
 <p>終了コード 0 は受理、1 は拒否、2 は判定に至らなかったことを表す。受理されるベクタは、復号して再符号化したときに同じバイト列に戻らなければならない。<code>--vectors &lt;dir&gt;</code> でベクタを作り直すのは形式が変わったときだけで、検査結果が食い違ったからという理由で作り直してはならない。</p>
 
 <h2 id="l1">検証者 5 台の L1 ゲートを走らせる</h2>

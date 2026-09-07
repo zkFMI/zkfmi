@@ -116,12 +116,12 @@ sequenceDiagram
 </tbody></table></div>
 
 <h2 id="repos">リポジトリと crate</h2>
-<p>リポジトリは 8 つ。最初の 3 つは一つの共有研究ツリーから生成したもので、配置が揃っているのも、いくつかの crate がいまも <code>qomm-</code> 接頭辞を持つのもそのためである。QOMM はこのスタック上に最初に作った市場で、台帳、指図、ゼロ知識のガジェットは、分離される前にその名で呼ばれていた。接頭辞は歴史的なものであり、依存関係を意味しない。層ごとに名付けた単一所有の crate への統合を計画している。他のリポジトリは、明示的なポートを持つ独立したワークスペースである。</p>
+<p>リポジトリは 8 つ。最初の 3 つは一つの共有研究ツリーから生成したもので、配置が揃っている一方、同じ crate が複数のリポジトリに存在する。表では crate を層の名前で示す。これは所有者を一つにまとめる統合後の名前でもある。現在のマニフェスト上のパッケージ名は表の下に示し、その一部はこのスタック上に最初に作った市場の接頭辞をいまも持つ。接頭辞は歴史的なものであり、依存関係を意味しない。他のリポジトリは独立したワークスペースで、境界は明示されている。</p>
 <div class="table-wrap"><table>
-<thead><tr><th>リポジトリ</th><th>役割</th><th>主な crate</th><th>依存先</th></tr></thead>
+<thead><tr><th>リポジトリ</th><th>役割</th><th>主な crate（層の名前）</th><th>依存先</th></tr></thead>
 <tbody>
-<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図と証明のガジェット</td><td><code>qomm-zk</code>、<code>qomm-zkpi</code>、<code>qomm-proofs</code></td><td>curve25519-dalek、bulletproofs、frost-ristretto255</td></tr>
-<tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>決済台帳と Avalanche VM</td><td><code>qomm-defmi</code>、<code>qomm-avalanche-vm</code>、<code>zkpi-defmi-sdk</code>、<code>qomm-harness</code></td><td>aethel、deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図と証明のガジェット</td><td><code>zkfmi-zk</code>、<code>zkpi</code>、<code>zkpi-proofs</code></td><td>curve25519-dalek、bulletproofs、frost-ristretto255</td></tr>
+<tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>決済台帳と Avalanche VM</td><td><code>defmi</code>、<code>defmi-avalanche-vm</code>、<code>zkpi-defmi-sdk</code>、<code>defmi-harness</code></td><td>aethel、deccp</td></tr>
 <tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-dsl</code>、<code>qomm-mpc</code>、<code>qomm-transport</code>、<code>qomm-audit</code>、<code>qomm-law</code></td><td>MP-SPDZ（外部）</td></tr>
 <tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>注文を見ない板</td><td><code>oclob-core</code>、<code>oclob-edge</code>、<code>oclob-node</code>、<code>oclob-ordering</code>、<code>oclob-mpc</code>、<code>oclob-settlement</code></td><td>dekyx、zkPI/DeFMI SDK、MP-SPDZ</td></tr>
 <tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>資格のクレデンシャル</td><td><code>dekyx-core</code>、<code>dekyx-aethel</code></td><td>なし</td></tr>
@@ -129,6 +129,7 @@ sequenceDiagram
 <tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と兄弟 crate 7 つ</td><td>dekyx</td></tr>
 <tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td>進行中</td><td>なし</td></tr>
 </tbody></table></div>
+<details><summary>現在のマニフェスト上のパッケージ名</summary><p>統合が済むまで、上の層の名前は次のパッケージに対応する。<code>zkfmi-zk</code> は <code>qomm-zk</code>、<code>zkpi</code> は <code>qomm-zkpi</code>、<code>zkpi-proofs</code> は <code>qomm-proofs</code>、<code>defmi</code> は <code>qomm-defmi</code>、<code>defmi-avalanche-vm</code> は <code>qomm-avalanche-vm</code>、各リポジトリの <code>defmi-harness</code> は <code>qomm-harness</code>。このサイトのコマンドは、いま動く名前で書いてある。統合の手順と、それに先立つ重複コピーの同期は、リポジトリ側の crate 配置の覚書にある。</p></details>
 
 <h2 id="primitives">暗号プリミティブは書き直さず使う</h2>
 <p>すべて ristretto255 の上に載る。曲線、範囲証明、閾値署名は監査済みの crate が供給し、このプロジェクト自身のガジェットはその上のシグマ・プロトコルである。</p>
@@ -139,7 +140,7 @@ flowchart TB
         BP["bulletproofs<br/>範囲証明"]
         FROST["frost-ristretto255<br/>閾値署名"]
     end
-    subgraph zk["qomm-zk"]
+    subgraph zk["ゼロ知識のガジェット"]
         PED["pedersen<br/>commitment、asset tag"]
         SIG["sigma<br/>開示、生成元間の等価、積"]
         RNG["range"]
@@ -148,7 +149,7 @@ flowchart TB
         ADP["adaptor<br/>事前署名、適応、抽出"]
         SHA["shamir<br/>Reed-Solomon 復号器"]
     end
-    subgraph pi["qomm-zkpi"]
+    subgraph pi["指図の crate"]
         ISS["issuer<br/>KYB クレデンシャル"]
         INS["instruction<br/>commitment 化、束縛、nullifier 導出"]
         QUO["quorum"]

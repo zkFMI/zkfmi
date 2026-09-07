@@ -23,6 +23,7 @@ cargo build --workspace --release --locked</code></pre>
 <h2 id="vectors">Check the instruction vectors</h2>
 <pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
 qomm-zkpi-verify --self-test</code></pre>
+<p class="muted">Binaries and packages keep the historical <code>qomm-</code> prefix until the crate consolidation lands; the commands on this page are the ones that run today.</p>
 <p>Exit 0 accepts, 1 rejects, 2 could not be asked. The accepted vector must decode and re-encode to the same bytes. Regenerate vectors with <code>--vectors &lt;dir&gt;</code> only when the format changes, never because a check disagreed.</p>
 
 <h2 id="l1">Run the five-validator L1 gate</h2>
