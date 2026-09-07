@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>暗号技術の使い方</h1>
 <p class="lede">各部品のページは、その部品が何を保証するかを述べる。このページはそれをどう実現しているかを述べる。どの群、どの生成元、どのトランスクリプト・ラベルを使い、検証器がどの等式を検査し、wire 上を何バイトが渡るか、という水準でである。ここにあるものはすべて 2026-09-07 にコードから読み取り、ファイル名を挙げてある。コードと古い設計文書が食い違うところではコードの側を報告し、食い違いを末尾に一覧にした。</p>
-<p class="src">出典: defmi/rust/qomm-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs) · defmi/rust/qomm-defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · qomm-zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · 版は Cargo.lock で固定したもの</p>
+<p class="src">出典: zkpi/rust/qomm-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs) · defmi/rust/qomm-defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · qomm-zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · 版は Cargo.lock で固定したもの</p>
 
 <div class="note">このページにあるものはどれも新しいプリミティブではない。スタックは監査済みか十分に研究された構成を組み合わせている。ristretto255 の算術、Pedersen commitment、Schnorr 型のシグマ・プロトコル、Bulletproofs、Groth–Kohlweiss と Triptych の one-of-many 証明、FROST、MP-SPDZ 上の Shamir シェア、そして今は ML-DSA と ML-KEM のハイブリッドである。関心は何が何に束縛されているかにある。<a href="security.html">安全性のページ</a>には攻撃者と信頼境界があり、このページには等式がある。</div>
 
