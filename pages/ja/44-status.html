@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>現状と受入</h1>
 <p class="lede">「実装済み」とは、コードが存在し、依存関係を固定した workspace でテストが通ることをいう。「受入済み」とは、リポジトリのリリースゲート（公開前の自動検査）が、記載した構成の上で通ったことをいう。どちらも本番を意味しない。複数ノードでの受入はすべて、1 人の管理者が管理する Linux ホスト 1 台の上で行ったものである。</p>
-<p class="src">最終確認: 2026-09-07 時点のリポジトリの最新コミット</p>
+<p class="src">最終確認: 2026-09-08 時点のリポジトリの最新コミット</p>
 
 <h2 id="summary">一段落の要約</h2>
 <p>端から端までの経路は存在し、実際に動かした。参加者が注文または依頼を分割する。7 つの MPC プロセスがそれを計算する。3-of-7 の定足数が閾値 zkPI を発行する。Rust VM を動かす 5 台の AvalancheGo 検証者が両脚を原子的に決済し、状態 root（台帳全体の要約ハッシュ）で合意し、リプレイを拒み、再起動した検証者 1 台を同じ root で復旧させる。これはネイティブ実行と復旧ができることの証拠である。独立した組織、WAN、HSM に保管した鍵、監督当局による鍵の生成儀式、法的 finality の制度については証拠にならない。そのどれも、まだ試していない。</p>
@@ -25,8 +25,8 @@ section: docs
 <tr><td>OCLOB から L1 までの分散経路</td><td><span class="pill ok">受入済み · ホスト 1 台、コンテナ 7</span></td><td>make remote-integrated-e2e</td><td>閾値方式の決済ゲートウェイ（現在は研究用ゲートウェイ 1 台が注文を開く）、独立した運営者、本番 API、形式的証明</td></tr>
 <tr><td>DeKYX</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>発行者のガバナンス、失効の運用、発行者にも連結できない資格（BBS+/CL アダプタ）</td></tr>
 <tr><td>DeCCP</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>クロスマージン、保証の部分的な遷移、法的な更改</td></tr>
-<tr><td>Aethel</td><td><span class="pill ok">実装済み · 8 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コードの外側の課題: 法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
-<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。基盤 crate は NIST ACVP ベクタで検査</td><td>リリース rev の固定、lock ファイルの再生成、ゲートの再実行、main への統合（2026 年 9 月 7 日の週を目標）。ZK の関係式は古典暗号のまま。WAN、HSM、FIPS、性能比較は未実施。<a href="post-quantum.html">詳細</a></td></tr>
+<tr><td>Aethel</td><td><span class="pill ok">実装済み · 12 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コードの外側の課題: 法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
+<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。基盤 crate は NIST ACVP ベクタで検査</td><td>ZK の関係式は古典暗号のまま。WAN、HSM、FIPS 認証、外部監査は未実施。性能は 2026-09-07（プリミティブ）と 2026-09-08（配置済みイメージ）に計測した。<a href="post-quantum.html">詳細</a></td></tr>
 <tr><td>企業向け PoC ガイド（日本語）</td><td><span class="pill ok">執筆済み</span></td><td>—</td><td>企業が自社のハードウェアで行う評価</td></tr>
 <tr><td>形式的な安全性定義と証明</td><td><span class="pill no">未受入</span></td><td>入力検査の健全性、責任者の名指し、秘匿性は証明済み。MPC は仮定。合成は論証のみ</td><td>UC での扱い。OCLOB の安全性定義</td></tr>
 <tr><td>第三者監査</td><td><span class="pill no">なし</span></td><td>内部レビュー 2 回、所見を記録</td><td>独立した暗号・Rust・ホスト VM・統合の監査</td></tr>
@@ -38,7 +38,7 @@ section: docs
 <p><strong>OCLOB のリリースゲート</strong>: Rust の fmt、clippy、全 crate のテスト、React Flow の型検査とビルド、実物の MP-SPDZ、zkPI、DeFMI の DvP、正規形での読み戻し、リプレイの拒否。これらを遠隔の Linux コンテナ上で一度に実行する。開発用の Mac ではビルドもテストもしない。</p>
 
 <h2 id="p0">本番を阻むもの</h2>
-<div class="note"><strong>健全性の問題。2026-09-07 に発見し、同日に修正した。</strong> 5 か所の検証器が、値の部分を 0 に固定すべきところで、一般の開封証明を使っていた。該当箇所は、登録簿との照合証明、bit 分解の範囲証明とその閾値版の連結（zkPI が運び、閾値 DvP パッケージが検査する範囲証明）、quote proof の「勝者の commitment が公開値に開く」段、rule audit（値付け規則の監査）の等値の段である。テストで偽造が 2 件成立した。誤った総額に対する照合証明が受理された。300 への commitment が 8 ビットの範囲証明を通った。同日中に次の修正を行った。全箇所を、値が 0 であることを固定した開封証明に移した。閾値の組み立てには、どのノードの nonce も値の成分を持たない零関係（値の部分が 0 であることの証明）を加えた。rule audit の不等値は、逆元を 1 への commitment に固定して証明する形にした。偽造は、3 つの crate のコピー（zkpi、defmi、qomm）と耐量子統合ブランチの回帰テストにした。変更前に発行された証明は検証を通らない。テストを含む所見の記録は決済リポジトリにある。<a href="cryptography.html#reconcile">暗号技術の使い方</a>を参照。</div>
+<div class="note"><strong>健全性の問題。2026-09-07 に発見し、同日に修正した。</strong> 5 か所の検証器が、値の部分を 0 に固定すべきところで、一般の開封証明を使っていた。該当箇所は、登録簿との照合証明、bit 分解の範囲証明とその閾値版の連結（zkPI が運び、閾値 DvP パッケージが検査する範囲証明）、quote proof の「勝者の commitment が公開値に開く」段、rule audit（値付け規則の監査）の等値の段である。テストで偽造が 2 件成立した。誤った総額に対する照合証明が受理された。300 への commitment が 8 ビットの範囲証明を通った。同日中に次の修正を行った。全箇所を、値が 0 であることを固定した開封証明に移した。閾値の組み立てには、どのノードの nonce も値の成分を持たない零関係（値の部分が 0 であることの証明）を加えた。rule audit の不等値は、逆元を 1 への commitment に固定して証明する形にした。偽造は、zkpi にある唯一の所有 crate で回帰テストにした。修正はすべてのリポジトリの <code>main</code> に入っている。変更前に発行された証明は検証を通らない。テストを含む所見の記録は決済リポジトリにある。<a href="cryptography.html#reconcile">暗号技術の使い方</a>を参照。</div>
 <ol>
   <li><strong>単一の当事者では開けない決済権限。</strong> OCLOB の研究用ゲートウェイは、参加者の固定長の決済権限を単独で復号している。本番には、閾値復号か、MPC ノードによる zkPI の共同生成が必要である。</li>
   <li><strong>暗号上だけでなく現実にも独立していること。</strong> k-of-n は算術の性質である。7 つの運営者、7 台のホスト、7 つの鍵保管庫、7 つの障害領域は現実世界の性質であり、どれもまだ整えていない。</li>

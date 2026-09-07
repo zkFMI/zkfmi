@@ -116,18 +116,18 @@ sequenceDiagram
 </tbody></table></div>
 
 <h2 id="repos">リポジトリと crate</h2>
-<p>リポジトリは 8 つある。最初の 3 つは一つの研究用ツリーから生成した。そのため配置は揃っているが、同じ crate が複数のリポジトリに入っている。下の表では crate を層の名前で示す。層の名前は、crate を一つの所有者にまとめる統合の後に使う名前でもある。現在のマニフェストに書かれているパッケージ名は表の下に示す。その一部は、このスタックで最初に作った市場の名前を接頭辞としていまも持つ。接頭辞は経緯を示すだけで、依存関係を意味しない。2026-09-07 以降、依存関係に循環はない。zkfmi-crypto ← zkpi ← defmi ← qomm の順に依存し、OCLOB と Aethel がその三つを使う。そのため各リポジトリは、他のリポジトリを変更不能な rev（コミット）で固定できる。残りのリポジトリは独立したワークスペースで、外部とのつなぎ目はポート（差し替えできる接続口）として明示している。</p>
+<p>リポジトリは 8 つある。最初の 3 つは一つの研究用ツリーから生成したので、配置は揃っている。2026-09-07 以降、各 crate の所有者は一つに定まり、重複していたコピーは削除した。下の表では crate を層の名前で示す。現在のマニフェストに書かれているパッケージ名は表の下に示す。その一部は、このスタックで最初に作った市場の名前を接頭辞としていまも持つ。接頭辞は経緯を示すだけで、依存関係を意味しない。2026-09-07 以降、依存関係に循環はない。zkfmi-crypto ← zkpi ← defmi ← qomm の順に依存し、OCLOB と Aethel がその三つを使う。そのため各リポジトリは、他のリポジトリを変更不能な rev（コミット）で固定できる。残りのリポジトリは独立したワークスペースで、外部とのつなぎ目はポート（差し替えできる接続口）として明示している。</p>
 <div class="table-wrap"><table>
 <thead><tr><th>リポジトリ</th><th>役割</th><th>主な crate（層の名前）</th><th>依存先</th></tr></thead>
 <tbody>
-<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図、証明のガジェット、委員会側の通信、MPC エンジン</td><td><code>zkfmi-zk</code>、<code>zkpi</code>、<code>zkpi-proofs</code>。2026-09-07 からは通信、MPC エンジン、監査受領証、値付け規則の言語、シミュレータ、計測の各 crate も含む（qomm から移動、名前は変えていない）</td><td>zkfmi-crypto、curve25519-dalek、bulletproofs、frost-ristretto255、MP-SPDZ（外部）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図、証明のガジェット、委員会側の通信、MPC エンジン</td><td><code>zkfmi-zk</code>、<code>zkpi</code>、<code>zkpi-proofs</code>、<code>zkpi-harness</code>、<code>qomm-batch-audit</code>。2026-09-07 からは通信、MPC エンジン、監査受領証、値付け規則の言語、シミュレータ、計測の各 crate も含む（qomm から移動、名前は変えていない）</td><td>zkfmi-crypto、curve25519-dalek、bulletproofs、frost-ristretto255、MP-SPDZ（外部）</td></tr>
 <tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>決済台帳と Avalanche VM</td><td><code>defmi</code>、<code>defmi-avalanche-vm</code>、<code>zkpi-defmi-sdk</code>、<code>defmi-harness</code></td><td>zkpi、dekyx</td></tr>
-<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-law</code>、<code>qomm-demo</code>、<code>qomm-harness</code></td><td>zkpi、defmi</td></tr>
-<tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>注文を見ない板</td><td><code>oclob-core</code>、<code>oclob-edge</code>、<code>oclob-node</code>、<code>oclob-ordering</code>、<code>oclob-mpc</code>、<code>oclob-settlement</code></td><td>dekyx、zkPI/DeFMI SDK、MP-SPDZ</td></tr>
-<tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>資格のクレデンシャル</td><td><code>dekyx-core</code>、<code>dekyx-aethel</code></td><td>なし</td></tr>
-<tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>清算の状態機械</td><td><code>deccp-core</code>、<code>deccp-aethel</code></td><td>なし（ポート経由）</td></tr>
-<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と、同じ並びの crate 7 つ</td><td>zkpi、defmi、qomm、dekyx、deccp</td></tr>
-<tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td>進行中</td><td>なし</td></tr>
+<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-law</code>、<code>qomm-demo</code>、<code>qomm-harness</code></td><td>zkfmi-crypto、zkpi、defmi、deccp-core、dekyx-core</td></tr>
+<tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>注文を見ない板</td><td><code>oclob-core</code>、<code>oclob-edge</code>、<code>oclob-node</code>、<code>oclob-ordering</code>、<code>oclob-mpc</code>、<code>oclob-settlement</code></td><td>zkfmi-crypto、dekyx、zkPI/DeFMI SDK、MP-SPDZ</td></tr>
+<tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>資格のクレデンシャル</td><td><code>dekyx-core</code></td><td>zkfmi-crypto（それ以外はポート経由のみ）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>清算の状態機械</td><td><code>deccp-core</code></td><td>zkfmi-crypto（それ以外はポート経由のみ）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と、同じ並びの crate 11 個。アダプタ <code>aethel-deccp</code>、<code>aethel-dekyx</code>、<code>aethel-zkpi</code>、<code>aethel-defmi-host</code> を含む</td><td>zkpi、defmi、qomm、dekyx、deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td><code>zkfmi-crypto</code>（単一パッケージ）</td><td>なし</td></tr>
 </tbody></table></div>
 <details><summary>現在のマニフェスト上のパッケージ名</summary><p>2026-09-07 から、上の層の名前はそのままパッケージ名である。例外は三つ。<code>zkpi-proofs</code> はまだ <code>qomm-proofs</code> で、委員会側の通信もまだ <code>qomm-transport</code> である。どちらも市場側の半分を含んでいて、crate を分割するときに qomm へ戻す。分割はモジュールのパスを変えるので、最後に行う。Avalanche VM のパッケージは <code>defmi-avalanche-vm</code> だが、バイナリは起動スクリプトが期待する <code>qomm-avalanche-vm</code> という名前のままである。このサイトのコマンドは、いま動く名前で書いてある。計画は各リポジトリの crate 配置の覚書に書いてある。</p></details>
 

@@ -1,11 +1,11 @@
 ---
 title: 耐量子化への移行
-description: zkFMI スタックの耐量子暗号の現在地。共通基盤 zkfmi-crypto（Ed25519 + ML-DSA-65 のハイブリッド署名、X25519 + ML-KEM-768 の鍵交換、正規化した署名入力、用途に束縛した鍵）、P0 から P6 の計画、統合ブランチ上でホスト 1 台のネイティブ受入を通過したもの、古典のまま残るもの、main に届く前に未了のもの。
+description: zkFMI スタックの耐量子暗号の現在地。共通基盤 zkfmi-crypto（Ed25519 + ML-DSA-65 のハイブリッド署名、X25519 + ML-KEM-768 の鍵交換、正規化した署名入力、用途に束縛した鍵）、P0 から P6 の計画、ホスト 1 台のネイティブ受入を通過し、いまは 8 リポジトリすべての `main` にあるもの、移行がバイト数とミリ秒でいくら掛かるか、古典のまま残るもの。
 path: docs/post-quantum.html
 section: docs
 ---
 <h1>耐量子化への移行</h1>
-<p class="lede">この移行は、古典方式と耐量子方式を組にして使う（ハイブリッド）。どちらか一方でも検証に通らなければ受理しない（fail-closed）。資金を守る古典の署名と鍵交換のすべてに、耐量子の相方を付ける。両方の検証が通ったときだけ受理する。古典方式しか出せない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にある。2026-09-06 に、ホスト 1 台でのネイティブ受入を通過した。2026-09-07 には、零関係の開封証明（commitment の値が 0 であることを示す開封）の修正を取り込んだ後にもう一度通過した。同じ 2026-09-07 に、スタック側の crate（Rust のライブラリ単位）を zkPI へ移し、DeFMI と QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の rev（git のリビジョン）で固定した。その結果、8 リポジトリすべての <code>main</code> が受入済みの状態になった。</p>
+<p class="lede">この移行は、古典方式と耐量子方式を組にして使う（ハイブリッド）。どちらか一方でも検証に通らなければ受理しない（fail-closed）。資金を守る古典の署名と鍵交換のすべてに、耐量子の相方を付ける。両方の検証が通ったときだけ受理する。古典方式しか出せない相手は拒否する。作業は 8 リポジトリすべての <code>main</code> にある。2026-09-06 に、ホスト 1 台でのネイティブ受入を通過した。2026-09-07 には、零関係の開封証明（commitment の値が 0 であることを示す開封）の修正を取り込んだ後にもう一度通過した。同じ 2026-09-07 に、スタック側の crate（Rust のライブラリ単位）を zkPI へ移し、DeFMI と QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の rev（git のリビジョン）で固定した。その結果、8 リポジトリすべての <code>main</code> が受入済みの状態になった。</p>
 <p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · 2026-09-08（夕方）時点の状況</p>
 
 <h2 id="status">状況の一覧</h2>
@@ -14,7 +14,7 @@ section: docs
 <tbody>
 <tr><td>基盤 crate <code>zkfmi-crypto</code>（P0）</td><td><span class="pill ok">実装済み · ゲート通過</span></td><td>Linux ホスト 1 台、公式の Rust 1.97 イメージ上で fmt、strict clippy、release テストを通した。テストは 45 本で、NIST ACVP のテストベクタ 8 本と RFC 8032 の検査を含む</td></tr>
 <tr><td>7 リポジトリの暗号使用箇所の棚卸し（P0）</td><td><span class="pill ok">完了</span></td><td>507 ファイル、暗号プリミティブの項目 1,032 件。独立に行った grep と照合し、欠落 0、余剰 0</td></tr>
-<tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>ネイティブ実行を 2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）に行った。シナリオは市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
+<tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part"><code>main</code> で受入済み · ホスト 1 台</span></td><td>ネイティブ実行を 2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）に行った。シナリオは市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
 <tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill ok">完了 · 2026-09-07</span></td><td>通信、MPC エンジン、監査、DSL、シミュレータ、計測の各 crate を zkPI に移し、DeFMI ⇄ QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の git rev で固定し、隣の checkout を重ねる overlay は使わない。9 ワークスペースすべてが lock 固定の検査を通り、固定後の配置でネイティブ受入も通った。8 つの <code>main</code> がすべて受入済みの状態を持つ。<a href="architecture.html#repos">全体構成ページ</a>を参照。</td></tr>
 <tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
 <tr><td>性能比較</td><td><span class="pill ok">計測済み · 1 ホスト · 2 回</span></td><td>基本演算は 2026-09-07 に、公開していた OCLOB の画像で端から端までを 2026-09-08 に計測。最初のハイブリッド画像は注文 1 件あたり、板に残る注文で +56 ms、約定する注文で +74 ms（中央値）。エンジン受領証の検査をプロセスごと 1 回にし、7 プロセスを回をまたいで維持したあとは、ハイブリッド画像が従来版より 177 ms と 202 ms 速い。詳細は下</td></tr>
@@ -74,7 +74,7 @@ section: docs
 
 <h2 id="phases">計画と、各フェーズの現在地</h2>
 <div class="table-wrap"><table>
-<thead><tr><th>フェーズ</th><th>対象</th><th>統合ブランチで確認したこと</th></tr></thead>
+<thead><tr><th>フェーズ</th><th>対象</th><th><code>main</code> で確認したこと</th></tr></thead>
 <tbody>
 <tr><td><strong>P0</strong> 棚卸しと基準値</td><td>暗号を使うすべての箇所の機械可読な一覧。各形式にスイート、鍵、版のフィールドを追加。基準値を計測</td><td>棚卸しは完了。基盤 crate はゲート通過。古典の基準値は、引き続き<a href="measurements.html">計測値のページ</a>の値を使う</td></tr>
 <tr><td><strong>P1</strong> トランスポート</td><td>常設接続のすべてでハイブリッド鍵交換。注文ごとの KEM はしない。古典方式への降格は拒否</td><td>QOMM、OCLOB、DeFMI の接続は TLS 1.3 を要求する。鍵交換は <code>X25519MLKEM768</code>、証明書の鍵とチェーンの署名は ML-DSA-65 で、トラストアンカー（信頼の起点となる証明書）も含む。MP-SPDZ のソケットアダプタも、同じグループ・版・署名の許可リストをホスト名検証付きで強制する。チケットとセッションキャッシュは無効にした。OpenSSL 3.5 を vendor（同梱）し、ベースイメージは変えない。note の開封値を受取人へ届ける封筒は、ハイブリッド KEM と AES-256-GCM を使い、受取人、用途、スイート、版に束縛する</td></tr>
@@ -93,7 +93,7 @@ section: docs
   <li><strong>lifecycle</strong>: 約定 3 件、新しい耐量子鍵 12 本、応答署名 6 本。部分約定の後に順序付きで取消し、厳密なリプレイと再起動を含む。期限切れによる解放。7 ノードの再起動チェックポイント。</li>
   <li><strong>P6 復旧</strong>: 新たに解決した不変な依存関係の下での復旧テスト 2 件。</li>
 </ul>
-<p>この実行で欠陥が 2 件見つかり、通過前に修正した。一つは、再試行ごとに ML-DSA 署名を作り直していた受領証で、署名済みの受領証を永続化して再送するようにした。もう一つは、部分約定の後に返金の開封値が新しい操作識別子で再認可されていたもので、元の請求コンテキストを保持するようにした。ブランチ上の補助ゲートは次のとおり。OCLOB のテスト 125 件、zkPI・DeKYX・DeCCP・P5 の各ワークスペースにわたるテスト 279 件、QOMM のトランスポートとデモのテスト、Aethel のエンドツーエンド。すべて strict clippy 付き。</p>
+<p>この実行で欠陥が 2 件見つかり、通過前に修正した。一つは、再試行ごとに ML-DSA 署名を作り直していた受領証で、署名済みの受領証を永続化して再送するようにした。もう一つは、部分約定の後に返金の開封値が新しい操作識別子で再認可されていたもので、元の請求コンテキストを保持するようにした。補助ゲートは次のとおり。OCLOB のテスト 125 件、zkPI・DeKYX・DeCCP・P5 の各ワークスペースにわたるテスト 279 件、QOMM のトランスポートとデモのテスト、Aethel のエンドツーエンド。すべて strict clippy 付き。</p>
 
 <h2 id="classical">古典のまま残るもの、その理由</h2>
 <p>この移行が扱うのは署名と鍵交換である。決済層が依拠するゼロ知識の関係式は扱わない。まだ扱えないからである。Pedersen commitment、Bulletproofs の範囲証明、one-of-many ring、quote proof、指図への FROST 閾値署名は、いずれも離散対数の困難さに立っている。議論の全体は<a href="binding.html#pq">束縛のページ</a>にある。要点は次のとおり。commitment の秘匿（hiding）は無条件で、量子計算機を持つ敵にも耐える。束縛（binding）は耐えない。それが最初に効いてくる場所は、メイカーのポリシー commitment である。この commitment は、ポリシーの有効期間中すべての見積に対して開かれる。VOLE-in-the-Head の commitment は実装して計測した。広い体の上で Pedersen の 5.9× から 11× のコストで、しかも一回しか開けない。格子 commitment は Shamir の再構成を壊す。未解決の問いは、ランダムオラクルだけに依拠し、何度でも開ける commitment があるか、である。それが存在するまで、このスタックの耐量子の保証は「誰が署名したか」「誰がチャネルを読めるか」についてのものであり、証明についてのものではない。</p>

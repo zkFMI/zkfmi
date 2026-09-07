@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>DeCCP: decentralized central counterparty</h1>
 <p class="lede">"Central" describes the logical role: obligations are accepted, netted, guaranteed and resolved through one authoritative clearing state. "Decentralized" describes control: material changes require a threshold of independent authorities, and settlement is verified against DeFMI rather than trusted to one operator. The crates do not custody assets and are not, by themselves, a licensed clearing house.</p>
-<p class="src">source: deccp/README.md, defmi/DEFMI.md §4.2 · crates deccp-core, deccp-aethel</p>
+<p class="src">source: deccp/README.md, defmi/DEFMI.md §4.2 · crate deccp-core (the only workspace member); the Aethel adapter is <code>aethel-deccp</code> in the aethel repository</p>
 
 <h2 id="flow">Clearing flow</h2>
 <pre class="mermaid">
@@ -42,7 +42,7 @@ flowchart LR
 <p>For every asset, the sum of net positions must remain zero. The resulting proposal has a canonical digest so the settlement receipt cannot be moved to a different cycle or set of legs. The cryptographic cost of each mode on committed balances is on the <a href="defmi.html#netting">DeFMI page</a>; the finding that matters is that novation is free arithmetically (two multiplications, no proof) and that a cleared cycle's cost stops growing with the number of trades, at <strong>0.53 µs per trade</strong> for the novation itself.</p>
 
 <h2 id="guarantee">Guarantee facilities</h2>
-<p>The public-value path tracks facility capacity, reserved, consumed and individual holds, with compare-and-swap sequence checks so two concurrent requests cannot spend the same remaining capacity. The confidential path stores a coverage commitment and a DeFMI state digest rather than a plaintext amount; reserve, release and claim name the prior sequence and digest, and the DeFMI adapter must verify the hidden amount relation, capacity bound, transition proof and final receipt before DeCCP advances. <code>deccp-aethel</code> maps Aethel guarantee lifecycle events to these transitions without importing Aethel's domain crate.</p>
+<p>The public-value path tracks facility capacity, reserved, consumed and individual holds, with compare-and-swap sequence checks so two concurrent requests cannot spend the same remaining capacity. The confidential path stores a coverage commitment and a DeFMI state digest rather than a plaintext amount; reserve, release and claim name the prior sequence and digest, and the DeFMI adapter must verify the hidden amount relation, capacity bound, transition proof and final receipt before DeCCP advances. Aethel's <code>aethel-deccp</code> adapter maps Aethel guarantee lifecycle events onto these transitions; the mapping lives in the aethel repository and imports <code>deccp-core</code>, so DeCCP never imports an Aethel crate.</p>
 
 <h2 id="waterfall">Default waterfall</h2>
 <p>A default case records the triggering evidence, the defaulter's available resources, mutualised layers, the CCP's own contribution and the resulting draws. Resolution requires threshold approval and a DeFMI receipt for the exact waterfall context. On the settlement side the tranche ordering is enforced with a committed product pinned to the identity (<code>draw_k × remaining_{k−1} = 0</code>), at about 11 ms per tranche to build and 1.4 ms to verify, once per default. The CCP's capital sits between the defaulting member's fund contribution and the mutualised pool, where CPMI-IOSCO and EMIR put it.</p>
@@ -71,7 +71,7 @@ flowchart TB
     EP --> CORE["deccp-core"]
     IP --> CORE
     DP --> CORE
-    CORE --> A["deccp-aethel<br/>optional guarantee adapter"]
+    A["aethel-deccp (aethel repo)<br/>optional guarantee adapter"] --> CORE
 </pre>
 <p><code>deccp-core</code> has no dependency on Aethel, DeKYX, zkPI or DeFMI crates. A deployment can replace the credential scheme or the settlement network without weakening DeCCP's internal invariants.</p>
 

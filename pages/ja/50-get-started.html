@@ -23,14 +23,14 @@ cargo build --workspace --release --locked</code></pre>
 <h2 id="vectors">指図のテストベクタを検査する</h2>
 <pre><code>zkpi-verify --check-vectors artifacts/zkpi_vectors
 zkpi-verify --self-test</code></pre>
-<p class="muted">バイナリとパッケージの名前には、crate の統合が済むまで、経緯上の <code>qomm-</code> 接頭辞が残る。このページのコマンドは、いま動く名前で書いてある。</p>
+<p class="muted">ライブラリ 2 つ（<code>qomm-proofs</code>、<code>qomm-transport</code>）とバイナリ 1 つ（<code>qomm-avalanche-vm</code>）には、経緯上の <code>qomm-</code> 接頭辞が残る。それ以外のパッケージは、いまは層の名前を持つ。このページのコマンドは、いま動く名前で書いてある。</p>
 <p>終了コードは、0 が受理、1 が拒否、2 が判定できなかったことを表す。受理されるベクタは、復号して再符号化したときに元と同じバイト列に戻らなければならない。<code>--vectors &lt;dir&gt;</code> でベクタを作り直すのは、形式が変わったときだけである。検査結果が食い違ったからという理由で作り直してはならない。</p>
 
 <h2 id="l1">検証者 5 台の L1 ゲートを走らせる</h2>
 <p><code>defmi/</code> で実行する。承認済みの版の AvalancheGo と avalanche-network-runner を先に用意しておく。</p>
-<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p defmi-avalanche-vm -p qomm-harness
+<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p defmi-avalanche-vm -p defmi-harness
 # launchers and configuration under avalanche/defmivm/
-cargo run --release --manifest-path rust/Cargo.toml -p qomm-harness --bin run_avalanche_l1_acceptance</code></pre>
+cargo run --release --manifest-path rust/Cargo.toml -p defmi-harness --bin run_avalanche_l1_acceptance</code></pre>
 <p>実行すると <code>artifacts/avalanche_l1_acceptance.json</code> が書き出される。<a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">企業向け PoC ガイド</a>（日本語）は、次の手順を順に案内する。ソースの固定、VM のビルド、ネットワークの起動、取引シナリオ、追加の署名なしで通る QOMM の経路、必須の拒否試験と障害試験、残すべき証拠、合格条件。その先には、企業が自分で評価するための章が続く。ハードウェアの見積、プロセスの分離、ネットワーク設計、genesis、鍵管理、バックアップ、監視、障害注入である。</p>
 
 <h2 id="demo">QOMM の座席デモを試す</h2>

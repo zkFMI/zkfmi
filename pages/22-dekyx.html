@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>DeKYX: decentralized know your X</h1>
 <p class="lede">A reusable identity and participation-qualification layer for systems that must verify eligibility without learning more identity than one action needs. X may be a person, a legal entity, a device, a service or an autonomous agent. The application never receives the holder's secret; it receives a verified, scoped result.</p>
-<p class="src">source: dekyx/README.md · crates dekyx-core, dekyx-aethel · research implementation, not certified as a KYC/KYB system</p>
+<p class="src">source: dekyx/README.md · crate dekyx-core; the Aethel binding is <code>aethel-dekyx</code> in the aethel repository · research implementation, not certified as a KYC/KYB system</p>
 
 <h2 id="flow">Credential and presentation flow</h2>
 <pre class="mermaid">
@@ -61,11 +61,12 @@ sequenceDiagram
 <pre class="mermaid">
 flowchart TB
     CORE["dekyx-core<br/>credential and presentation verification"]
-    AA["dekyx-aethel<br/>optional artifact binding"]
+    AA["aethel-dekyx (aethel repo)<br/>optional artifact binding"]
     A["Aethel<br/>credit and guarantee eligibility"]
     C["DeCCP<br/>clearing-member admission"]
     O["OCLOB, QOMM, others<br/>policy-specific eligibility"]
-    CORE --> AA --> A
+    AA --> CORE
+    AA --> A
     CORE --> C
     CORE --> O
     Z["zkPI / DeFMI"] -. "no direct credential dependency" .-> CORE

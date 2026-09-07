@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>DeKYX: 分散型 Know Your X</h1>
 <p class="lede">DeKYX は、身元と参加資格を扱う共通の層である。相手の資格は確かめたいが、その行為に必要な範囲を超えて身元を知りたくないシステムのために作った。X は人でも、法人でも、機器でも、サービスでも、自律エージェントでもよい。業務システムが受け取るのは、検証済みで scope（用途の範囲）付きの結果である。保持者の秘密は受け取らない。</p>
-<p class="src">出典: dekyx/README.md · crate: dekyx-core、dekyx-aethel · 研究実装であり、KYC/KYB システムとしての認証は受けていない</p>
+<p class="src">出典: dekyx/README.md · crate: dekyx-core。Aethel との結び付けは aethel リポジトリ側の <code>aethel-dekyx</code> · 研究実装であり、KYC/KYB システムとしての認証は受けていない</p>
 
 <h2 id="flow">クレデンシャルと提示の流れ</h2>
 <pre class="mermaid">
@@ -61,11 +61,12 @@ sequenceDiagram
 <pre class="mermaid">
 flowchart TB
     CORE["dekyx-core<br/>クレデンシャルと提示の検証"]
-    AA["dekyx-aethel<br/>任意の artifact 束縛"]
+    AA["aethel-dekyx（aethel リポジトリ）<br/>任意の artifact 束縛"]
     A["Aethel<br/>与信と保証の資格"]
     C["DeCCP<br/>清算参加者の受入"]
     O["OCLOB、QOMM ほか<br/>ポリシー別の資格"]
-    CORE --> AA --> A
+    AA --> CORE
+    AA --> A
     CORE --> C
     CORE --> O
     Z["zkPI / DeFMI"] -. "クレデンシャルへの直接依存なし" .-> CORE
