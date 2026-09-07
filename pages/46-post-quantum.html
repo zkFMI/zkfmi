@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>Post-quantum migration</h1>
 <p class="lede">The migration is hybrid and fail-closed: every classical signature or key exchange that protects money gains a post-quantum partner, both must verify, and a peer that offers only the classical suite is refused. The work is on integration branches across all eight repositories and passed a single-host native acceptance on 2026-09-06 and again on 2026-09-07 after the zero-relation opening fix was merged in. On 2026-09-07 the dependency cycle between DeFMI and QOMM was broken by moving the stack crates to zkPI, every repository was pinned by immutable revision, and all eight repositories carry the accepted state on <code>main</code>.</p>
-<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json · status as of 2026-09-07</p>
+<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · status as of 2026-09-08</p>
 
 <h2 id="status">Status at a glance</h2>
 <div class="table-wrap"><table>
@@ -17,7 +17,8 @@ section: docs
 <tr><td>Integration P1 to P6 across QOMM, zkPI, DeFMI, OCLOB, DeKYX, DeCCP, Aethel</td><td><span class="pill part">accepted on branches · 1 host</span></td><td>native runs 2026-09-06 (exit 0, 15 min 07 s) and 2026-09-07 (PASS, after merging the zero-relation opening fix): market, finality, lifecycle, P6 recovery; source hash-identical before and after each run</td></tr>
 <tr><td>Release pinning, lock regeneration, gate rerun, merge to <code>main</code></td><td><span class="pill ok">done · 2026-09-07</span></td><td>the DeFMI ⇄ QOMM cycle was broken by moving the transport, MPC engine, audit, DSL, simulator and measurement crates to zkPI; every repository pins the others by immutable git revision with no sibling overlays; all nine workspaces pass the locked check and the native acceptance passed on the pinned layout; all eight <code>main</code> branches carry the accepted state. See the <a href="architecture.html#repos">architecture page</a>.</td></tr>
 <tr><td>Zero-knowledge relations (commitments, range proofs, rings, quote proof, FROST)</td><td><span class="pill no">classical</span></td><td>by design for now; see below</td></tr>
-<tr><td>Independent operators, WAN, HSM, FIPS validation, performance comparison, external audit</td><td><span class="pill no">none</span></td><td>the acceptance record lists each as absent</td></tr>
+<tr><td>Performance comparison</td><td><span class="pill part">measured · 1 host · 1 run</span></td><td>primitives on 2026-09-07; the two deployed OCLOB images end to end on 2026-09-08: +56 ms per resting order and +74 ms per filled order at the median, +16 ms and +76 ms at p95, against the plan's 5 ms p95 target; see below</td></tr>
+<tr><td>Independent operators, WAN, HSM, FIPS validation, external audit</td><td><span class="pill no">none</span></td><td>the acceptance record lists each as absent</td></tr>
 </tbody></table></div>
 
 <h2 id="foundation">The foundation: zkfmi-crypto</h2>
@@ -55,8 +56,19 @@ section: docs
 <tr><td>encapsulate</td><td class="num">48.9 µs</td><td class="num">37.0 µs</td><td class="num">88.1 µs</td><td class="num">1.8×</td></tr>
 <tr><td>decapsulate</td><td class="num">37.0 µs</td><td class="num">40.4 µs</td><td class="num">79.6 µs</td><td class="num">2.2×</td></tr>
 </tbody></table></div>
-<p>A hybrid signature takes 0.36 ms to make and 0.17 ms to check on one core. A settlement end to end is measured in tens of milliseconds to seconds, so the migration does not show in latency. It shows in bytes: each signed object grows by 3,309 B per signature and 1,952 B per embedded public key. Single-core verification throughput falls from about 26,000 to about 5,800 per second. Encapsulation and decapsulation, which are on the path of every recipient envelope, less than double. ML-DSA-65 signing has a long tail: p90 is 951 µs against the 340 µs median, from the rejection sampling the standard specifies. Every hybrid row is the sum of its two components to within 5 µs. The sizes the bench produced matched the table above in every row.</p>
+<p>A hybrid signature takes 0.36 ms to make and 0.17 ms to check on one core. A settlement end to end is measured in tens of milliseconds to seconds, so the primitives alone do not show in latency; what the whole path adds is measured in the next section. On the wire the migration shows in bytes: each signed object grows by 3,309 B per signature and 1,952 B per embedded public key. Single-core verification throughput falls from about 26,000 to about 5,800 per second. Encapsulation and decapsulation, which are on the path of every recipient envelope, less than double. ML-DSA-65 signing has a long tail: p90 is 951 µs against the 340 µs median, from the rejection sampling the standard specifies. Every hybrid row is the sum of its two components to within 5 µs. The sizes the bench produced matched the table above in every row.</p>
 
+
+<h2 id="timing-e2e">What the time costs end to end</h2>
+<p>Measured on 2026-09-08 on an idle 64-core host with the two images that have served the public OCLOB demo: the classical image deployed until 2026-09-07 (MP-SPDZ default TLS with RSA-2048 certificates, Ed25519 application signatures) and the hybrid image deployed since. 20 rounds per image after 2 warm-up rounds, alternating images every round; a round is a maker sell that rests, then a taker buy that fills it. Prediction, run and review are in docs/PQC_E2E_LATENCY_2026-09-08.md in zkfmi-crypto. One run.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>order leg</th><th class="num">classical, median</th><th class="num">hybrid, median</th><th class="num">added, median</th><th class="num">added, p95</th></tr></thead>
+<tbody>
+<tr><td>maker order that rests (no fill)</td><td class="num">1,211.6 ms</td><td class="num">1,268.0 ms</td><td class="num">+56.4 ms (+4.7%)</td><td class="num">+16.3 ms</td></tr>
+<tr><td>taker order that fills and settles</td><td class="num">1,707.2 ms</td><td class="num">1,781.0 ms</td><td class="num">+73.8 ms (+4.3%)</td><td class="num">+76.3 ms</td></tr>
+</tbody></table></div>
+<p>Where the time goes. Every order spawns the 7 MP-SPDZ parties afresh, and each party opens 12 mutually authenticated TLS connections, so one round performs 42 handshakes. One mutual handshake, measured with the same OpenSSL 3.5.5 over the loopback: 1.07 ms with the RSA-2048 certificates the classical image used, 0.56 ms with Ed25519 certificates, 2.19 ms with ML-DSA-65 certificates and X25519MLKEM768. ML-DSA-65 signing at 0.69 ms per signature in OpenSSL 3.5.5 is the largest term, about +13 ms per round. The hybrid image also re-reads and hashes the 45 MB of engine binaries against the .pqc-tls.sha256 receipt on every round, about 35 ms; the migration added that check, and it runs before the MPC timer starts. The hybrid application signatures (1 plan, 7 party receipts, 1 node receipt, 5 transition attestations, a 3-node quorum) add an estimated 10 to 20 ms. The remaining 30 to 40 ms is the non-cryptographic difference between the two builds and was not separated.</p>
+<p>Against the plan: throughput on this path is 95.5% and 95.9% of the classical rate, inside the 95% target by half a point; the added latency is 16 ms and 76 ms at p95 against a 5 ms target, so that target is not met as deployed. The prediction written before the run expected a difference between −10 and +5 ms and was wrong on two counts: it had the engine receipt check running once at start-up, and it had ML-DSA-65 signing faster than RSA-2048 signing, which in OpenSSL 3.5.5 it is not (0.69 ms against 0.27 ms). Hashing the engine artifacts once per process instead of once per round would recover about 35 ms; keeping the 7 parties alive between rounds would remove the 42 handshakes from both variants. Neither has been done.</p>
 
 <h2 id="phases">The plan, and where each phase stands</h2>
 <div class="table-wrap"><table>
@@ -89,7 +101,7 @@ section: docs
 <ul>
   <li>Single host, one administrator. No independent operators, no WAN, no physical HSM.</li>
   <li>No FIPS validation of the backends and no external audit.</li>
-  <li>No performance comparison yet: the plan's throughput and latency targets (≥95% of baseline, a p95 overhead target of 5 ms) are unmeasured, and the seven-process network fault tests are not seven-node WAN evidence.</li>
+  <li>The performance comparison is one run on one idle host with the two deployed OCLOB images over the loopback. The plan's throughput target (≥95% of baseline) is met by half a point; its latency target (a p95 overhead of 5 ms) is not: +16 ms on a resting order and +76 ms on a filled order at p95. The seven-process network fault tests are not seven-node WAN evidence.</li>
   <li>The P5 prover depends on an upstream alpha (Miden 0.32) and proves a deliberately narrow statement.</li>
 </ul>
 

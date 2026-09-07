@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>耐量子化への移行</h1>
 <p class="lede">この移行は、古典方式と耐量子方式を組にして使う（ハイブリッド）。どちらか一方でも検証に通らなければ受理しない（fail-closed）。資金を守る古典の署名と鍵交換のすべてに、耐量子の相方を付ける。両方の検証が通ったときだけ受理する。古典方式しか出せない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にある。2026-09-06 に、ホスト 1 台でのネイティブ受入を通過した。2026-09-07 には、零関係の開封証明（commitment の値が 0 であることを示す開封）の修正を取り込んだ後にもう一度通過した。同じ 2026-09-07 に、スタック側の crate（Rust のライブラリ単位）を zkPI へ移し、DeFMI と QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の rev（git のリビジョン）で固定した。その結果、8 リポジトリすべての <code>main</code> が受入済みの状態になった。</p>
-<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json · 2026-09-07 時点の状況</p>
+<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · 2026-09-08 時点の状況</p>
 
 <h2 id="status">状況の一覧</h2>
 <div class="table-wrap"><table>
@@ -17,7 +17,8 @@ section: docs
 <tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>ネイティブ実行を 2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）に行った。シナリオは市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
 <tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill ok">完了 · 2026-09-07</span></td><td>通信、MPC エンジン、監査、DSL、シミュレータ、計測の各 crate を zkPI に移し、DeFMI ⇄ QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の git rev で固定し、隣の checkout を重ねる overlay は使わない。9 ワークスペースすべてが lock 固定の検査を通り、固定後の配置でネイティブ受入も通った。8 つの <code>main</code> がすべて受入済みの状態を持つ。<a href="architecture.html#repos">全体構成ページ</a>を参照。</td></tr>
 <tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
-<tr><td>独立した運営者、WAN、HSM、FIPS 認証、性能比較、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録は、これらをいずれも未実施と記している</td></tr>
+<tr><td>性能比較</td><td><span class="pill part">計測済み · 1 ホスト · 1 回</span></td><td>基本演算は 2026-09-07 に、公開していた OCLOB の二つの画像で端から端までを 2026-09-08 に計測。注文 1 件あたり、板に残る注文で +56 ms、約定する注文で +74 ms（中央値）、p95 では +16 ms と +76 ms。計画の目標は p95 で 5 ms。詳細は下</td></tr>
+<tr><td>独立した運営者、WAN、HSM、FIPS 認証、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録は、これらをいずれも未実施と記している</td></tr>
 </tbody></table></div>
 
 <h2 id="foundation">基盤: zkfmi-crypto</h2>
@@ -55,8 +56,19 @@ section: docs
 <tr><td>カプセル化（encapsulate）</td><td class="num">48.9 µs</td><td class="num">37.0 µs</td><td class="num">88.1 µs</td><td class="num">1.8×</td></tr>
 <tr><td>開封（decapsulate）</td><td class="num">37.0 µs</td><td class="num">40.4 µs</td><td class="num">79.6 µs</td><td class="num">2.2×</td></tr>
 </tbody></table></div>
-<p>ハイブリッド署名は、1 コアで作るのに 0.36 ms、確かめるのに 0.17 ms かかる。決済 1 件の端から端までは数十ミリ秒から数秒の単位で計測されているので、この移行は遅延には現れない。現れるのはバイト数である。署名付きの対象はどれも、署名 1 本あたり 3,309 B、埋め込む公開鍵 1 つあたり 1,952 B 大きくなる。1 コアあたりの検証処理量は、毎秒約 26,000 件から約 5,800 件に下がる。カプセル化と開封は受取人向け封筒のすべてが通る経路だが、2 倍にはならない。ML-DSA-65 の署名には長い裾がある。中央値 340 µs に対して p90 は 951 µs で、これは標準が定める棄却サンプリングによる。ハイブリッドの各行は、二つの構成要素の和に 5 µs 以内で一致する。ベンチが出した大きさは、上の表とすべての行で一致した。</p>
+<p>ハイブリッド署名は、1 コアで作るのに 0.36 ms、確かめるのに 0.17 ms かかる。決済 1 件の端から端までは数十ミリ秒から数秒の単位で計測されているので、基本演算だけでは遅延に現れない。経路全体で何 ms 増えるかは次の節で測る。通信路では、移行はバイト数に現れる。署名付きの対象はどれも、署名 1 本あたり 3,309 B、埋め込む公開鍵 1 つあたり 1,952 B 大きくなる。1 コアあたりの検証処理量は、毎秒約 26,000 件から約 5,800 件に下がる。カプセル化と開封は受取人向け封筒のすべてが通る経路だが、2 倍にはならない。ML-DSA-65 の署名には長い裾がある。中央値 340 µs に対して p90 は 951 µs で、これは標準が定める棄却サンプリングによる。ハイブリッドの各行は、二つの構成要素の和に 5 µs 以内で一致する。ベンチが出した大きさは、上の表とすべての行で一致した。</p>
 
+
+<h2 id="timing-e2e">注文 1 件の所要時間はどれだけ増えたか</h2>
+<p>2026-09-08 に、空いている 64 コアのホストで、公開デモの OCLOB を動かしてきた二つの画像を並べて測った。2026-09-07 まで公開していた従来版（MP-SPDZ 標準の TLS、RSA-2048 証明書、アプリ署名は Ed25519）と、それ以降のハイブリッド版である。準備の 2 回のあと各画像 20 回、1 回ごとに画像を交互に切り替えた。1 回は、板に残る maker の売り注文と、それを全量約定させる taker の買い注文の組である。予測、実行、検討は zkfmi-crypto の docs/PQC_E2E_LATENCY_2026-09-08.md にある。計測は一回である。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>注文の種類</th><th class="num">従来版の中央値</th><th class="num">ハイブリッド版の中央値</th><th class="num">増分の中央値</th><th class="num">増分の p95</th></tr></thead>
+<tbody>
+<tr><td>板に残る maker 注文（約定なし）</td><td class="num">1,211.6 ms</td><td class="num">1,268.0 ms</td><td class="num">+56.4 ms（+4.7%）</td><td class="num">+16.3 ms</td></tr>
+<tr><td>約定して決済まで進む taker 注文</td><td class="num">1,707.2 ms</td><td class="num">1,781.0 ms</td><td class="num">+73.8 ms（+4.3%）</td><td class="num">+76.3 ms</td></tr>
+</tbody></table></div>
+<p>増えた時間の内訳。注文ごとに 7 つの MP-SPDZ プロセスを起動し直し、各プロセスは相互認証つきの TLS 接続を 12 本張るので、1 回で 42 回のハンドシェイクが起きる。同じ OpenSSL 3.5.5 でループバック上のハンドシェイク 1 回を測ると、従来版が使っていた RSA-2048 証明書で 1.07 ms、Ed25519 証明書で 0.56 ms、ML-DSA-65 証明書と X25519MLKEM768 で 2.19 ms だった。OpenSSL 3.5.5 の ML-DSA-65 署名は 1 回 0.69 ms で、これが最も大きい項であり、1 回あたりおよそ +13 ms になる。ハイブリッド版はさらに、45 MB のエンジンのバイナリを毎回読み直して .pqc-tls.sha256 の受領証と照合しており、これに約 35 ms かかる。この検査は移行で加えたもので、MPC の計時が始まる前に動く。ハイブリッドのアプリ署名（計画 1 件、参加者の受領証 7 件、ノードの受領証 1 件、遷移の証明 5 件、3 ノードの定足数）は見積もりで 10〜20 ms を足す。残る 30〜40 ms は暗号以外のビルド差で、今回は分けていない。</p>
+<p>計画の目標に対して。この経路の処理量は従来の 95.5% と 95.9% で、目標の 95% を半ポイント上回る。追加の遅延は p95 で 16 ms と 76 ms で、目標の 5 ms を満たしていない。実行前に書いた予測は差を −10〜+5 ms と見ていて、二つの点で外れた。エンジン受領証の検査を起動時の 1 回だけと思っていたこと、ML-DSA-65 の署名が RSA-2048 の署名より速いと見ていたことである。OpenSSL 3.5.5 では 0.69 ms 対 0.27 ms で逆になる。エンジンのハッシュ検査を 1 回ごとではなくプロセスごとに 1 回にすれば約 35 ms 戻る。7 つのプロセスを回をまたいで維持すれば、42 回のハンドシェイクが両方の版から消える。どちらもまだ行っていない。</p>
 
 <h2 id="phases">計画と、各フェーズの現在地</h2>
 <div class="table-wrap"><table>
@@ -89,7 +101,7 @@ section: docs
 <ul>
   <li>ホスト 1 台、管理者 1 人。独立した運営者、WAN、物理 HSM はない。</li>
   <li>バックエンドの FIPS 認証も外部監査もない。</li>
-  <li>性能比較はまだない。計画の処理量と遅延の目標（基準値の ≥95%、p95 のオーバーヘッド目標 5 ms）は未計測である。7 プロセスのネットワーク障害テストは、7 ノードの WAN の根拠にはならない。</li>
+  <li>性能比較は、空いている 1 台のホストで、公開していた OCLOB の二つの画像をループバック上で 1 回測ったものである。計画の処理量の目標（基準値の ≥95%）は半ポイントの差で満たす。遅延の目標（p95 のオーバーヘッド 5 ms）は満たしていない。p95 で、板に残る注文は +16 ms、約定する注文は +76 ms である。7 プロセスのネットワーク障害テストは、7 ノードの WAN の根拠にはならない。</li>
   <li>P5 の証明器は本家の alpha 版（Miden 0.32）に依存し、意図的に狭い命題を証明する。</li>
 </ul>
 
