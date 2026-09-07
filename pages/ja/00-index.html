@@ -1,6 +1,6 @@
 ---
 title: zkFMI — 読めないものを決済する市場基盤
-description: zkFMI は、清算する内容を読まない市場と決済のための研究スタック。証明付き決済指図、commitment でできた決済台帳、注文を見ない市場、匿名の資格、分散型清算機関（CCP）。Rust 実装、計測済み、限界を明記。
+description: zkFMI は、清算する内容を読まずに動く市場と決済のための研究スタック。証明付きの決済指図、commitment だけでできた決済台帳、注文を見ない市場、匿名の資格、分散型の清算機関（CCP）。Rust 実装、計測済み、限界を明記。
 path: index.html
 section: top
 ---
@@ -9,7 +9,7 @@ section: top
     <div>
       <div class="eyebrow">zkfmi.com · 研究スタック · Rust · MIT · トークンなし</div>
       <h1><em>読めないもの</em>を<br>決済する市場基盤。</h1>
-      <p class="lede">zkFMI は、市場が注文を見ず、決済層が金額を見ず、それでも提示された中で最良の価格だったことと両脚が同時に動いたことを誰でも検証できる、金融市場基盤のプロトコル群です。掲載する数値にはすべて計測 artifact があり、限界はすべて文書に書いてあります。</p>
+      <p class="lede">zkFMI は金融市場基盤のためのプロトコル群です。市場は注文を見ず、決済層は金額を見ません。それでも、価格が提示された中で最良だったこと、そして取引の両脚（受渡しと支払い）が同時に動いたことは、誰でも検証できます。掲載する数値にはすべて裏付けとなる計測記録（artifact）があります。限界はすべて文書に書いてあります。</p>
       <div class="cta">
         <a class="btn primary" href="docs/architecture.html">全体構成</a>
         <a class="btn" href="docs/zkpi.html">wire 形式を読む</a>
@@ -26,7 +26,7 @@ section: top
         <g transform="translate(260,34)">
           <rect x="-96" y="-22" width="192" height="44" rx="22" fill="var(--bg-2)" stroke="url(#tok)" stroke-width="2"/>
           <text x="0" y="-2" text-anchor="middle" font-size="12" fill="var(--fg)">C = g^price · h^r</text>
-          <text x="0" y="13" text-anchor="middle" font-size="9.5" fill="var(--fg-3)">commitment された一つの価格</text>
+          <text x="0" y="13" text-anchor="middle" font-size="9.5" fill="var(--fg-3)">commitment にした一つの価格</text>
         </g>
         <!-- spine -->
         <line x1="260" y1="56" x2="260" y2="372" stroke="var(--line-2)" stroke-width="2" stroke-dasharray="4 5"/>
@@ -45,7 +45,7 @@ section: top
             <rect x="306" y="-26" width="208" height="52" rx="8" fill="var(--bg-2)" stroke="var(--accent-3)" stroke-width="1.5"/>
             <text x="318" y="-8" fill="var(--accent-3)" font-size="9" letter-spacing="1.5">2 · 定足数の署名</text>
             <text x="318" y="8" fill="var(--fg)">3-of-7 FROST, ristretto255</text>
-            <text x="318" y="20" fill="var(--fg-3)" font-size="9">どのノードも witness を持たない</text>
+            <text x="318" y="20" fill="var(--fg-3)" font-size="9">どのノードも秘密の値を持たない</text>
             <circle cx="260" cy="0" r="6" fill="url(#tok)"/>
           </g>
           <g transform="translate(0,236)">
@@ -79,18 +79,18 @@ section: top
 
 <div class="strip">
   <div class="wrap">
-    <div class="stat"><b>7.0 ms</b><span>DvP 一件の決済、64 ビット Bulletproof、1 コア</span></div>
-    <div class="stat"><b>3,424 B</b><span>その幅での決済パッケージの wire 上サイズ</span></div>
-    <div class="stat"><b>217 / s</b><span>ノード 1 台、8 ワーカーで検証する決済件数</span></div>
-    <div class="stat"><b>96 B</b><span>台帳が外部の口座簿と一致することの証明、規模を問わず</span></div>
-    <div class="stat"><b>検証者 5</b><span>非 EVM Avalanche L1、再起動をまたいで状態ルートが一致</span></div>
+    <div class="stat"><b>7.0 ms</b><span>DvP 1 件を決済する時間。64 ビットの Bulletproof、1 コア</span></div>
+    <div class="stat"><b>3,424 B</b><span>同じビット幅での、決済パッケージ 1 件の通信サイズ（wire 上）</span></div>
+    <div class="stat"><b>217 / s</b><span>ノード 1 台（8 ワーカー）が毎秒検証できる決済の件数</span></div>
+    <div class="stat"><b>96 B</b><span>台帳が外部の口座簿と一致することを示す証明の大きさ。台帳の規模によらず一定</span></div>
+    <div class="stat"><b>検証者 5</b><span>非 EVM の Avalanche L1。再起動をまたいでも状態ルートが一致</span></div>
   </div>
 </div>
 
 <section class="block">
   <div class="wrap">
-    <h2>判断はどこでも、指図は一つ、決済は読まずに</h2>
-    <p>移転を決めるのが市場（見積市場や板）でも、業務システム（ファンド管理者、担保エンジン、銀行の審査）でも、その判断は一つの封印された指図に載ります。決済層は指図の証明を検証して両脚を同時に動かすか、どちらも動かさず、何が決まったかは知りません。このサイトで例に使うのは見積依頼（RFQ）で、勝った価格は commitment のまま市場を出て、同じ commitment が最小値であることを証明され、定足数が署名し、指図が運び、台帳の積の証明が消費します。一つの値、四つの証明、一度も開かない。ファンドの申込、担保請求、二通貨決済も、指図の発行元が違うだけで同じ経路を通ります。</p>
+    <h2>決める場所は自由、指図は一つ、決済は中身を読まない</h2>
+    <p>移転を決めるのは、見積市場や板のような市場でも構いませんし、ファンド管理者・担保エンジン・銀行の審査のような業務システムでも構いません。どちらの場合も、その判断は封印された一つの指図に載ります。決済層はその指図に付いた証明を検証し、両脚を同時に動かすか、どちらも動かしません。何が決まったのかは知りません。このサイトで例に使うのは見積依頼（RFQ）です。勝った価格は commitment（中身を隠したまま値を固定したもの）のまま市場を出ます。同じ commitment について、最小値であることが証明され、定足数（署名に必要な数のノード）が署名し、指図がそれを運び、台帳の積の証明がそれを消費します。値は一つ、証明は四つ、一度も開きません。ファンドの申込、担保請求、二通貨決済も同じ経路を通ります。違うのは指図を出す側だけです。</p>
     <div class="three">
       <div class="col h">
         <h3>決済が読まないもの</h3>
@@ -106,10 +106,10 @@ section: top
         <h3>隠す仕組み</h3>
         <ul>
           <li>Pedersen commitment と範囲証明</li>
-          <li>移転ごとに新しい blinded asset tag</li>
-          <li>one-of-many ring を持つ note 台帳</li>
-          <li>7 ノードにわたる Shamir 分散、honest majority、malicious 安全</li>
-          <li>一つの seed から市場ごとに導出する handle</li>
+          <li>asset tag（資産種別の識別子）。隠した形で、移転ごとに作り直す</li>
+          <li>note（1 件ごとの受取記録）の台帳。one-of-many の ring（本物をおとりに混ぜた候補の集合）付き</li>
+          <li>7 ノードへの Shamir 秘密分散。過半数が正直なら（honest majority）、不正な参加者（malicious）に対しても安全</li>
+          <li>handle（市場ごとの口座識別子）。一つの seed から市場ごとに別々に導出</li>
         </ul>
       </div>
       <div class="col c">
@@ -119,7 +119,7 @@ section: top
           <li>残高が負にならない</li>
           <li>資金脚 = 数量 × 価格</li>
           <li>両脚が動くか、どちらも動かない</li>
-          <li>一つの指図は一度だけ決済され、3-of-7 の定足数が署名する</li>
+          <li>一つの指図は一度だけ決済される。署名は 3-of-7 の定足数</li>
         </ul>
       </div>
     </div>
@@ -129,16 +129,16 @@ section: top
 <section class="block">
   <div class="wrap">
     <h2>構成要素</h2>
-    <p>プロトコルの核は指図と台帳で、その脇に資格と清算があります。市場と業務システムはその上に、入れ替え可能な指図の発行元として載ります。zkFMI 組織の下の 8 つのリポジトリを、状態の共有ではなく明示的なポートでつないでいます。</p>
+    <p>プロトコルの核は指図と台帳です。その脇に資格と清算があります。市場と業務システムはその上に載り、どれも指図を出す側として入れ替えられます。コードは zkFMI 組織の下の 8 つのリポジトリに分かれています。状態は共有せず、明示したポート（入出力の口）だけでつないでいます。</p>
     <div class="grid">
-      <a class="card proved" href="docs/zkpi.html"><div class="tag">指図</div><h3>zkPI</h3><p>ゼロ知識証明付き決済指図。市場の判断を、それを生んだ入力なしに証明できる形にしたもの。金額・価格・資産の commitment、nullifier、期限、FROST 定足数署名、閾値範囲証明 2 本。wire 上 9,726 バイト。</p></a>
-      <a class="card proved" href="docs/defmi.html"><div class="tag">決済</div><h3>DeFMI</h3><p>分散型金融市場基盤。commitment 残高上の DvP と PvP、ring 署名付き note、asset tag、ネッティング、デフォルト・ウォーターフォール、正本台帳との照合。専用の非 EVM Avalanche L1 として動作。</p></a>
-      <a class="card checked" href="docs/dekyx.html"><div class="tag">資格</div><h3>DeKYX</h3><p>分散型 Know Your X。一つの行為に必要な資格だけを証明する匿名の提示。audience・action・nonce・期限に束縛。scope 別 nullifier、署名付き失効一覧、鍵交代。scope ごとに仮名であり、発行者に対する連結不能はまだ。</p></a>
-      <a class="card checked" href="docs/deccp.html"><div class="tag">清算</div><h3>DeCCP</h3><p>分散型清算機関。閾値統治の清算簿、gross-gross から net-net までのサイクル、証拠金、秘匿保証枠、決定的な損失ウォーターフォール。当該提案そのものに対する DeFMI 受領証があるときだけ状態を進める。更改（novation）は 1 取引あたり 0.53 µs。</p></a>
-      <a class="card hidden" href="docs/qomm.html"><div class="tag">市場</div><h3>QOMM</h3><p>依頼を見ないマーケットメイキング。16 社のメイカーの値付け規則を、誰も見ない依頼に MP-SPDZ の中で適用。最良見積を最小値として証明し、開かずに決済。公開値には差分プライバシー。</p></a>
-      <a class="card hidden" href="docs/oclob.html"><div class="tag">市場</div><h3>OCLOB</h3><p>注文を見ない連続指値板。注文は参加者側で分割し、暗号化して 7 ノードへ配送。5-of-7 の委員会が照合前に受付順を確定。MPC 内で価格・時間優先。公開板は価格帯別の合計だけ。</p></a>
-      <a class="card checked" href="docs/aethel.html"><div class="tag">業務システム</div><h3>Aethel</h3><p>プログラム可能な支払ストリームの債権化。署名された支払ストリームが金融可能な債権になる。独立した提供者が、scope 付きの capability を通じて与信判断、保証、資金、サービシングを供給する。型付きの zkPI を発行して決済。</p></a>
-      <a class="card" href="docs/use-cases.html"><div class="tag">業務システム</div><h3>他の業務システム</h3><p>zkPI と DeFMI は QOMM の部品ではない。ファンドの申込・解約、担保・証拠金の請求、二通貨 PvP、発行と利払、債権、環境証書。判断する主体なら誰でも指図を出せる。</p></a>
+      <a class="card proved" href="docs/zkpi.html"><div class="tag">指図</div><h3>zkPI</h3><p>ゼロ知識証明付きの決済指図。市場の判断を、その判断の元になった入力を見せずに証明できる形にしたもの。中身は、金額・価格・資産の commitment、nullifier（二重使用を防ぐ使用済みの印）、期限、FROST による定足数署名、閾値範囲証明 2 本。wire 上では 9,726 バイト。</p></a>
+      <a class="card proved" href="docs/defmi.html"><div class="tag">決済</div><h3>DeFMI</h3><p>分散型の金融市場基盤。commitment にした残高の上での DvP と PvP、ring 署名付きの note、asset tag、ネッティング、デフォルト・ウォーターフォール、正本台帳との照合。専用の非 EVM Avalanche L1 として動く。</p></a>
+      <a class="card checked" href="docs/dekyx.html"><div class="tag">資格</div><h3>DeKYX</h3><p>分散型の Know Your X。ある行為に必要な資格だけを、匿名の提示で証明する。提示は相手（audience）、行為、nonce、期限に結び付ける。scope（用途の範囲）別の nullifier、署名付きの失効一覧、鍵の交代。scope ごとに仮名だが、発行者から見た連結不能性はまだない。</p></a>
+      <a class="card checked" href="docs/deccp.html"><div class="tag">清算</div><h3>DeCCP</h3><p>分散型の清算機関（CCP）。閾値署名で管理する清算簿、gross-gross から net-net までの清算サイクル、証拠金、中身を隠した保証枠、決定的に決まる損失ウォーターフォール。状態を進めるのは、その提案そのものに対する DeFMI の受領証があるときだけ。更改（novation）は 1 取引あたり 0.53 µs。</p></a>
+      <a class="card hidden" href="docs/qomm.html"><div class="tag">市場</div><h3>QOMM</h3><p>依頼を見ないマーケットメイキング。メイカー（値付けする側）16 社の値付け規則を、誰も見ない依頼に MP-SPDZ の中で適用する。最良の見積が最小値であることを証明し、開かずに決済する。公開する値には差分プライバシーをかける。</p></a>
+      <a class="card hidden" href="docs/oclob.html"><div class="tag">市場</div><h3>OCLOB</h3><p>注文を見ない連続指値板。注文は参加者の側で分割し、暗号化して 7 ノードへ送る。照合の前に、5-of-7 の委員会が受付順を確定する。価格・時間優先の照合は MPC の中で行う。公開する板は価格帯別の合計だけ。</p></a>
+      <a class="card checked" href="docs/aethel.html"><div class="tag">業務システム</div><h3>Aethel</h3><p>プログラムできる支払ストリームの債権化。署名された支払ストリームを、資金調達に使える債権にする。与信判断、保証、資金、サービシングは、独立した提供者が scope を限った capability（権限の札）を通じて供給する。決済は型付きの zkPI を発行して行う。</p></a>
+      <a class="card" href="docs/use-cases.html"><div class="tag">業務システム</div><h3>他の業務システム</h3><p>zkPI と DeFMI は QOMM の部品ではない。ファンドの申込・解約、担保・証拠金の請求、二通貨 PvP、発行と利払、債権、環境証書。移転を決める主体なら誰でも指図を出せる。</p></a>
     </div>
   </div>
 </section>
@@ -146,45 +146,45 @@ section: top
 <section class="block">
   <div class="wrap">
     <h2>他の方式の中での位置</h2>
-    <p>六つの軸を、双方向に述べます。大半の軸では他の誰かが強く、二つの軸では他に誰もいません。</p>
+    <p>六つの軸で比べ、優劣を両方向に書きます。大半の軸では他のどこかの方が強く、二つの軸では他に誰もいません。</p>
     <div class="table-wrap"><table class="compare">
       <thead><tr><th></th><th>従来の FMI の連鎖</th><th>DLT 上の DvP 実証</th><th>Canton（Daml アプリケーション）</th><th>MPC ダークプール（Rialto、P2DEX、Renegade）</th><th>Prime Match（J.P. Morgan）</th><th>監査可能 MPC（BDO 2014、Rivinius 2022）</th><th>zkFMI</th></tr></thead>
       <tbody>
         <tr><td>市場が注文を見る</td><td class="no">見る</td><td class="no">見る</td><td class="no">自社の validator と業務側が見る</td><td class="part">委任された relayer が見る</td><td class="part">semi-honest なハブが見る</td><td class="yes">見ない</td><td class="yes">見ない</td></tr>
         <tr><td>決済が金額と価格を見る</td><td class="no">見る</td><td class="no">見る</td><td class="no">当事者の validator が見る</td><td class="no">おおむね見る</td><td class="no">見る</td><td class="no">対象外</td><td class="yes">見ない</td></tr>
-        <tr><td>最良執行を外部者が証明できる</td><td class="no">報告書のみ、検証不能として廃止</td><td class="no">できない</td><td class="part">当事者が規則を再実行する</td><td class="part">照合の証明はあるが注文集合はない</td><td class="no">できない</td><td class="part">回路の正しさ</td><td class="yes">できる、市場機構そのもの</td></tr>
+        <tr><td>最良執行を外部者が証明できる</td><td class="no">報告書のみ。検証不能として廃止</td><td class="no">できない</td><td class="part">当事者が規則を再実行する</td><td class="part">照合の証明はあるが、注文集合はない</td><td class="no">できない</td><td class="part">回路の正しさ</td><td class="yes">できる。市場機構そのものを証明</td></tr>
         <tr><td>清算: 更改、ネッティング、ウォーターフォール</td><td class="yes">CCP</td><td class="part">一部</td><td class="part">アプリケーションごと</td><td class="no">なし</td><td class="no">銀行の処理系</td><td class="no">なし</td><td class="yes">DeCCP、commitment 上で</td></tr>
-        <tr><td>頑健性 / 説明責任</td><td class="yes">法制度</td><td class="part">合意</td><td class="part">当事者 + BFT 順序付け</td><td class="part">まちまち</td><td class="part">銀行</td><td class="yes">Rivinius: 両方、11–20×</td><td class="part">第 1 段を配備、第 5 段は n=9 で実装済み</td></tr>
+        <tr><td>頑健性 / 説明責任</td><td class="yes">法制度</td><td class="part">合意</td><td class="part">当事者 + BFT 順序付け</td><td class="part">まちまち</td><td class="part">銀行</td><td class="yes">Rivinius: 両方、11–20×</td><td class="part">第 1 段を配備。第 5 段は n=9 で実装済み</td></tr>
         <tr><td>本番稼働</td><td class="yes">あり</td><td class="part">実証</td><td class="yes">メインネット、商用レポ</td><td class="part">一部</td><td class="yes">あり</td><td class="no">なし</td><td class="no">研究、1 台のホスト</td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:.9rem"><a href="docs/prior-art.html">先行研究のページ</a>に論文ごとの版があり、初期稿から撤回した 3 件の主張も載せています。<a href="docs/comparison.html">他のシステムとの比較</a>は 18 の製品・プラットフォームを、Canton は詳しく、2026-09-05 時点の公開資料から扱います。</p>
+    <p class="muted" style="font-size:.9rem"><a href="docs/prior-art.html">先行研究のページ</a>には論文ごとの比較があり、初期稿から撤回した 3 件の主張も載せています。<a href="docs/comparison.html">他のシステムとの比較</a>は、2026-09-05 時点の公開資料に基づいて 18 の製品・プラットフォームを扱い、Canton は詳しく述べます。</p>
   </div>
 </section>
 
 <section class="block">
   <div class="wrap">
-    <h2>信頼は実際にどこにあるか</h2>
+    <h2>信頼は実際にどこに置かれているか</h2>
     <div class="grid">
       <div class="card">
-        <h3>公開検証可能、第 1 段</h3>
-        <p>quote proof により、勝者が commitment された鍵の最小値だったことを誰でも検証できます。配備している MPC は abort 付きの malicious 安全で、逸脱は検出されますが、責任者は特定されず、続行もされません。n ≥ 4t+1 での頑健な復元は 9 ノードで実装・計測済みで、配備中のエンジンより安価です。配備中のエンジンは 7 ノードで動いています。</p>
+        <h3>誰でも検証できる（説明責任の第 1 段）</h3>
+        <p>quote proof（見積の証明）により、勝った見積が commitment された鍵の中の最小値だったことを誰でも検証できます。配備している MPC は、不正な参加者に対して abort（中断）付きで安全です。つまり逸脱は検出できますが、誰の逸脱かは特定できず、計算を続けることもできません。n ≥ 4t+1 で成り立つ頑健な復元（逸脱があっても結果を出せる方式）は、9 ノードで実装し計測済みで、配備中のエンジンより安価です。配備中のエンジンは 7 ノードで動いています。</p>
       </div>
       <div class="card">
         <h3>検証者は提出物をすべて検証する</h3>
-        <p>各 Avalanche 検証者は、3-of-7 の承認、型付き指図、quote proof の全体、共同範囲証明 2 本、テイカーの価格上限、資産の対応、DvP の関係式、期限、順序番号、直前のルート、nullifier を独立に検証してから、状態遷移を原子的に適用します。</p>
+        <p>各 Avalanche 検証者は、次のすべてを独立に検証してから、状態遷移を原子的に適用します。3-of-7 の承認、型付きの指図、quote proof の全体、共同で作った範囲証明 2 本、テイカー（依頼する側）の価格上限、資産の対応、DvP の関係式、期限、順序番号、直前のルート、nullifier です。</p>
       </div>
       <div class="card">
         <h3>検証者が再実行しないもの</h3>
-        <p>検証者は非公開の MP-SPDZ の実行記録を再生しません。share から証明への受け渡しは、体を一致させることと参加者ごとの入力検査で閉じており、それでも残る委員会への信頼境界は暗黙にせず wire 仕様に明記しています。</p>
+        <p>検証者は、非公開の MP-SPDZ の実行記録を再生しません。share（秘密の分割片）から証明への受け渡しは、二つの手当てで閉じています。MPC の体を commitment の群の位数に合わせること、そして参加者ごとに入力を検査することです。それでも委員会への信頼は残ります。その信頼境界は暗黙にせず、wire 仕様に明記しています。</p>
       </div>
       <div class="card">
-        <h3>耐量子化、意図して半分</h3>
-        <p>署名と鍵交換はハイブリッドへ移行中です。Ed25519 + ML-DSA-65 と X25519 + ML-KEM-768、両方を必須とし、降格は拒否します。2026 年 9 月に単一ホスト上の統合ブランチで受入済み、main への統合は未了です。ゼロ知識の関係式は、群を使わずに何度でも開ける commitment が存在するまで離散対数のままです。<a href="docs/post-quantum.html">現状</a>。</p>
+        <h3>耐量子化は、意図して半分まで</h3>
+        <p>署名と鍵交換は、古典方式と耐量子方式を組み合わせたハイブリッドへ移行中です。署名は Ed25519 + ML-DSA-65、鍵交換は X25519 + ML-KEM-768 で、どちらも両方の方式を必須とし、片方だけへの降格は拒否します。2026 年 9 月に、1 台のホスト上の統合ブランチで受入済みです。main への統合は未了です。ゼロ知識の関係式は離散対数のままです。群を使わずに何度でも開ける commitment ができるまでは変えません。<a href="docs/post-quantum.html">現状</a>。</p>
       </div>
       <div class="card">
         <h3>匿名性は他人の通信量</h3>
-        <p>周囲に他の決済がない ring 16 は、その note を確実に名指しします。16 件分の決済の通信量と、新しさを合わせたおとりがあれば、観測者は名目どおりの 1/16 に留まります。群衆に隠れる構成は、誰もいない部屋では何もしません。計測値がそう言っています。</p>
+        <p>ring（本物 1 件とおとりを混ぜた候補の集合）が 16 でも、周囲に他の決済がなければ、どの note が本物かは確実に分かります。他の決済が 16 件分あり、おとりの新しさも本物に合わせてあれば、観測者の当てる確率は名目どおりの 1/16 に留まります。群衆に隠れる構成は、誰もいない部屋では何もしません。計測値がそれを示しています。</p>
       </div>
     </div>
   </div>
@@ -232,7 +232,7 @@ section: top
   <div class="wrap">
     <div class="honest">
       <h3>これは何ではないか</h3>
-      <p>研究実装です。監査を受けていません。資産を保管せず、トークンもありません。複数ノードの受入はすべて 1 台のホスト上、一人の管理者の下でプロセスまたはコンテナとして走りました（AvalancheGo 検証者 5、MP-SPDZ 参加者 7、板ノード 7）。独立した組織をまたぐ配置、実 WAN、HSM 保管鍵、法的 finality 制度での運用は行っていません。日本の振替制度の下では DeFMI は振替口座簿にはなれず、鏡として照合します。これらはいずれも規制準拠ではなく、「監査可能」は統制の材料であって統制ではありません。<a href="docs/status.html">現状のページ</a>に、現在のゲートと本番の間にあるものを項目ごとに列挙しています。</p>
+      <p>これは研究実装です。監査は受けていません。資産を預からず、トークンもありません。複数ノードでの受入は、すべて 1 台のホスト上で、一人の管理者の下で、プロセスまたはコンテナとして走らせたものです（AvalancheGo 検証者 5、MP-SPDZ 参加者 7、板ノード 7）。独立した組織をまたぐ配置、実際の WAN、HSM に保管した鍵、法的 finality（決済の法的な確定）のある制度の下では、まだ動かしていません。日本の振替制度の下では、DeFMI は振替口座簿そのものにはなれません。口座簿の写しを持ち、正本と照合します。ここにあるものはどれも規制への準拠ではありません。「監査可能」は統制のための材料であって、統制そのものではありません。<a href="docs/status.html">現状のページ</a>に、現在のゲートと本番の間にあるものを項目ごとに列挙しています。</p>
     </div>
   </div>
 </section>

@@ -5,50 +5,50 @@ path: docs/index.html
 section: docs
 ---
 <h1>ドキュメント一覧</h1>
-<p class="lede">これらのページは、7 つのリポジトリにある設計文書、レビュー記録、計測 artifact から抜き出したものである。市場基盤を作る、あるいは評価する立場で、何が証明され、何が計測され、何がまだ主張にとどまるかを正確に知りたい読者に向けて書いている。</p>
+<p class="lede">このページ群は、7 つのリポジトリにある設計文書、レビュー記録、計測 artifact（計測結果を収めたファイル）を要約したものである。読者として想定するのは、市場基盤を作る人か評価する人である。何が証明済みで、何が計測済みで、何がまだ主張にとどまるかを、正確に知りたい人に向けて書いている。</p>
 
 <h2 id="how">読み方</h2>
 <ol>
   <li><a href="architecture.html">全体構成</a>が骨格を示す。誰が判断し、誰が指図し、誰が決済し、どの秘密がどこにあるか。</li>
   <li><a href="zkpi.html">zkPI</a> と <a href="defmi.html">DeFMI</a> がプロトコルの核である。二つは併せて読む。指図は、それを消費する台帳がなければ意味を持たない。</li>
-  <li><a href="qomm.html">QOMM</a> と <a href="oclob.html">OCLOB</a> がこれまでに作った二つの市場である。<a href="use-cases.html">市場以外の業務システム</a>は、二つが製品ではなく例であることを論じる。</li>
-  <li><a href="binding.html">束縛</a>、<a href="audit.html">監査</a>、<a href="accountability.html">説明責任</a>、<a href="deployment.html">配置</a>は、MPC の計測の大半を行った RFQ 市場を深く掘る。これらは QOMM についてのものであり、決済層はこれらに依存しない。</li>
-  <li><a href="security.html">安全性</a>、<a href="measurements.html">計測値</a>、<a href="status.html">現状</a>が根拠のページである。一つだけ読むなら<a href="status.html">現状</a>を読む。何が受入済みで何がそうでないかが書いてある。<a href="principles.html">この研究の進め方</a>は、根拠のページがなぜこの形をしているかを説明する。</li>
+  <li><a href="qomm.html">QOMM</a> と <a href="oclob.html">OCLOB</a> が、これまでに作った二つの市場である。<a href="use-cases.html">市場以外の業務システム</a>は、この二つが製品ではなく例にすぎないことを論じる。</li>
+  <li><a href="binding.html">束縛</a>、<a href="audit.html">監査</a>、<a href="accountability.html">説明責任</a>、<a href="deployment.html">配置</a>の四つは、RFQ 市場を深く掘り下げる。MPC の計測の大半はこの市場で行った。四つとも QOMM についてのページであり、決済層はこれらに依存しない。</li>
+  <li><a href="security.html">安全性</a>、<a href="measurements.html">計測値</a>、<a href="status.html">現状</a>が根拠のページである。一つだけ読むなら<a href="status.html">現状</a>を読む。何が受入済みで、何がそうでないかが書いてある。<a href="principles.html">この研究の進め方</a>は、根拠のページがなぜこの形をしているかを説明する。</li>
 </ol>
 
 <h2 id="conventions">このサイトの約束事</h2>
 <ul>
-  <li><strong>数値はすべて artifact 由来である。</strong>計測値にはホストのラベル（<code>host-a</code>、<code>host-b</code>、<code>host-c</code>）と、それを収めた <code>artifacts/</code> 配下の JSON ファイルを示す。機械の較正値はその数値の脇に書く。他の何かを比べる前に、まず較正値を比べる。</li>
-  <li><strong>「実装済み」と「受入済み」は別の語である。</strong>実装済みとは、コードが存在しテストが通ることである。受入済みとは、リポジトリのリリースゲートで実行されたことである。どちらも本番を意味しない。</li>
-  <li><strong>「主張しない」は脚注ではなく一つの節である。</strong>各プロトコルのページは、それがしないことで終わる。その一覧はレビュー記録から来ており、仕組みと同じだけ設計の一部である。</li>
+  <li><strong>数値はすべて artifact から取っている。</strong>計測値には、計測したホストのラベル（<code>host-a</code>、<code>host-b</code>、<code>host-c</code>）と、値を収めた <code>artifacts/</code> 配下の JSON ファイルを示す。そのホストの較正値（基準となる処理の所要時間）は数値の脇に書く。数値を比べる前に、まず較正値を比べること。</li>
+  <li><strong>「実装済み」と「受入済み」は別の語である。</strong>実装済みとは、コードが存在し、テストが通ることである。受入済みとは、リポジトリのリリースゲート（公開前の受入試験）で実行されたことである。どちらも本番を意味しない。</li>
+  <li><strong>「主張しない」ことは、脚注ではなく一つの節にしてある。</strong>各プロトコルのページは、そのプロトコルがしないことの一覧で終わる。一覧はレビュー記録から取ったもので、仕組みの説明と同じく設計の一部である。</li>
 </ul>
 
 <h2 id="pages">ページ一覧</h2>
 <div class="grid">
   <a class="card" href="architecture.html"><h3>全体構成</h3><p>データの流れ、秘密の所有者、リポジトリ、暗号プリミティブ、実行対象。</p></a>
-  <a class="card proved" href="zkpi.html"><h3>zkPI</h3><p>指図。何を commit し、何を証明するか、版 2 の wire 配置、テストベクタ、どこで動くか。</p></a>
+  <a class="card proved" href="zkpi.html"><h3>zkPI</h3><p>指図そのもの。何を commitment にし、何を証明するか。版 2 の wire 配置（バイト列の並び）、テストベクタ、どこで動くか。</p></a>
   <a class="card proved" href="defmi.html"><h3>DeFMI</h3><p>保証する性質、残高のビット幅、asset tag、ネッティング方式、当座貸越限度、デフォルト・ウォーターフォール、note と ring、PvP、照合、閲覧、審査証明（vetting）、Avalanche VM。</p></a>
-  <a class="card checked" href="dekyx.html"><h3>DeKYX</h3><p>資格証明、匿名の提示、scope 別 nullifier、失効、鍵交代、「scope ごとに仮名」の意味。</p></a>
+  <a class="card checked" href="dekyx.html"><h3>DeKYX</h3><p>資格証明、匿名の提示、scope 別の nullifier、失効、鍵の交代、「scope ごとに仮名」の意味。</p></a>
   <a class="card checked" href="deccp.html"><h3>DeCCP</h3><p>清算簿、受付、証拠金、三つのネッティング方式、保証枠、デフォルト・ウォーターフォール、受領証。</p></a>
-  <a class="card hidden" href="qomm.html"><h3>QOMM</h3><p>依頼を見ない RFQ。搬送、7 者トーナメント、quote proof、公開値の差分プライバシー、監査可能性のコスト。</p></a>
-  <a class="card hidden" href="oclob.html"><h3>OCLOB</h3><p>注文を見ない板。参加者側での分割、5-of-7 の受付順、MPC 内の照合、合計だけの公開板、事前承認済みの決済。</p></a>
+  <a class="card hidden" href="qomm.html"><h3>QOMM</h3><p>依頼を見ない RFQ。搬送、7 者のトーナメント、quote proof、公開値の差分プライバシー、監査可能性のコスト。</p></a>
+  <a class="card hidden" href="oclob.html"><h3>OCLOB</h3><p>注文を見ない板。参加者側での分割、5-of-7 で決める受付順、MPC 内の照合、合計だけの公開板、事前承認済みの決済。</p></a>
   <a class="card checked" href="aethel.html"><h3>Aethel</h3><p>支払ストリームの債権化。提供者の capability、DeCCP を通じた秘匿保証、zkPI による決済。</p></a>
   <a class="card" href="binding.html"><h3>計算結果を commitment に束縛する</h3><p>スタックの中央にある隙間、二つの閉じ方、コンパイルフラグの誤り、VOLE-in-the-Head の計測、耐量子、量子ネットワーク。</p></a>
-  <a class="card" href="audit.html"><h3>監査の仕組み</h3><p>カバー・スロット、受領証と slashing、relay、quote proof、値付け規則の記述言語、銘柄を見ない資産選択、ラウンドはどこで費やされるか。</p></a>
-  <a class="card" href="accountability.html"><h3>説明責任と頑健性</h3><p>説明責任の五つの段階、エンジン内の Reed–Solomon 復号、9 ノードでの第 5 段、dishonest majority のコスト見積、参加者としてのテイカー。</p></a>
-  <a class="card" href="deployment.html"><h3>配置の選び方</h3><p>共謀に対する置き場所、26 s が許容できる理由、三つのプロファイル、既定で切ってあるスイッチ、部品の選択。</p></a>
-  <a class="card" href="cryptography.html"><h3>暗号技術の使い方</h3><p>群と生成元、すべてのトランスクリプトのラベル、6 つのシグマ・プロトコル、範囲証明、one-of-many、note、adaptor、FROST、一致体の MPC、DeKYX、ハイブリッド。コードと文書が食い違う箇所。</p></a>
-  <a class="card" href="principles.html"><h3>この研究の進め方</h3><p>数値は手で書かない、予測を先に書く、撤回は公開で、fail closed、TEE は使わない。</p></a>
+  <a class="card" href="audit.html"><h3>監査の仕組み</h3><p>カバー・スロット、受領証と slashing（保証金の没収）、relay（中継）、quote proof、値付け規則の記述言語、銘柄を見ない資産選択、ラウンドはどこで費やされるか。</p></a>
+  <a class="card" href="accountability.html"><h3>説明責任と頑健性</h3><p>説明責任の五つの段階、エンジン内の Reed–Solomon 復号、9 ノードでの第 5 段、dishonest majority（過半数が不正な場合）のコスト見積、参加者としてのテイカー。</p></a>
+  <a class="card" href="deployment.html"><h3>配置の選び方</h3><p>共謀を防ぐノードの置き場所、26 s が許容できる理由、三つのプロファイル、既定で切ってあるスイッチ、部品の選択。</p></a>
+  <a class="card" href="cryptography.html"><h3>暗号技術の使い方</h3><p>群と生成元、すべてのトランスクリプトのラベル、6 つのシグマ・プロトコル、範囲証明、one-of-many、note、adaptor、FROST、MPC の体を commitment の群の位数に合わせた構成（matched field）、DeKYX、ハイブリッド。コードと文書が食い違う箇所。</p></a>
+  <a class="card" href="principles.html"><h3>この研究の進め方</h3><p>数値は手で書かない、予測を先に書く、撤回は公開で、異常時は止める（fail closed）、TEE は使わない。</p></a>
   <a class="card" href="faq.html"><h3>よくある質問</h3><p>トークン、ブロックチェーン、EVM、TEE、7 ノード、規制当局、耐量子、ダークプール、本番。</p></a>
-  <a class="card" href="roadmap.html"><h3>今後の計画</h3><p>完了したもの、依存関係順の次、製品の順序、コードの外で止まっているもの、未解決の問い。</p></a>
+  <a class="card" href="roadmap.html"><h3>今後の計画</h3><p>完了したもの、依存関係の順に見た次の作業、製品の順序、コードの外で止まっているもの、未解決の問い。</p></a>
   <a class="card" href="use-cases.html"><h3>市場以外の業務システム</h3><p>ファンドの申込、担保、PvP、発行、債権、証書、保険。実装の順序。</p></a>
   <a class="card" href="measurements.html"><h3>計測値</h3><p>判断に関わる数値を一箇所に、artifact 付きで。</p></a>
   <a class="card" href="security.html"><h3>安全性と信頼境界</h3><p>攻撃者、説明責任の段階、検証者が検証するものとしないもの、通信量としての匿名性、防御していないもの。</p></a>
-  <a class="card" href="post-quantum.html"><h3>耐量子化への移行</h3><p>スタック全体のハイブリッド署名と鍵交換、統合ブランチで通ったもの、古典のまま残すもの、未了のもの。</p></a>
+  <a class="card" href="post-quantum.html"><h3>耐量子化への移行</h3><p>スタック全体のハイブリッド署名と鍵交換、統合ブランチで通ったもの、古典方式のまま残すもの、未了のもの。</p></a>
   <a class="card" href="prior-art.html"><h3>先行研究との位置関係</h3><p>五つの論文、六つの軸、撤回した三つの主張、四つの未解決の問い。</p></a>
-  <a class="card" href="comparison.html"><h3>他のシステムとの比較</h3><p>18 の製品・プラットフォームを zkFMI と一つの表で、Canton は詳しく、九つの決定、使わない言い回し。</p></a>
+  <a class="card" href="comparison.html"><h3>他のシステムとの比較</h3><p>18 の製品・プラットフォームと zkFMI を一つの表で比較。Canton は詳しく。九つの判断、使わないと決めた言い回し。</p></a>
   <a class="card" href="regulation.html"><h3>規制</h3><p>この構成が法制度に求めるもの、日本の詳細、他の四法域、主張してよいことといけないこと。</p></a>
   <a class="card" href="status.html"><h3>現状と受入</h3><p>構成要素ごとの状態、ゲートが覆う範囲、本番を止めているもの。</p></a>
   <a class="card" href="get-started.html"><h3>始め方</h3><p>clone、テスト、テストベクタの検証、L1 ゲートの実行、企業向け PoC ガイド。</p></a>
-  <a class="card" href="glossary.html"><h3>用語集</h3><p>術語。暗号のものと市場基盤のものの両方。</p></a>
+  <a class="card" href="glossary.html"><h3>用語集</h3><p>用語の定義。暗号の用語と市場基盤の用語の両方。</p></a>
 </div>

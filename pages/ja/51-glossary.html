@@ -5,66 +5,66 @@ path: docs/glossary.html
 section: docs
 ---
 <h1>用語集</h1>
-<p class="lede">このスタックでは二つの語彙が出会う。金融市場基盤には固有の厳密な語があり、暗号にも同じく固有の語がある。片方に通じた読み手は、もう片方をしばしば推測で読んでいる。</p>
+<p class="lede">このスタックでは二つの語彙が出会う。金融市場基盤には固有の厳密な語があり、暗号にも固有の語がある。片方に通じた読み手は、もう片方をしばしば推測で読んでいる。</p>
 
 <h2 id="market">金融市場基盤</h2>
 <dl class="kv">
-  <dt>金融市場基盤（FMI）</dt><dd>資金決済システム、証券決済システム、証券保管振替機関、清算機関、取引情報蓄積機関のいずれかで、CPMI-IOSCO 原則の対象となるもの。DeFMI はこの語を意図的に借りている。</dd>
-  <dt>DvP</dt><dd>証券と資金の同時決済（delivery versus payment）。証券と資金が一緒に動くか、どちらも動かない。BIS のモデル 1（gross-gross）、モデル 2（証券は gross、資金は net）、モデル 3（net-net）。</dd>
-  <dt>PvP</dt><dd>資金同士の同時決済（payment versus payment）。二つの通貨、または二つの台帳が一緒に動く。状態を共有しない二つの台帳の間では、何かを受け渡す必要がある。ここでは adaptor signature がそれを担う。</dd>
-  <dt>ヘルシュタット・リスク（Herstatt risk）</dt><dd>相手の脚を受け取る前に自分の脚を払うことで生じる決済リスク。1974 年の銀行破綻に由来する名。ここの PvP プロトコルでは二つの期限の間の隙間がこれにあたり、その幅は台帳の finality が決める。証明の速さではない。</dd>
-  <dt>ネッティング（netting）</dt><dd>多数の gross の債務をより少ない net の債務にまとめること。ここでは net のレールが準同型に累積し、締めの時点で一度だけ充足を証明する。</dd>
-  <dt>更改（novation）</dt><dd>二者間の債務を、清算機関に対する二本の債務に置き換えること。commitment になった債務の上では、乗算二回で済み、証明は要らない。</dd>
-  <dt>清算機関（CCP）</dt><dd>中央清算機関（central counterparty）。更改し、ネッティングし、証拠金を集め、決済を保証し、デフォルト・ウォーターフォールを執行する。DeCCP はこの役割を担う分散型の状態機械。</dd>
-  <dt>デフォルト・ウォーターフォール（default waterfall）</dt><dd>破綻者の証拠金、破綻者の基金拠出、CCP 自身の資本、共有の基金が損失を吸収する順序。ここでは commitment 上の積をゼロに固定することで執行する。</dd>
-  <dt>見積依頼（RFQ）</dt><dd>テイカー（依頼する側）が複数のメイカー（値付けする側）に価格を求め、最良の相手と取引する方式。QOMM は、尋ねても内容を明かさない RFQ 市場。</dd>
-  <dt>連続指値板（CLOB）</dt><dd>待機している注文を、価格、次いで時間の優先順で連続的に照合する板。OCLOB は注文を秘匿し、価格帯別の合計だけを公開する。</dd>
-  <dt>最良執行（best execution）</dt><dd>得られる最良の結果を得る義務。quote proof はそれを検証可能な形で述べたもので、勝者が commitment された鍵の最小値であったことを示す。</dd>
-  <dt>振替口座簿（book-entry register）</dt><dd>振替機関と口座管理機関が保持する、証券の権利の正式な記録。日本では DeFMI はこれを鏡として写し、照合する。これ自体にはなれない。</dd>
-  <dt>日中当座貸越（intraday overdraft）</dt><dd>差し入れた担保に対して与える限度で、日中は net のポジションが負になることを許す。ここでは限度が commitment であり、充足はポジションと限度の和について証明する。</dd>
-  <dt>KYB / KYC</dt><dd>取引先確認 / 顧客確認（know your business / customer）。DeKYX はこれを「know your X」に一般化し、身元ではなく scope 付きの資格を返す。</dd>
-  <dt>finality</dt><dd>移転が取り消せなくなる時点。移転の finality は請求権の finality ではない。ステーブルコインは finality をもって移転するが、請求権は発行者に残る。</dd>
+  <dt>金融市場基盤（FMI）</dt><dd>資金決済システム、証券決済システム、証券保管振替機関、清算機関、取引情報蓄積機関の総称。CPMI-IOSCO 原則が対象とする。DeFMI はこの語を意図して借りている。</dd>
+  <dt>DvP</dt><dd>delivery versus payment。証券と資金を同時に決済すること。証券と資金は一緒に動くか、どちらも動かない。BIS のモデル 1（gross-gross）、モデル 2（証券は gross、資金は net）、モデル 3（net-net）がある。</dd>
+  <dt>PvP</dt><dd>payment versus payment。二つの通貨、または二つの台帳の上の資金を同時に決済すること。状態を共有しない二つの台帳の間では、何かを受け渡す仕組みが要る。ここではそれを adaptor signature が担う。</dd>
+  <dt>ヘルシュタット・リスク（Herstatt risk）</dt><dd>相手の脚を受け取る前に自分の脚を払ってしまうことで生じる決済リスク。1974 年の銀行破綻にちなむ名前。ここの PvP プロトコルでは、二つの期限の間の隙間がこのリスクにあたる。隙間の幅を決めるのは台帳の finality であり、証明の速さではない。</dd>
+  <dt>ネッティング（netting）</dt><dd>多数の gross の債務を、より少ない net の債務にまとめること。ここでは net のレールが期間中は準同型に累積し、締めの時点で一度だけ、足りていることを証明する。</dd>
+  <dt>更改（novation）</dt><dd>二者間の債務を、清算機関に対する二本の債務に置き換えること。債務が commitment になっていれば、乗算二回で済み、証明は要らない。</dd>
+  <dt>清算機関（CCP）</dt><dd>central counterparty。取引の相手方として間に入り、更改し、ネッティングし、証拠金を集め、決済を保証し、デフォルト・ウォーターフォールを執行する。DeCCP はこの役割を果たす分散型の状態機械。</dd>
+  <dt>デフォルト・ウォーターフォール（default waterfall）</dt><dd>破綻した参加者の証拠金、その参加者の基金拠出、CCP 自身の資本、参加者が共同で積む基金が、この順で損失を吸収する取り決め。ここでは commitment 上の積をゼロに固定することで、その順序を強制する。</dd>
+  <dt>見積依頼（RFQ）</dt><dd>request for quote。テイカー（価格を依頼する側）が複数のメイカー（値付けする側）に価格を求め、最良の相手と取引する方式。QOMM は RFQ の市場だが、尋ねても依頼の内容を相手に教えない。</dd>
+  <dt>連続指値板（CLOB）</dt><dd>central limit order book。板に置かれた注文を、価格を優先し、同じ価格なら時間を優先して、連続的に照合する仕組み。OCLOB は注文の内容を秘匿し、価格帯ごとの合計数量だけを公開する。</dd>
+  <dt>最良執行（best execution）</dt><dd>得られる中で最良の結果を得る義務。quote proof（見積の証明）はこれを検証可能な形で述べたもので、勝者が、commitment された各社のキー（比較に使う値）の中の最小値であったことを示す。</dd>
+  <dt>振替口座簿（book-entry register）</dt><dd>振替機関と口座管理機関が保持する、証券の権利の正式な記録。日本では DeFMI はこれを写した鏡であり、正本と照合する。DeFMI 自体が振替口座簿になることはできない。</dd>
+  <dt>日中当座貸越（intraday overdraft）</dt><dd>差し入れた担保に対して与える限度で、日中に限って net のポジションが負になることを許す。ここでは限度そのものが commitment であり、ポジションと限度の和が足りていることを証明する。</dd>
+  <dt>KYB / KYC</dt><dd>know your business / know your customer。取引先確認 / 顧客確認。DeKYX はこれを「know your X」に一般化し、身元ではなく、scope 付きの資格（範囲を限った資格）を返す。</dd>
+  <dt>finality</dt><dd>移転が取り消せなくなる時点。移転の finality と、請求権の finality は別である。ステーブルコインは finality をもって移転するが、その請求権は発行者に対するものとして残る。</dd>
 </dl>
 
 <h2 id="crypto">暗号</h2>
 <dl class="kv">
-  <dt>Pedersen commitment</dt><dd><code>g^v · h^r</code>。v を隠し、v に束縛し、準同型に乗算できるので、隠した値の和を開かずに検査できる。ここにあるすべての台帳の最小単位。</dd>
-  <dt>範囲証明（range proof）</dt><dd>commitment された値が [0, 2^n) に入っていることの証明。ここでは線形のビット分解か、Bulletproofs（対数サイズ）。「残高が負にならない」を成り立たせるもの。</dd>
-  <dt>Bulletproofs</dt><dd>幅に対して対数サイズの範囲証明で、監査済みの crate を使う。64 ビットのレールでの決済パッケージは 3,424 B。</dd>
-  <dt>シグマ・プロトコル（sigma protocol）</dt><dd>三往復の知識の証明（開示、生成元をまたぐ等価、積）を、Fiat–Shamir のトランスクリプトで非対話にしたもの。</dd>
-  <dt>積の証明（product proof）</dt><dd>三つの commitment が c = a × b を満たすことのシグマ証明。「資金脚 = 数量 × 価格」を成り立たせるもの。</dd>
-  <dt>asset tag</dt><dd>資産ごとの生成元 <code>A_a</code> で、残高はこの下で commitment される。移転ごとに blinded した tag を公開するので、銘柄は隠れたまま、価値の保存は資産ごとに成り立つ。</dd>
-  <dt>nullifier</dt><dd>秘密から導出した値で、使用時に公開する。同じ note や指図を二度使えなくしつつ、どれを使ったかは明かさない。Zcash 流。</dd>
-  <dt>note</dt><dd>一回限りの出力 <code>C = g^S · A_a^v · h^r</code> で、serial の S は受取人だけが構成できる。口座に代わるもので、決済時にどの handle も名指しされない。</dd>
-  <dt>one-of-many（Groth–Kohlweiss）</dt><dd>N 個の commitment のうち一つがゼロに開くことを、どれかを言わずに証明する。note の ring、資産への所属、審査証明（vetting）に使う。</dd>
-  <dt>ring / 匿名集合（ring / anonymity set）</dt><dd>ある使用がそのどれでもあり得る N 個の note。おとりが本物と見分けられないときに限り 1/N の価値を持ち、それは他人の通信量に左右される。</dd>
-  <dt>adaptor signature</dt><dd>秘密があるときだけ有効な署名になる事前署名で、署名が現れればその秘密を復元できる。二つの台帳の間でスカラーを受け渡し、どちらの台帳にも共通の痕跡を残さない。</dd>
-  <dt>FROST</dt><dd>閾値 Schnorr 署名。ここでは ristretto255 上の 3-of-7。指図に対する定足数の署名。</dd>
-  <dt>Shamir 分散（Shamir sharing）</dt><dd>秘密を t 次多項式上の n 点に分けること。任意の t+1 点で復元できる。シェアは Reed–Solomon 符号語になっており、これが頑健な復号を可能にする。</dd>
+  <dt>Pedersen commitment</dt><dd><code>g^v · h^r</code>。値 v を隠し、後から v を変えられないように固定し、しかも準同型に乗算できる。だから隠した値の和を、開かずに検査できる。ここにあるすべての台帳の最小単位。</dd>
+  <dt>範囲証明（range proof）</dt><dd>commitment された値が [0, 2^n) の範囲にあることの証明。ここでは線形のビット分解か、Bulletproofs（サイズが対数）を使う。「残高が負にならない」を成り立たせる。</dd>
+  <dt>Bulletproofs</dt><dd>サイズが幅に対して対数でしか増えない範囲証明。監査済みの crate を使う。64 ビットのレールでは、決済パッケージが 3,424 B になる。</dd>
+  <dt>シグマ・プロトコル（sigma protocol）</dt><dd>三往復で知識を証明する方式（開封、生成元をまたぐ等価、積）。Fiat–Shamir により、トランスクリプトのハッシュを使って非対話にする。</dd>
+  <dt>積の証明（product proof）</dt><dd>三つの commitment が c = a × b を満たすことのシグマ証明。「資金脚 = 数量 × 価格」を成り立たせる。</dd>
+  <dt>asset tag</dt><dd>資産ごとに定めた生成元 <code>A_a</code>。残高はこの生成元の下で commitment する。移転ごとに乱数で隠した tag を公開するので、銘柄は隠れたまま、価値の保存は資産ごとに成り立つ。</dd>
+  <dt>nullifier</dt><dd>秘密から導出し、使用時に公開する値。同じ note や指図を二度使えなくしつつ、どの note や指図だったかは明かさない。Zcash 流の仕組み。</dd>
+  <dt>note</dt><dd>一回限りの受取単位 <code>C = g^S · A_a^v · h^r</code>。serial の S は受取人だけが組み立てられる。口座に代わるもので、決済時にどの handle も名指しされない。</dd>
+  <dt>one-of-many（Groth–Kohlweiss）</dt><dd>N 個の commitment のうち一つがゼロに開くことを、どれかは言わずに証明する方式。note の ring、資産への所属、審査証明（vetting）に使う。</dd>
+  <dt>ring / 匿名集合（ring / anonymity set）</dt><dd>ある使用が、本当はそのどれであってもおかしくない N 個の note。おとりが本物と見分けられないときに限り、1/N の匿名性を持つ。見分けられるかどうかは、他人の通信量に左右される。</dd>
+  <dt>adaptor signature</dt><dd>事前署名の一種。秘密の値を加えたときだけ有効な署名になり、有効な署名が現れれば、逆にその秘密を復元できる。二つの台帳の間でスカラーを受け渡すのに使い、どちらの台帳にも共通の痕跡を残さない。</dd>
+  <dt>FROST</dt><dd>閾値 Schnorr 署名。ここでは ristretto255 上の 3-of-7（7 者のうち 3 者で署名できる）。定足数が指図に付ける署名。</dd>
+  <dt>Shamir 分散（Shamir sharing）</dt><dd>秘密を t 次多項式上の n 個の点に分けて配ること。任意の t+1 個の点から復元できる。シェアの並びは Reed–Solomon 符号語になっており、これが頑健な復号（誤ったシェアが混ざっても復元できること）を可能にする。</dd>
   <dt>MP-SPDZ</dt><dd>7 ノードの回路を動かす秘密計算フレームワーク。malicious-Shamir モードで使う。</dd>
-  <dt>honest majority / dishonest majority</dt><dd>プロトコルが、参加者の半数未満しか不正でないことを仮定するかどうか。honest majority は世界についてより強い仮定であり、その代わりに頑健性と情報理論的なオンライン段階が得られる。</dd>
-  <dt>abort 付き安全性（security with abort）</dt><dd>第 1 段。逸脱は検知され、プロトコルは出力なしで停止する。配備済みのエンジンが位置する段。</dd>
-  <dt>公開検証可能性（public verifiability）</dt><dd>外部の者が答えの正しさを検査できること。abort の段階とは独立の軸で、quote proof が提供するもの。</dd>
-  <dt>一致体（matched field）</dt><dd>MPC を commitment 群の位数である素数の上で走らせること。これにより監査は線形の再生になる。通信量は 2.00× になる。</dd>
-  <dt>VOLE-in-the-Head</dt><dd>ランダムオラクルだけに依拠する commitment。耐量子だが一回限り。ここでは計測済みで、主張はしない。</dd>
-  <dt>差分プライバシー（differential privacy）</dt><dd>公開された出力が任意の一入力について明かす量を、較正したノイズで抑えること。ここでは MPC の内部でノイズを引き、(ε, δ) を明示する。</dd>
-  <dt>ristretto255</dt><dd>Curve25519 上の素数位数群。ここにあるすべての commitment、証明、署名が使う。</dd>
+  <dt>honest majority / dishonest majority</dt><dd>参加者の半数未満しか不正でないと仮定するか（honest majority）、しないか（dishonest majority）。honest majority は現実についてより強い仮定だが、その代わりに頑健性と、情報理論的に安全なオンライン段階が得られる。</dd>
+  <dt>abort 付き安全性（security with abort）</dt><dd>説明責任の第 1 段。不正があれば検知し、プロトコルは出力を出さずに停止する。配備済みのエンジンはこの段にある。</dd>
+  <dt>公開検証可能性（public verifiability）</dt><dd>外部の者が答えの正しさを検査できること。abort の段階とは独立の性質で、quote proof が提供する。</dd>
+  <dt>一致体（matched field）</dt><dd>MPC の体を、commitment 群の位数である素数に合わせた構成。こうすると監査は線形演算の再生で済む。通信量は 2.00× になる。</dd>
+  <dt>VOLE-in-the-Head</dt><dd>ランダムオラクルだけに依拠する commitment。耐量子だが、一回限りしか使えない。ここでは計測済みだが、主張には含めない。</dd>
+  <dt>差分プライバシー（differential privacy）</dt><dd>公開した出力が、どの一つの入力についても明かす量を、較正した雑音で抑える方式。ここでは MPC の内部で雑音を引き、(ε, δ) を明示する。</dd>
+  <dt>ristretto255</dt><dd>Curve25519 上に作った素数位数の群。ここにあるすべての commitment、証明、署名がこの群を使う。</dd>
 </dl>
 
 <h2 id="stack">このスタック</h2>
 <dl class="kv">
-  <dt>zkFMI</dt><dd>一族の名。ゼロ知識証明付きの金融市場基盤。コードでは名前空間のルートでもある。例: <code>org.zkfmi.oclob.legal-entity-participant</code>。</dd>
-  <dt>zkPI</dt><dd>ゼロ知識証明付き決済指図。</dd>
+  <dt>zkFMI</dt><dd>一族全体の名前。ゼロ知識証明付きの金融市場基盤。コードでは名前空間のルートでもある。例: <code>org.zkfmi.oclob.legal-entity-participant</code>。</dd>
+  <dt>zkPI</dt><dd>ゼロ知識証明付きの決済指図。</dd>
   <dt>DeFMI</dt><dd>分散型金融市場基盤。決済台帳と、その Avalanche VM。</dd>
-  <dt>QOMM</dt><dd>依頼を見ないマーケットメイキング。</dd>
-  <dt>OCLOB</dt><dd>注文を見ない連続指値板。</dd>
-  <dt>DeKYX</dt><dd>分散型 know your X。</dd>
-  <dt>DeCCP</dt><dd>分散型清算機関。</dd>
-  <dt>Aethel</dt><dd>プログラム可能な支払ストリームの債権。</dd>
-  <dt>指図の発行元（instruction source）</dt><dd>移転を決め、zkPI を発行するもの全般。市場と業務システムの二種類がある。決済層は両者を区別しない。</dd>
-  <dt>市場（venue）</dt><dd>多数の当事者の注文や見積を照合して決める指図の発行元。QOMM と OCLOB。市場に固有なのは、MPC 内での値付けまたは照合と、最良執行の証明。</dd>
-  <dt>業務システム（application）</dt><dd>自身の業務規則で決める指図の発行元。ファンド管理者、担保エンジン、銀行の審査、Aethel。</dd>
-  <dt>handle</dt><dd>ある市場で参加者を名指しする公開点 <code>a·G</code>。一つの seed から市場ごとに導出する。</dd>
+  <dt>QOMM</dt><dd>依頼を見ないマーケットメイキング（query-oblivious market making）。</dd>
+  <dt>OCLOB</dt><dd>注文を見ない連続指値板（oblivious continuous limit order book）。</dd>
+  <dt>DeKYX</dt><dd>分散型の know your X。</dd>
+  <dt>DeCCP</dt><dd>分散型の清算機関。</dd>
+  <dt>Aethel</dt><dd>プログラム可能な、支払ストリームの債権。</dd>
+  <dt>指図の発行元（instruction source）</dt><dd>移転を決めて zkPI を発行するもの全般。市場と業務システムの二種類がある。決済層は両者を区別しない。</dd>
+  <dt>市場（venue）</dt><dd>多数の当事者の注文や見積を照合して移転を決める、指図の発行元。QOMM と OCLOB がこれにあたる。市場に固有なのは、MPC の中での値付けまたは照合と、最良執行の証明である。</dd>
+  <dt>業務システム（application）</dt><dd>自身の業務規則で移転を決める、指図の発行元。ファンド管理者、担保エンジン、銀行の審査、Aethel。</dd>
+  <dt>handle</dt><dd>ある市場で参加者を指す公開の点 <code>a·G</code>。一つの seed から市場ごとに導出する。</dd>
   <dt>host-a / host-b / host-c</dt><dd>計測を走らせた機械のラベル。実機との対応は公開しない。</dd>
 </dl>
 

@@ -1,54 +1,54 @@
 ---
 title: 現状と受入
-description: 何を実装し、何がリリースゲートを通り、zkFMI スタックと本番の間に何が残っているかを部品ごとに述べる。1 台のホスト、1 人の管理者、デモ鍵、法的 finality なし。
+description: 何を実装し、何がリリースゲートを通り、zkFMI スタックと本番の間に何が残っているかを、部品ごとに述べる。ホスト 1 台、管理者 1 人、デモ用の鍵、法的 finality なし。
 path: docs/status.html
 section: docs
 ---
 <h1>現状と受入</h1>
-<p class="lede">「実装済み」はコードが存在し、固定した workspace でテストが通ることを意味する。「受入済み」はリポジトリのリリースゲートで、記載の構成上で動いたことを意味する。どちらも本番を意味せず、複数ノードの受入はすべて、記載の構成が 1 人の管理者の下の Linux ホスト 1 台である。</p>
-<p class="src">最終確認: 2026-09-07 時点のリポジトリ先頭</p>
+<p class="lede">「実装済み」とは、コードが存在し、依存関係を固定した workspace でテストが通ることをいう。「受入済み」とは、リポジトリのリリースゲート（公開前の自動検査）が、記載した構成の上で通ったことをいう。どちらも本番を意味しない。複数ノードでの受入はすべて、1 人の管理者が管理する Linux ホスト 1 台の上で行ったものである。</p>
+<p class="src">最終確認: 2026-09-07 時点のリポジトリの最新コミット</p>
 
 <h2 id="summary">一段落の要約</h2>
-<p>端から端までの経路は存在し、実行済みである。参加者が注文または依頼を分割し、7 つの MPC プロセスがそれを計算し、3-of-7 の定足数が閾値 zkPI を発行し、Rust VM を動かす 5 台の AvalancheGo 検証者が両脚を原子的に決済し、状態 root で合意し、リプレイを拒み、再起動した検証者 1 台を同じ root で復旧させる。これはネイティブ実行と復旧の証拠である。独立した組織、WAN、HSM 保管鍵、監督当局の鍵儀式、法的 finality 制度の証拠ではなく、そのどれも試みていない。</p>
+<p>端から端までの経路は存在し、実際に動かした。参加者が注文または依頼を分割する。7 つの MPC プロセスがそれを計算する。3-of-7 の定足数が閾値 zkPI を発行する。Rust VM を動かす 5 台の AvalancheGo 検証者が両脚を原子的に決済し、状態 root（台帳全体の要約ハッシュ）で合意し、リプレイを拒み、再起動した検証者 1 台を同じ root で復旧させる。これはネイティブ実行と復旧ができることの証拠である。独立した組織、WAN、HSM に保管した鍵、監督当局による鍵の生成儀式、法的 finality の制度については証拠にならない。そのどれも、まだ試していない。</p>
 
 <h2 id="components">部品ごと</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>部品</th><th>状態</th><th>対象とするゲート</th><th>残っていること</th></tr></thead>
 <tbody>
-<tr><td>zkPI v2 wire 形式、テストベクタ、検証器</td><td><span class="pill ok">実装済み · ベクタ固定</span></td><td><code>qomm-zkpi-verify --check-vectors</code>、デコード・再エンコードでのバイト同一性</td><td>ベクタに対する独立した第二実装</td></tr>
-<tr><td>DeFMI 台帳: 口座、note、tag、ネッティング、PvP、照合、閲覧、審査証明</td><td><span class="pill ok">実装済み · 計測済み</span></td><td><code>cargo test --locked --workspace</code>、全表を JSON から再生成</td><td>受付・担保差入・限度・支払を一つの原子的操作に。L1 上の本番 note レール（OCLOB はまだ commitment 口座を使う）</td></tr>
-<tr><td>Bulletproof バックエンド</td><td><span class="pill ok">実装済み · host-a で計測済み</span></td><td>rust_bench.json</td><td>昇格前に両バックエンドを 1 台のホストで再計測</td></tr>
-<tr><td>Avalanche L1、Rust VM、検証者 5</td><td><span class="pill ok">受入済み · ホスト 1 台</span></td><td>run_avalanche_l1_acceptance、高さ 53–54 での QOMM 全経路</td><td>独立したホストと運営者、WAN、reorg 試験、HSM 鍵、公開ネットワークへの準備</td></tr>
-<tr><td>QOMM RFQ、7 者 MP-SPDZ、quote proof、監査スロット</td><td><span class="pill ok">実装済み · 計測済み</span></td><td>research_run、placement/sites の代理計測</td><td>7 拠点への配備。ハーネスでは input-check と shamir-inputs の切替が既定で off。レート制限器のカウンタの永続化</td></tr>
-<tr><td>MPC 内での DP 公表</td><td><span class="pill ok">実装済み · ホスト 1 台で 14 プロセス</span></td><td>distributed_publication.json</td><td>純粋な DP を主張する前に、厳密な非有界サンプラー</td></tr>
-<tr><td>頑健な復元（n ≥ 4t+1）</td><td><span class="pill part">実装済み · n=9 で計測済み</span></td><td>2 台の計算機での robust_atlas.json</td><td>配備中の n=7 エンジンではない。入力段階は頑健でない。機関があと 2 つ必要</td></tr>
-<tr><td>OCLOB の L1 までの分散経路</td><td><span class="pill ok">受入済み · ホスト 1 台、コンテナ 7</span></td><td>make remote-integrated-e2e</td><td>閾値方式の決済ゲートウェイ（現在は研究用ゲートウェイ 1 台が注文を開く）、独立した運営者、本番 API、形式的証明</td></tr>
-<tr><td>DeKYX</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>発行者のガバナンス、失効の運用、発行者にも連結不能な資格（BBS+/CL アダプタ）</td></tr>
-<tr><td>DeCCP</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>クロスマージン、部分的な保証の遷移、法的な更改</td></tr>
-<tr><td>Aethel</td><td><span class="pill ok">実装済み · 8 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コード外での法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
-<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。共通基盤 crate は NIST ACVP ベクタでゲート</td><td>リリース rev の固定、lock 再生成、ゲート再実行、main への統合（2026 年 9 月 7 日の週を目標）。ZK の関係式は古典のまま。WAN、HSM、FIPS、性能比較は未実施。<a href="post-quantum.html">詳細</a></td></tr>
+<tr><td>zkPI v2 の wire 形式、テストベクタ、検証器</td><td><span class="pill ok">実装済み · ベクタ固定</span></td><td><code>qomm-zkpi-verify --check-vectors</code>。デコードして再エンコードしたバイト列の同一性</td><td>テストベクタに対する、独立した第二の実装</td></tr>
+<tr><td>DeFMI 台帳: 口座、note（金額を隠した残高の単位）、tag、ネッティング、PvP、照合、閲覧、審査証明</td><td><span class="pill ok">実装済み · 計測済み</span></td><td><code>cargo test --locked --workspace</code>。全表を JSON から再生成</td><td>受付・担保差入・限度・支払を一つの原子的操作にまとめる。L1 上の本番用 note レール（OCLOB はまだ commitment 口座を使っている）</td></tr>
+<tr><td>Bulletproof バックエンド</td><td><span class="pill ok">実装済み · host-a で計測済み</span></td><td>rust_bench.json</td><td>昇格の前に、両バックエンドを同じ 1 台のホストで再計測</td></tr>
+<tr><td>Avalanche L1、Rust VM、検証者 5 台</td><td><span class="pill ok">受入済み · ホスト 1 台</span></td><td>run_avalanche_l1_acceptance。高さ 53–54 での QOMM 全経路</td><td>独立したホストと運営者、WAN、reorg（チェーンの巻き戻し）の試験、HSM 鍵、公開ネットワークで動かす準備</td></tr>
+<tr><td>QOMM RFQ、7 者 MP-SPDZ、quote proof、監査スロット</td><td><span class="pill ok">実装済み · 計測済み</span></td><td>research_run。placement/sites の代理計測</td><td>7 拠点への配備。ハーネスでは input-check と shamir-inputs の切替が既定で off。レート制限器のカウンタの永続化</td></tr>
+<tr><td>MPC 内での DP（差分プライバシー）公表</td><td><span class="pill ok">実装済み · ホスト 1 台で 14 プロセス</span></td><td>distributed_publication.json</td><td>純粋な DP を主張する前に、厳密で上限を設けないサンプラーが必要</td></tr>
+<tr><td>頑健な復元（n ≥ 4t+1）</td><td><span class="pill part">実装済み · n=9 で計測済み</span></td><td>2 台の計算機での robust_atlas.json</td><td>配備中の n=7 エンジンには入っていない。入力段階は頑健でない。参加機関があと 2 つ必要</td></tr>
+<tr><td>OCLOB から L1 までの分散経路</td><td><span class="pill ok">受入済み · ホスト 1 台、コンテナ 7</span></td><td>make remote-integrated-e2e</td><td>閾値方式の決済ゲートウェイ（現在は研究用ゲートウェイ 1 台が注文を開く）、独立した運営者、本番 API、形式的証明</td></tr>
+<tr><td>DeKYX</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>発行者のガバナンス、失効の運用、発行者にも連結できない資格（BBS+/CL アダプタ）</td></tr>
+<tr><td>DeCCP</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>クロスマージン、保証の部分的な遷移、法的な更改</td></tr>
+<tr><td>Aethel</td><td><span class="pill ok">実装済み · 8 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コードの外側の課題: 法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
+<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。基盤 crate は NIST ACVP ベクタで検査</td><td>リリース rev の固定、lock ファイルの再生成、ゲートの再実行、main への統合（2026 年 9 月 7 日の週を目標）。ZK の関係式は古典暗号のまま。WAN、HSM、FIPS、性能比較は未実施。<a href="post-quantum.html">詳細</a></td></tr>
 <tr><td>企業向け PoC ガイド（日本語）</td><td><span class="pill ok">執筆済み</span></td><td>—</td><td>企業が自社のハードウェアで行う評価</td></tr>
-<tr><td>形式的な安全性定義と証明</td><td><span class="pill no">未受入</span></td><td>入力検査の健全性、責任者の名指し、秘匿性は証明済み。MPC は仮定。合成は論証</td><td>UC での扱い。OCLOB の安全性定義</td></tr>
+<tr><td>形式的な安全性定義と証明</td><td><span class="pill no">未受入</span></td><td>入力検査の健全性、責任者の名指し、秘匿性は証明済み。MPC は仮定。合成は論証のみ</td><td>UC での扱い。OCLOB の安全性定義</td></tr>
 <tr><td>第三者監査</td><td><span class="pill no">なし</span></td><td>内部レビュー 2 回、所見を記録</td><td>独立した暗号・Rust・ホスト VM・統合の監査</td></tr>
 </tbody></table></div>
 
-<h2 id="gates">ゲートが実行するもの</h2>
-<p><strong>ライブラリのゲート</strong>: 各リポジトリで <code>cargo test -j 4 --locked --workspace</code>。状態機械の検査。コンセンサスなし、複数検証者なし、プロセス分離なし。</p>
-<p><strong>Avalanche L1 のゲート</strong>（defmi）: RPCChainVM 45 で Rust VM を起動する AvalancheGo プロセス 5 台。口座を持たない note、事前承認済みの予約、7 者 MPC の zkPI、複数 RFQ の原子的決済、法人単位で共有する上限、再起動復旧、状態 root の合意。外部バイナリ（AvalancheGo、avalanche-network-runner、MP-SPDZ）は承認済みの SHA-256 とともに明示的に供給し、スクリプトは決して取得しない。</p>
-<p><strong>OCLOB のリリースゲート</strong>: Rust の fmt、clippy、全 crate のテスト、React Flow の型検査とビルド、実物の MP-SPDZ、zkPI、DeFMI の DvP、正規形での読み戻し、リプレイの拒否を、遠隔の Linux コンテナ上で一度に実行する。開発用の Mac ではビルドもテストもしない。</p>
+<h2 id="gates">ゲートが実行する内容</h2>
+<p><strong>ライブラリのゲート</strong>: 各リポジトリで <code>cargo test -j 4 --locked --workspace</code> を実行する。状態機械の検査のみで、コンセンサス、複数の検証者、プロセス分離は含まない。</p>
+<p><strong>Avalanche L1 のゲート</strong>（defmi）: RPCChainVM 45 経由で Rust VM を起動する AvalancheGo プロセス 5 台。検査項目は、口座を持たない note、事前承認済みの予約、7 者 MPC による zkPI、複数 RFQ の原子的決済、法人単位で共有する上限、再起動からの復旧、状態 root の合意。外部バイナリ（AvalancheGo、avalanche-network-runner、MP-SPDZ）は承認済みの SHA-256 とともに明示的に渡す。スクリプトが自分で取得することはない。</p>
+<p><strong>OCLOB のリリースゲート</strong>: Rust の fmt、clippy、全 crate のテスト、React Flow の型検査とビルド、実物の MP-SPDZ、zkPI、DeFMI の DvP、正規形での読み戻し、リプレイの拒否。これらを遠隔の Linux コンテナ上で一度に実行する。開発用の Mac ではビルドもテストもしない。</p>
 
 <h2 id="p0">本番を阻むもの</h2>
-<div class="note"><strong>健全性の問題、2026-09-07 に発見し同日修正。</strong> 値の部分が 0 であることを示す必要のある 5 か所の検証器が、一般の開封証明を使っていた。登録簿との照合証明、bit 分解の範囲証明とその閾値版の連結（zkPI が運び、閾値 DvP パッケージが検証する範囲証明）、quote proof の「勝者の commitment が公開値に開く」段、rule audit の等値の段である。テストで偽造が 2 件成立した。誤った総額に対する照合証明の受理と、300 への commitment の 8 ビット範囲証明の通過である。同日中に全箇所を値を 0 に固定する開封証明に移し、閾値の組み立てにはどのノードの nonce も値の成分を持たない零関係を加え、rule audit の不等値は 1 への commitment に固定した逆元の積として証明するようにし、偽造は 3 つの crate のコピー（zkpi、defmi、qomm）と耐量子統合ブランチの回帰テストになった。変更前に発行された証明は検証を通らない。テストを含む所見の記録は決済リポジトリにある。<a href="cryptography.html#reconcile">暗号技術の使い方</a>を参照。</div>
+<div class="note"><strong>健全性の問題。2026-09-07 に発見し、同日に修正した。</strong> 5 か所の検証器が、値の部分を 0 に固定すべきところで、一般の開封証明を使っていた。該当箇所は、登録簿との照合証明、bit 分解の範囲証明とその閾値版の連結（zkPI が運び、閾値 DvP パッケージが検査する範囲証明）、quote proof の「勝者の commitment が公開値に開く」段、rule audit（値付け規則の監査）の等値の段である。テストで偽造が 2 件成立した。誤った総額に対する照合証明が受理された。300 への commitment が 8 ビットの範囲証明を通った。同日中に次の修正を行った。全箇所を、値が 0 であることを固定した開封証明に移した。閾値の組み立てには、どのノードの nonce も値の成分を持たない零関係（値の部分が 0 であることの証明）を加えた。rule audit の不等値は、逆元を 1 への commitment に固定して証明する形にした。偽造は、3 つの crate のコピー（zkpi、defmi、qomm）と耐量子統合ブランチの回帰テストにした。変更前に発行された証明は検証を通らない。テストを含む所見の記録は決済リポジトリにある。<a href="cryptography.html#reconcile">暗号技術の使い方</a>を参照。</div>
 <ol>
-  <li><strong>単一の当事者では開けない決済権限。</strong> OCLOB の研究用ゲートウェイは参加者の固定長の決済権限を単独で復号する。本番には閾値復号か、MPC ノードによる zkPI の共同生成が必要である。</li>
-  <li><strong>暗号上だけでなく現実に独立していること。</strong> k-of-n は算術の性質である。7 つの運営者、7 台のホスト、7 つの鍵保管庫、7 つの障害領域は現実世界の性質であり、どれも整えていない。</li>
-  <li><strong>再起動をまたいで永続する状態世代。</strong> キュー、レート制限器、nullifier 台帳を認証付き記憶域に置き、ロールバックでリプレイが再び通らないようにする。</li>
-  <li><strong>認証、認可、鍵管理</strong>: mTLS、テナント別の認可、外部 KMS/HSM、鍵の交代、バックアップと復旧。</li>
-  <li><strong>share から証明への受け渡し</strong>: 検証者は非公開の計算を再実行しない。これを閉じるには MPC 全体の証明と、まだ存在しないコンセンサス性能計測が必要である。</li>
+  <li><strong>単一の当事者では開けない決済権限。</strong> OCLOB の研究用ゲートウェイは、参加者の固定長の決済権限を単独で復号している。本番には、閾値復号か、MPC ノードによる zkPI の共同生成が必要である。</li>
+  <li><strong>暗号上だけでなく現実にも独立していること。</strong> k-of-n は算術の性質である。7 つの運営者、7 台のホスト、7 つの鍵保管庫、7 つの障害領域は現実世界の性質であり、どれもまだ整えていない。</li>
+  <li><strong>再起動をまたいで残る状態の世代番号。</strong> キュー、レート制限器、nullifier 台帳を認証付きの記憶域に置き、ロールバックしてもリプレイが通らないようにする。</li>
+  <li><strong>認証、認可、鍵管理</strong>: mTLS、テナント別の認可、外部の KMS/HSM、鍵のローテーション、バックアップと復旧。</li>
+  <li><strong>share から証明への受け渡し</strong>: 検証者は非公開の計算を再実行しない。この隙間を閉じるには、MPC 全体の証明と、まだ存在しないコンセンサスの性能計測が必要である。</li>
   <li><strong>法的 finality と登録簿への接続</strong>: 振替口座簿、CSD、中央銀行の資金脚、監督当局の開示手続き。</li>
 </ol>
 
-<h2 id="review">レビュー 2 回、記録あり</h2>
-<p>各リポジトリはレビュー文書を保持し、検査して健全と判断したものも、受け入れなかったものも含め、すべての所見を残している。レビューが変えたものの例: 既定で off で配備ガイドにも載っていなかった束縛の切替 2 つ。3 回引用されながらどこでも計測されていなかった probe の予算。履歴とともに大きくなる状態 root。命名規約の中にしか存在しなかった連結不能性。commit する前にノードが係数を読めた入力検査。呼び出し側が自分の封筒を押し込めた審査証明の名簿。いまも未解明として載っている 1 件の失敗。仕組みを読む前にこれらを読むのは、妥当な順番である。</p>
+<h2 id="review">記録に残る 2 回のレビュー</h2>
+<p>各リポジトリはレビュー文書を保持している。そこには、検査して健全と判断したものも、受け入れなかったものも含め、すべての所見が残っている。レビューが変えたものの例を挙げる。既定で off のうえ、配備ガイドにも載っていなかった束縛の切替が 2 つ。3 回引用されながら、どこでも計測されていなかった probe（監査の問い合わせ）の予算。履歴とともに大きくなっていた状態 root。命名規約の中にしか存在しなかった連結不能性。commit する前にノードが係数を読めた入力検査。呼び出し側が自分の封筒を押し込めた審査証明の名簿。いまも未解明として載っている 1 件の失敗。仕組みの説明を読む前にこれらを読むのは、妥当な順番である。</p>
 
 <div class="next"><a href="regulation.html">← 規制</a><a href="roadmap.html">今後の計画 →</a></div>
