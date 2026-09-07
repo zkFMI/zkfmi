@@ -8,6 +8,8 @@ import math
 COLORS = ["var(--accent)", "var(--accent-2)", "var(--accent-3)", "var(--danger)", "var(--fg-2)"]
 
 def _fmt(v):
+    if float(v).is_integer():
+        return f"{v:,.0f}"
     if v >= 1000:
         return f"{v:,.0f}"
     if v >= 100:
@@ -31,6 +33,9 @@ def _ticks(lo, hi, n=5):
     while t <= hi + step * 0.001:
         ticks.append(round(t, 10))
         t += step
+    # The axis must reach the largest value, or the top point leaves the plot.
+    while ticks[-1] < hi - step * 0.001:
+        ticks.append(round(ticks[-1] + step, 10))
     return ticks
 
 def line_chart(series, *, title, xlabel, ylabel, logx=False, logy=False, width=640, height=320, y0=True, note=None, caption=None):
@@ -77,12 +82,19 @@ def line_chart(series, *, title, xlabel, ylabel, logx=False, logy=False, width=6
         out.append(f'<polyline fill="none" stroke="{c}" stroke-width="2.2"{dash} points="{pts}"/>')
         for x, y in s["points"]:
             out.append(f'<circle cx="{X(x):.1f}" cy="{Y(y):.1f}" r="3.2" fill="{c}"><title>{s["name"]}: {xlabel} {_fmt(x)}, {_fmt(y)}</title></circle>')
-    # legend
-    lx = ml + 8
+    # legend: in whichever top corner the data leaves more room; on the right
+    # the swatch sits after the text, so no text width has to be guessed.
+    mid = ml + pw / 2
+    left_high = min((Y(y) for s in series for x, y in s["points"] if X(x) <= mid), default=height)
+    right_high = min((Y(y) for s in series for x, y in s["points"] if X(x) > mid), default=height)
     for i, s in enumerate(series):
         c = COLORS[i % len(COLORS)]
-        out.append(f'<rect x="{lx}" y="{mt+8+i*16}" width="14" height="3" fill="{c}"/>')
-        out.append(f'<text class="cl" x="{lx+20}" y="{mt+13+i*16}">{s["name"]}</text>')
+        if right_high > left_high:
+            out.append(f'<rect x="{ml+pw-8-14}" y="{mt+8+i*16}" width="14" height="3" fill="{c}"/>')
+            out.append(f'<text class="cl" x="{ml+pw-8-14-6}" y="{mt+13+i*16}" text-anchor="end">{s["name"]}</text>')
+        else:
+            out.append(f'<rect x="{ml+8}" y="{mt+8+i*16}" width="14" height="3" fill="{c}"/>')
+            out.append(f'<text class="cl" x="{ml+28}" y="{mt+13+i*16}">{s["name"]}</text>')
     if note:
         out.append(f'<text class="cl" x="{ml+pw}" y="{mt-6}" text-anchor="end">{note}</text>')
     out.append("</svg>")
