@@ -1,0 +1,215 @@
+---
+title: Comparison with other systems
+description: Eighteen products and platforms that overlap with zkFMI, compared from public materials on 2026-09-05. Canton in depth, then Renegade, Arcium, Zama, Corda, Kinexys, Fnality, Partior, Ownera, Swift, Chainlink, Progmat, ibet for Fin, Prime Match, Penumbra, Dusk, Aztec, Fabric. Nine decisions, the wording this project refuses, and what is unverified.
+path: docs/comparison.html
+section: docs
+---
+<h1>Comparison with other systems</h1>
+<p class="lede">Eighteen products and platforms whose customers have problems that overlap with this stack, read from their own specifications, announcements and regulatory filings on 2026-09-05. The result is not a scorecard. It is a list of the axes on which a difference can be stated, the axes on which somebody else is ahead, and the sentences this project may and may not say as a consequence.</p>
+<p class="src">source: zkfmi-crypto/docs/research/COMPETITORS_EX_CANTON_2026-09-05.md · CANTON_NETWORK_2026-09-05.md · CANTON_FABLE_5_1_MAX_REVIEW_2026-09-05.md · COMPETITIVE_DECISIONS_2026-09-05.md (v1.2) · docs/strategy/ZKFMI_STRATEGY_2026-09-05.md · 54 distinct primary sources for the survey, 37 of 38 URLs re-opened for the Canton review</p>
+
+<div class="note warn">Three rules were applied throughout and should be applied when reading. Nothing was measured: no competitor's environment was run, no code audited, no trade executed, so fees, throughput, latency and funding are never ranked. A commercial announcement is a fact reported by that company, not an operational audit. And "unverified" means not found in the materials read; it is never scored as "unsupported".</div>
+
+<h2 id="read">How to read the stage labels</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>label</th><th>meaning here</th></tr></thead>
+<tbody>
+<tr><td>commercial case announced</td><td>an operator or adopter says the target workflow ran. Not an independent operational audit.</td></tr>
+<tr><td>mainnet / alpha announced</td><td>a network stage. Distinct from commercial delivery in a regulated market.</td></tr>
+<tr><td>adoption / demonstration / planned</td><td>kept at the stage the announcement states. A planned date passing does not make it live.</td></tr>
+<tr><td>specification confirmed</td><td>the operating model was checked in documentation. A particular deployment's status is unverified.</td></tr>
+<tr><td>unverified</td><td>not confirmed in the materials read. Different from unimplemented or unsupported.</td></tr>
+</tbody></table></div>
+<p>zkFMI's own baseline, read the same day: research software on one host, with smoke evidence for two fills settled in one transaction and for two continuous trading rounds. Asset identifiers and settlement metadata on the native note path are public. Post-quantum hybrids were standalone at that date and have since passed a single-host integration acceptance; see <a href="post-quantum.html">Post-quantum migration</a>. Aethel is excluded from the eighteen because it is an application on the stack, not a competitor.</p>
+
+<h2 id="decisions">Nine decisions</h2>
+<p>The comparison closes on nine numbered decisions. They were reviewed a second time, at maximum effort, with Canton added; all nine were retained and several gained evidence.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>decision</th><th>why</th><th>consequence</th></tr></thead>
+<tbody>
+<tr><td>C01</td><td>MPC, ZK and a proof that fills were computed correctly do not make zkFMI unique</td><td>Renegade's VALID MATCH proves input validity and matching correctness. Canton has the relevant participants re-execute Daml rules. Prime Match ran financial MPC in 2023.</td><td>never market "only we can prove market rules"</td></tr>
+<tr><td>C02</td><td>The promising axes are <em>who learns which secret</em> and <em>which rules and states are bound to the same transaction</em></td><td>Renegade's delegated relayer reads the wallets it serves. Canton's host validator reads all of its parties' data. OCLOB splits on the participant's side, so no single node holds an order, under a 2-of-7 collusion bound.</td><td>first establish which disclosure a customer accepts; target the projects that need secrecy from the computing entities themselves</td></tr>
+<tr><td>C03</td><td>Price formation differs, and that is not superiority</td><td>Renegade documents midpoint crossing at an external price. QOMM is RFQ over confidential pricing rules; OCLOB is price-time priority over a finalised admission order.</td><td>no "speed ranking" that mixes RFQ, continuous books and midpoint crossing</td></tr>
+<tr><td>C04</td><td>zkFMI is not uniformly stronger in secret-sharing security</td><td>Arcium's Cerberus keeps confidentiality with one honest party and aborts on deviation. Zama's KMS completes key operations with t &lt; n/3. OCLOB assumes at most two of seven malicious.</td><td>state confidentiality, correctness, completion and operator independence as four separate claims</td></tr>
+<tr><td>C05</td><td>Instruction standards, DvP and cross-ledger coordination already exist</td><td>Ownera describes intents, holds and orchestration. Corda verifies contract state and uniqueness. Canton's Token Standard (CIP-0056) standardises allocations and one-transaction settlement of all legs.</td><td>propose zkPI as verification that can be added to existing contracts. Atomicity itself is not the claim.</td></tr>
+<tr><td>C06</td><td>zkFMI is a research MVP with real function and a maturity gap</td><td>Two fills in one transaction and two continuous rounds are smoke evidence on one host. Canton has a mainnet, a commercial repo platform, a multi-firm pilot, a live Treasury trade and launched PoCs.</td><td>next priorities are continued use, consistency under failure and independent operation. Do not understate the other side's maturity.</td></tr>
+<tr><td>C07</td><td>In Japan, connecting to existing securities workflows and to a cash leg may be a condition of adoption</td><td>Progmat, ibet for Fin, Kinexys and Fnality publish adoption records. MUFG and Progmat started a JGB repo PoC on Canton in August 2026; JSCC, Mizuho and Nomura a JGB collateral PoC in April.</td><td>the first adoption demonstration is an integration, not a replacement</td></tr>
+<tr><td>C08</td><td>System-wide quantum resistance is not yet a competitive advantage</td><td>Standalone hybrids and now integration branches do not cover commitments, proofs, stored state or every transport. Competitors' PQC status is unverified, not absent.</td><td>offer PQC as a migration plan per boundary</td></tr>
+<tr><td>C09</td><td>Canton is at once the priority competitor and a candidate platform or integration destination</td><td>Daml holds business logic, authorisation and disclosure; synchronisers can be global or private. Wiring external MPC results or a zkPI verifier into a Daml app is a design inference, not a verified implementation.</td><td>keep the standalone DeFMI L1, QOMM, OCLOB and DeCCP objectives; evaluate a Canton integration at the second gate</td></tr>
+</tbody></table></div>
+<p>The shorthand used elsewhere on this site, "others prove circuits, we prove markets", is a description of what the quote proof states. It is not, on its own, evidence of novelty, and the comparison retired it as such.</p>
+
+<h2 id="canton">Canton, the closest comparison</h2>
+<p>Canton is not one product. It is a protocol, a set of synchronisers, validators that host parties, and Daml applications written by third parties. Reading any Canton case as evidence for all Canton capabilities was the most common error found in the earlier drafts, so the layers come first.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>layer</th><th>what official materials confirm</th><th>keep separate from</th></tr></thead>
+<tbody>
+<tr><td>Canton Network</td><td>independently operated applications, validators and several synchronisers connected together. Each validator stores only the ledger fragments of the parties it hosts.</td><td>one firm's Canton project as evidence that the whole network's capabilities are live</td></tr>
+<tr><td>Daml application</td><td>contracts define business logic, signatory/observer/controller roles, authorisation and disclosure. They execute on validators.</td><td>properties of the foundation versus order, credit, reservation and clearing rules that each application implements</td></tr>
+<tr><td>validator (participant node)</td><td>hosts parties, stores their contracts, decrypts and validates the transaction views addressed to them</td><td>the public-chain sense of "validator" in which every validator reads every transaction</td></tr>
+<tr><td>synchroniser</td><td>the sequencer orders and delivers encrypted messages; the mediator collects confirmations from the relevant validators and declares commit or reject. Neither validates Daml contents.</td><td>ordering and confirmation versus validation of business logic and input correctness</td></tr>
+<tr><td>Global Synchronizer</td><td>a public synchroniser run by Super Validators with CometBFT ordering, tolerance f = ⌊(n−1)/3⌋, traffic paid by burning Canton Coin, sponsorship required to join. Applications may instead use private synchronisers.</td><td>the assumption that every Canton application runs through it</td></tr>
+<tr><td>application provider</td><td>supplies on-ledger Daml and off-ledger logic, authentication and submission</td><td>protocol guarantees versus trust that the provider admits, selects and submits inputs honestly</td></tr>
+</tbody></table></div>
+
+<h3 id="canton-visibility">Who reads what</h3>
+<p>Canton splits a transaction into views and encrypts each for the participants of its informees. Unrelated parties receive nothing and synchronisers cannot decrypt. That is sub-transaction privacy: plaintext shared only with the parties that need it. It is a different guarantee from the one this stack aims at, which is that no computing node holds a complete order within the tolerated collusion bound.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>entity</th><th>can read</th><th>cannot read</th></tr></thead>
+<tbody>
+<tr><td>party (signatory, observer, controller)</td><td>views it is an informee of; divulgence may expose contracts it is not a stakeholder in</td><td>payload and party metadata of unrelated views</td></tr>
+<tr><td>the party's own validator</td><td>the trust model states it "sees all your data and could block you". External party keys keep signing authority with the party but are not described as removing visibility.</td><td></td></tr>
+<tr><td>counterparty</td><td>plaintext of the shared views, trusted not to leak them</td><td></td></tr>
+<tr><td>application provider, off-ledger components</td><td>implementation dependent. An off-ledger matching engine may handle plaintext orders.</td><td></td></tr>
+<tr><td>sequencer</td><td>encrypted envelopes, recipients, order, size, timing</td><td>contents</td></tr>
+<tr><td>mediator</td><td>each view's informee list, confirmation policy, each approve or reject</td><td>contents</td></tr>
+<tr><td>unrelated parties and validators</td><td>nothing</td><td></td></tr>
+<tr><td>auditor</td><td>plaintext of the relevant views if designed in as an observer</td><td>a portable proof of a proposition without receiving the secrets is not part of the documented standard path</td></tr>
+</tbody></table></div>
+<p>This is a design choice with a stated reason, not a gap in documentation. The 2020 Canton whitepaper says advanced cryptography including MPC is computationally expensive and that Canton limits visibility under stronger trust assumptions instead; a 2025 official post calls zero-knowledge proofs for general privacy experimental. Nothing prohibits a Canton application from calling external MPC or verifying an external proof, so the difference is between the documented standard path and this stack's path, and cannot be written as "impossible on Canton".</p>
+
+<h3 id="canton-axes">Axis by axis</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>axis</th><th>Canton, confirmed scope</th><th>zkFMI, current position</th><th>judgment</th></tr></thead>
+<tbody>
+<tr><td>who learns the secret</td><td>hidden from unrelated parties and synchronisers; host validator and entitled parties read the relevant views</td><td>participant-side splitting, no MPC node holds a complete input; collusion of three or more nodes and traffic observation remain limits</td><td><span class="pill ok">a difference can be shown</span> and it shrinks to nothing if the customer is content to disclose to its own validator</td></tr>
+<tr><td>computation hidden from the computing entities</td><td>the standard path decrypts views and re-executes Daml in plaintext</td><td>seven-node MPC, at most two malicious, research implementation</td><td><span class="pill part">candidate</span> external MPC on Canton is a design option with no verified implementation; superiority undetermined until compared under one workflow, collusion bound, availability and cost</td></tr>
+<tr><td>eligibility, credit, reservations</td><td>Daml can express and verify all three; reservation-based settlement is already standardised by CIP-0056 allocations, in plaintext</td><td>DeKYX eligibility, maker and taker reservations, guarantee capacity across the end-to-end path</td><td><span class="pill part">not a feature difference</span> the difference is whether the order-to-reservation correspondence is hidden from the matching nodes or read by registry, app and validator</td></tr>
+<tr><td>market rules</td><td>parties validate deterministic Daml logic; an identical CLOB or RFQ application is unverified, the one documented trading app is an AMM that submits swaps off-chain</td><td>QOMM RFQ and OCLOB price-time priority computed in MPC, bound into the zkPI</td><td><span class="pill part">buildable on Canton</span> in principle; not shown to exist</td></tr>
+<tr><td>input set</td><td>binds the contracts a submitted transaction references; completeness of off-ledger admission is at the application boundary</td><td>aims to bind admission order and order set into the proof; pre-admission censorship remains possible</td><td>neither proves "the whole market"; compare admission commitments and target sets</td></tr>
+<tr><td>settlement atomicity</td><td>cross-application DvP in one Daml transaction on a common synchroniser; across synchronisers, reassignment then atomic settlement, with assets pending in between</td><td>smoke evidence for multi-fill batch settlement on the native rail</td><td><span class="pill no">no zkFMI claim</span> until compared with the same legs including external ledgers</td></tr>
+<tr><td>third-party verification</td><td>relevant validators check their views; an auditor can be an observer</td><td>a zkPI verifier checks defined propositions without the secrets</td><td><span class="pill part">potential value</span> not exclusive, since a zkPI verifier could sit inside a Daml application</td></tr>
+<tr><td>operational trust</td><td>own or outsourced validator, counterparties, application provider, synchroniser, Foundation governance</td><td>MPC nodes, coordinator, read-back service, DeFMI validators; independence of keys and operators not accepted</td><td>compare who is responsible for confidentiality, correctness, availability, censorship and recovery; not node counts</td></tr>
+<tr><td>maturity, performance, legal frame</td><td>mainnet since 2024-07, protocol upgrades live, commercial repo platform, one live Treasury trade, three Japanese PoCs launched</td><td>single-host research MVP, smoke evidence</td><td><span class="pill no">do not understate Canton</span> performance under equal conditions, demand and authorisation are unverified on both sides</td></tr>
+<tr><td>post-quantum</td><td>unverified</td><td>hybrid signatures and KEM on integration branches; ZK relations classical</td><td>mark unverified, claim neither direction</td></tr>
+</tbody></table></div>
+
+<h3 id="canton-maturity">Cases, at the stage their sources state</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>case</th><th>stage in primary sources</th><th>do not generalise to</th></tr></thead>
+<tbody>
+<tr><td>Global Synchronizer</td><td>go-live 2024-07-01; Canton 3.5 logical synchroniser upgrade live 2026-06-29</td><td>usage, SLOs or authorisation of any individual application</td></tr>
+<tr><td>Canton Network Pilot</td><td>2024-03-12: 22 dApps, more than 350 <em>simulated</em> transactions on TestNet; 45 participants in the summary, 36 in the role-by-role body</td><td>production assets or continuing commercial trading</td></tr>
+<tr><td>Broadridge DLR</td><td>migrated to Canton in 2023 with cash off-chain (2024 customer story); self-reported average daily repo of $280bn in August 2025</td><td>Global Synchronizer use, on-chain cash, a confidential order book</td></tr>
+<tr><td>Tradeweb</td><td>2026-07-01: one transaction, tokenised US Treasuries against USDCx, synchronised on-chain settlement</td><td>sustained capacity or a full lifecycle</td></tr>
+<tr><td>DTCC</td><td>plan to mint a subset of DTC-custodied Treasuries on Canton; MVP planned for a controlled production environment in the first half of 2026, completion unverified</td><td>commercial launch</td></tr>
+<tr><td>JSCC / Mizuho / Nomura</td><td>2026-04-20: PoC for digital JGB collateral management, keeping JGBs' legal status under the book-entry transfer law; selected for the FSA's Payment Innovation Project</td><td>completion, end date, commercialisation</td></tr>
+<tr><td>MUFG / Progmat / Secured Finance</td><td>2026-08-13: PoC to bring JGB repo on-chain, account management institutions updating their transfer books alongside the chain, tokenised deposits or stablecoins as the cash leg</td><td>completion or legal delivery</td></tr>
+<tr><td>Progmat / DCC working group</td><td>launched 2026-05, report targeted for 2026-10</td><td>a platform choice</td></tr>
+</tbody></table></div>
+<p>The Japanese PoCs matter for this project specifically. They sit in the workflows the <a href="use-cases.html">application survey</a> ranks highest, collateral and repo, and they keep the JGB inside the book-entry system exactly as the <a href="regulation.html">regulation page</a> says a Japanese deployment must. The strategy therefore does not propose replacing those workflows. It looks for the parts inside them that need an input hidden even from the computing entity: the order, the rate quote, the collateral allocation.</p>
+
+<h2 id="others">The other seventeen</h2>
+<p>Priority is a judgment of relevance to a build, buy or connect decision, not a market-share ranking. "Integration candidate" means a plausible destination for a zkPI, not an existing integration; none exists.</p>
+
+<h3 id="ledgers">Institutional ledgers, cash legs and connectivity</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>target</th><th>competing task</th><th>confidentiality and trust boundary</th><th>stage</th><th>treatment</th></tr></thead>
+<tbody>
+<tr><td><strong>R3 Corda</strong></td><td>asset state and inter-institution workflow</td><td>sharing among relevant parties; a non-validating notary sees input-state references, not full contents</td><td>adopted for CSD Prague's DLT settlement; a separate "Corda protocol" for Solana was planned for H1 2026 and is not the ledger product</td><td>priority comparison, integration candidate</td></tr>
+<tr><td><strong>Kinexys</strong> (J.P. Morgan)</td><td>bank payments, tokenisation, fund flows</td><td>bank-operated; distinct from hiding inputs from the bank</td><td>JPM Coin on Base and a first fund-flow transaction announced 2026-04-28</td><td>institutional comparison, cash-leg candidate</td></tr>
+<tr><td><strong>Fnality</strong></td><td>institutional digital cash</td><td>backed by central-bank account funds; secret price formation not its focus</td><td>sterling system in the Bank of England's FMI report, operating under limits</td><td>cash-leg candidate</td></tr>
+<tr><td><strong>Partior</strong></td><td>cross-border payments, FX PvP</td><td>network of participating banks; confidential market computation unverified</td><td>live payment cases; a DvP proof of concept</td><td>cash-leg and PvP candidate</td></tr>
+<tr><td><strong>Ownera / FinP2P</strong></td><td>asset distribution and settlement instructions across ledgers</td><td>routers per institution, adapters, agreement among participants; depends on the underlying ledgers' hold and atomic capabilities</td><td>APIs and orchestration plans published</td><td>priority comparison, the reference for integration design; closest to where zkPI sits</td></tr>
+<tr><td><strong>Swift shared ledger</strong></td><td>interbank payment coordination, tokenised deposits</td><td>a shared layer run by Swift, bank ledgers on the side, final settlement through existing systems</td><td>ready for initial use 2026-07-09, banks preparing live pilots</td><td>monitor</td></tr>
+<tr><td><strong>Chainlink</strong> CCIP, CRE, ACE</td><td>external data, policy and cross-chain execution</td><td>oracle networks, TEEs and distributed key generation; plaintext inside a TEE is a different trust placement from MPC or ZK, whatever the word "verifiable" is applied to</td><td>privacy features and cases described 2026-05</td><td>integration candidate and comparison for zkPI</td></tr>
+<tr><td><strong>Progmat</strong></td><td>Japanese security-token issuance and administration</td><td>issuer, trust and distributor roles; hiding inputs from all of them unverified</td><td>ST project list; provider announcement of a completed migration from Corda to a dedicated Avalanche L1; a tokenised investment-trust demonstration without external sales, chain unstated</td><td>priority Japanese comparison, integration candidate</td></tr>
+<tr><td><strong>BOOSTRY / ibet for Fin</strong></td><td>Japanese STs, consortium operation</td><td>member-run network, standard contracts</td><td>operation launched 2021-06; body text of the consortium page could not be extracted</td><td>priority Japanese comparison, integration candidate</td></tr>
+</tbody></table></div>
+<p>The common lesson from this group: connectivity and customer relationships, not cryptography, are the barrier. A zkPI adds something only if the receiving ledger verifies the proof; a receiver that accepts a signature or a digest has turned the guarantee back into trust in the signer. The <a href="use-cases.html#common">six problems every instruction source has to solve</a> on the applications page is the list of what a destination must be able to do.</p>
+
+<h3 id="trading">Confidential orders and confidential asset trading</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>target</th><th>market and verification</th><th>confidentiality and trust boundary</th><th>stage</th><th>treatment</th></tr></thead>
+<tbody>
+<tr><td><strong>Renegade</strong></td><td>pairwise MPC produces a collaborative SNARK (VALID MATCH: valid inputs, correct matching, encrypted outputs); midpoint crossing at an external price; balances updated on-chain</td><td>the relayer a customer delegates to reads that customer's orders and balances in plaintext; other relayers do not; a customer may run its own relayer</td><td>mainnet on Arbitrum One</td><td>priority comparison for OCLOB. The difference is the delegation boundary, price-time priority over a finalised admission order versus midpoint crossing, and continuity from fill to reservation to settlement. Whether Renegade proves that no eligible order was omitted was not audited and is not asserted.</td></tr>
+<tr><td><strong>Prime Match</strong> (J.P. Morgan)</td><td>MPC inventory matching between a bank and its clients</td><td>bank-and-client threat model set by the authors; not this stack's node topology</td><td>live operation reported in the 2023 paper; 2026 status unverified</td><td>prior work; refutes any "first financial MPC" claim. Full treatment on <a href="prior-art.html#prime">the prior-art page</a>.</td></tr>
+<tr><td><strong>Penumbra</strong></td><td>shielded pool, per-block batch swaps</td><td>swap input assets and amounts are public in the current specification; sealed-bid batches are a stated future feature</td><td>specification confirmed</td><td>monitor market design. Wallet unlinkability and pre-execution price secrecy are separate rows and must not be merged.</td></tr>
+<tr><td><strong>Dusk</strong></td><td>ledger for regulated assets with confidential transfers and selective disclosure</td><td>model dependent; the exchange integration guide specifies a public account model</td><td>mainnet specifications; collaboration with NPEX</td><td>monitor securities workflow. A partner's licence does not extend to applications on the chain; the same standard applies to DeCCP, whose code is not a licensed CCP.</td></tr>
+</tbody></table></div>
+
+<h3 id="infra">Confidential computation and application infrastructure</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>target</th><th>provides</th><th>confidentiality and trust boundary</th><th>stage</th><th>treatment</th></tr></thead>
+<tbody>
+<tr><td><strong>Arcium</strong></td><td>general-purpose MPC execution environments on Solana</td><td>Cerberus: dishonest majority, confidentiality with one honest party, detect-and-abort; availability is a separate condition</td><td>mainnet alpha</td><td>priority comparison and a procurement option. "We have seven nodes, they are centralised" does not hold; building the same workflow on Arcium is an alternative to evaluate.</td></tr>
+<tr><td><strong>Zama</strong></td><td>FHE over encrypted state, confidential tokens, threshold KMS</td><td>computation, decryption authority and key management are separate; the KMS assumes a strong honest majority t &lt; n/3; the coprocessor separates input proofs of knowledge, FHE evaluation, commitments and signatures</td><td>mainnet 2025-12-31, a sealed-bid auction in 2026-01</td><td>infrastructure comparison alongside Arcium. Do not read its input proofs as a proof of a whole business result, and do not claim only zkFMI has external verification.</td></tr>
+<tr><td><strong>Aztec</strong></td><td>private and public applications on an Ethereum L2 with client-side proving</td><td>private witnesses stay on the client; not joint computation over several firms' inputs</td><td>Alpha V5; a critical proving-system vulnerability disclosed 2026-08-07 with a fix planned for V6, completion unverified</td><td>monitor. This stack has no independent audit either and gains nothing from a competitor's alpha status.</td></tr>
+<tr><td><strong>Hyperledger Fabric</strong></td><td>permissioned ledger, private data collections</td><td>actual data to authorised peers, hashes to the channel; orderers receive no private data. Limits which organisations read; does not hide inputs from the authorised peers</td><td>specification confirmed</td><td>the in-house alternative. Where secrecy from everyone is not required, existing governance plus Fabric may be the clearer choice, and the case for zkFMI must be made from the boundary access control cannot reach.</td></tr>
+</tbody></table></div>
+
+<h2 id="self">The same standard applied to this stack</h2>
+<p>The comparison read this project's own documents with the same rules, and fixed the results by SHA-256 in a baseline file so that later drift cannot improve them retroactively.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>item</th><th>judgment</th><th>evidence and limits</th></tr></thead>
+<tbody>
+<tr><td>separation of orders from the MPC nodes</td><td>design and implementation of the participant-side path confirmed</td><td>seven nodes, coordinator never sees an order; the browser-compatible demo still holds plaintext</td></tr>
+<tr><td>settlement of several fills</td><td>confirmed from existing artifacts</td><td>two fills, one transaction, fourteen confirmations, roots agree across five validators and a restart; not rerun for the comparison</td></tr>
+<tr><td>continuous trading</td><td>smoke only</td><td>two rounds and three fills; cancellation, expiry, reuse of returned assets, restart of seven MPC nodes; the earlier rejected run is kept in the ledger</td></tr>
+<tr><td>ledger finality</td><td>trust in the read service remains</td><td>each node reads back but does not verify an independent consensus proof</td></tr>
+<tr><td>settlement confidentiality</td><td>not every field</td><td>asset identifiers and settlement metadata on the native rail are public</td></tr>
+<tr><td>identity and eligibility</td><td>pseudonymous within a scope</td><td>DeKYX is not issuer-unlinkable and is not a certified KYC product</td></tr>
+<tr><td>clearing</td><td>research state machine</td><td>DeCCP is neither a custodian nor a licensed clearing house</td></tr>
+<tr><td>cryptographic security</td><td>fixed defects distinct from unaccepted guarantees</td><td>a note-proof defect was found and fixed; the Triptych dependency is experimental; no independent audit</td></tr>
+<tr><td>QOMM economics</td><td>confirmation experiment not passed</td><td>synthetic-data smoke; no claim of price improvement or customer benefit</td></tr>
+<tr><td>independent operation</td><td>false</td><td>one host, one administrator, no WAN</td></tr>
+</tbody></table></div>
+
+<h2 id="wording">Wording this project uses, and wording it refuses</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>sentence</th><th>status</th><th>condition, or what to say instead</th></tr></thead>
+<tbody>
+<tr><td>"a research implementation that connects confidential order admission, price-time priority matching, advance reservation and proof-carrying settlement"</td><td><span class="pill ok">used</span></td><td>with the path and the single-host scope stated</td></tr>
+<tr><td>"two fills settled atomically in one transaction"</td><td><span class="pill ok">used</span></td><td>with the run's conditions and artifact; never as capacity</td></tr>
+<tr><td>"aims to let an outsider verify that a stated order set, the rules and the settlement agree"</td><td><span class="pill part">conditional</span></td><td>naming the propositions the verifier checks and the residual trust in signers and read-back</td></tr>
+<tr><td>"the first financial MPC" / "the only MPC-plus-ZK settlement"</td><td><span class="pill no">refused</span></td><td>Prime Match and Renegade precede it</td></tr>
+<tr><td>"competitors prove circuits, we prove market rules", as evidence of novelty</td><td><span class="pill no">refused</span></td><td>Renegade proves matching; Canton's participants validate Daml rules. Name the concrete function, set, authorisation and settlement that differ.</td></tr>
+<tr><td>"Canton cannot do orders, eligibility or reservations" / "Canton has no atomic DvP"</td><td><span class="pill no">refused</span></td><td>both exist; compare documented individual applications</td></tr>
+<tr><td>"seven nodes, therefore stronger than Arcium"</td><td><span class="pill no">refused</span></td><td>the honesty assumptions differ</td></tr>
+<tr><td>"a confidential ledger hides everything, including asset types, traffic and identities"</td><td><span class="pill no">refused</span></td><td>asset tags on the native rail are public; traffic is observable; DeKYX is linkable by its issuer</td></tr>
+<tr><td>"production FMI or CCP" / "the whole system is quantum-resistant" / "faster than competitors"</td><td><span class="pill no">not yet</span></td><td>needs institutional evidence, evidence covering every cryptographic path, and measurements under equal conditions respectively</td></tr>
+</tbody></table></div>
+
+<h2 id="evidence">What zkFMI must show before claiming a difference</h2>
+<p>These are verification tasks for this project, derived from the comparison. They are not a list of anyone else's weaknesses.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>candidate proposition</th><th>evidence required</th><th>measured against</th></tr></thead>
+<tbody>
+<tr><td>orders and pricing rules hidden even from the operator</td><td>the list of entities with visibility from participant-side share generation through MPC to settlement; collusion conditions; every plaintext point; key administrators</td><td>Renegade, Arcium, Prime Match, Canton</td></tr>
+<tr><td>execution rules verifiable afterwards</td><td>propositions binding the order set, admission order, eligibility, price-time priority and partial fills, with an independent verification procedure</td><td>Renegade, Penumbra, market apps on Zama, Daml apps on Canton</td></tr>
+<tr><td>computation result equals delivery</td><td>the same commitment bound through computation, instruction, reservation and consumption of both legs; state unchanged by retry or double spend</td><td>Ownera, Corda, Chainlink, Canton Token Standard</td></tr>
+<tr><td>adoptable by an institution</td><td>issuance, custody, registration and cash-leg responsibilities; recovery; supervisory disclosure; entry and exit; legal finality</td><td>Kinexys, Fnality, Partior, Swift, Progmat, ibet for Fin, Dusk, Canton</td></tr>
+<tr><td>long-term confidentiality and verifiability</td><td>a threat model separating signatures, KEM, commitments, proofs, TLS and stored data, with migration, revocation and re-verification paths</td><td>every adopted configuration</td></tr>
+</tbody></table></div>
+
+<h2 id="strategy">What the comparison changed</h2>
+<p>The strategy that follows from the nine decisions is short. The first use case is institutional secondary trading of digital securities where an order must stay hidden from the computing entities, meaning the organisation's own validator, the application operator and the matching engine, until its order in the book is fixed. The first thing offered is an integration module: confidential matching, advance reservation and a zkPI verifier added to a ledger the customer already runs, with the standalone DeFMI L1 kept as the reference path. Canton and Renegade are the comparisons for markets and settlement, Arcium and Zama for confidential computation, Ownera for integration design.</p>
+<p>Before any of that, the first gate is a customer question, not a build: does at least one organisation document that it needs inputs hidden from its own validator and matching engine? If the answer everywhere is that disclosure to one's own validator is acceptable, a Canton-style design suffices for those customers and the initial use case is wrong. The comparison names that as the condition under which the strategy is revised, and it has not been tested.</p>
+
+<h2 id="update">When these conclusions change</h2>
+<ul>
+  <li>acceptance receipts for continuous trading, cancellation, expiry, contention, recovery and independent operation (C02, C06);</li>
+  <li>an explicit mapping of the same admission set, ordering, eligibility, reservations and settlement onto Canton or Renegade (C01, C03, C09);</li>
+  <li>the same end-to-end path run on Arcium or Zama with measured differences in output, confidentiality scope, cost and failure behaviour (C04);</li>
+  <li>a destination ledger confirming APIs, hold, commit, abort and read-back and the allocation of legal responsibilities (C05, C07);</li>
+  <li>migration receipts covering components beyond signatures and key exchange (C08);</li>
+  <li>any change in a vendor's version, stage or fix notice, which requires rereading the source before reuse.</li>
+</ul>
+
+<h2 id="limits">What this comparison did not do</h2>
+<p>It did not run a Canton node, use a competitor's application, benchmark anything, audit anyone's code, interview a customer or write to any external system. Some sources could not be read in full: the Renegade whitepaper returned a server error, the Canton pilot PDF exceeded the retrieval limit and was replaced by the official announcement of the same content, the Tradeweb investor page timed out and was replaced by Canton's republication, and the ibet for Fin consortium page yielded only its search summary. Each substitution is recorded in the source documents, and nothing unread is treated as read. The comparison is dated; a stage label from 2026-09-05 describes that day.</p>
+
+<details>
+<summary>Primary sources checked (selection, all opened 2026-09-05)</summary>
+<div class="table-wrap"><table>
+<thead><tr><th>target</th><th>sources</th></tr></thead>
+<tbody>
+<tr><td>Canton</td><td><a href="https://docs.canton.network/overview/learn/architecture">architecture</a> · <a href="https://docs.canton.network/overview/learn/privacy-model">privacy model</a> · <a href="https://docs.canton.network/overview/reference/smart-contract-consensus">consensus</a> · <a href="https://docs.canton.network/overview/reference/transaction-lifecycle">transaction lifecycle</a> · <a href="https://docs.canton.network/overview/learn/trust-model">trust model</a> · <a href="https://docs.canton.network/overview/learn/multi-synchronizer">multi-synchroniser</a> · <a href="https://docs.canton.network/overview/reference/cross-sync-dvp-example">cross-synchroniser DvP</a> · <a href="https://docs.sync.global/overview/overview.html">Splice / Global Synchronizer</a> · <a href="https://www.canton.io/publications/canton-whitepaper.pdf">2020 whitepaper</a> · <a href="https://raw.githubusercontent.com/canton-foundation/cips/main/cip-0056/cip-0056.md">CIP-0056 Token Standard</a> · <a href="https://raw.githubusercontent.com/canton-network/splice/main/token-standard/splice-api-token-allocation-v1/daml/Splice/Api/Token/AllocationV1.daml">Splice allocation interface</a> · <a href="https://www.canton.network/canton-network-press-releases/the-canton-networks-global-synchronizer-and-canton-coin-go-live">go-live 2024-07-01</a> · <a href="https://www.canton.network/blog/logical-synchronizer-upgrades">Canton 3.5 LSU</a> · <a href="https://www.canton.network/canton-network-press-releases/the-canton-network-completes-the-most-comprehensive-blockchain-pilot-to-date-for-tokenized-real-world-assets">pilot 2024-03-12</a> · <a href="https://www.broadridge.com/press-release/2025/billions-in-average-daily-processed-trade-volumes-on-broadridge-dlt-repo-platform">Broadridge 2025-09-10</a> · <a href="https://blog.digitalasset.com/blog/customer-story-broadridge">Broadridge customer story</a> · <a href="https://www.canton.network/canton-network-press-releases/tradeweb-on-chain-us-treasuries-canton">Tradeweb 2026-07-01</a> · <a href="https://canton.foundation/the-gsf-is-now-canton-foundation/">Canton Foundation renaming</a></td></tr>
+<tr><td>Japan</td><td><a href="https://www.mufg.jp/dam/pressrelease/2026/pdf/news-20260813-002_ja.pdf">MUFG JGB repo PoC 2026-08-13</a> · <a href="https://blog.digitalasset.com/press-release/launch-of-proof-of-concept-trial-for-digital-collateral-management-using-japanese-government-bonds-jgbs">JSCC / Mizuho / Nomura PoC 2026-04-20</a> · <a href="https://prtimes.jp/main/html/rd/p/000000006.000172212.html">Progmat / DCC WG</a> · <a href="https://progmat.co.jp/concept/st_list/">Progmat ST list</a> · <a href="https://progmat.co.jp/news/2026-09-03-press/">Progmat investment-trust demonstration</a> · <a href="https://www.avax.network/about/blog/progmat-migrates-2b-tokenized-securities-to-avalanche">Progmat migration plan</a> · <a href="https://boostry.co.jp/blog/ibet-for-Fin">ibet for Fin</a> · <a href="https://www.sbigroup.co.jp/news/pdf/group/2021/0615_a.pdf">ibet for Fin launch 2021</a></td></tr>
+<tr><td>Renegade, Prime Match</td><td><a href="https://help.renegade.fi/hc/en-us/articles/32530262853395-What-are-relayers-on-Renegade">relayers</a> · <a href="https://help.renegade.fi/hc/en-us/articles/32529961385363-What-is-a-collaborative-zkSNARK">collaborative zkSNARK</a> · <a href="https://help.renegade.fi/hc/en-us/articles/32530439391763-What-is-the-Renegade-peer-to-peer-network">peer-to-peer network</a> · <a href="https://github.com/renegade-fi/renegade">repository</a> · <a href="https://arxiv.org/abs/2310.09621">Prime Match, arXiv 2310.09621</a></td></tr>
+<tr><td>Arcium, Zama, Aztec, Fabric</td><td><a href="https://docs.arcium.com/multi-party-execution-environments-mxes/mpc-protocols">Arcium MPC protocols</a> · <a href="https://www.zama.org/post/zama-developer-program-mainnet-season1-building-for-the-long-game">Zama mainnet</a> · <a href="https://github.com/zama-ai/kms/blob/main/docs/getting-started/concepts.md">Zama KMS concepts</a> · <a href="https://docs.zama.org/protocol/protocol/overview/coprocessor">Zama coprocessor</a> · <a href="https://aztec.network/blog/alpha-v5-proving-system-vulnerability">Aztec V5 notice</a> · <a href="https://hyperledger-fabric.readthedocs.io/en/latest/private-data/private-data.html">Fabric private data</a></td></tr>
+<tr><td>Ledgers and connectivity</td><td><a href="https://r3.com/r3s-corda-selected-as-first-authorized-dlt-platform-for-european-dlt-pilot-regime/">Corda, CSD Prague</a> · <a href="https://docs.r3.com/en/platform/corda/5.2/developing-applications/ledger/notaries/non-validating-notary.html">Corda non-validating notary</a> · <a href="https://www.jpmorgan.com/payments/newsroom/kinexys-milestones-2026">Kinexys milestones</a> · <a href="https://www.bankofengland.co.uk/financial-stability/financial-market-infrastructure-supervision/report/fmi-annual-report-2025-26">Bank of England FMI report 2025–26</a> · <a href="https://partior.com/">Partior</a> · <a href="https://finp2p-docs.ownera.io/docs/orchestration-plan-capabilities">Ownera orchestration</a> · <a href="https://www.swift.com/news-events/press-releases/swifts-blockchain-ledger-ready-use-17-banks-set-pioneer-tokenised-cross-border-payments-trusted-global-infrastructure">Swift shared ledger</a> · <a href="https://chain.link/blog/how-chainlink-is-bringing-privacy-to-blockchains">Chainlink privacy</a> · <a href="https://protocol.penumbra.zone/main/dex/swap.html">Penumbra batch swaps</a> · <a href="https://docs.dusk.network/developer/integrations/exchanges/">Dusk exchange integration</a></td></tr>
+</tbody></table></div>
+</details>
+
+<div class="next"><a href="prior-art.html">← Prior art</a><a href="regulation.html">Regulation →</a></div>

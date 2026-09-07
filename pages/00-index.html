@@ -148,17 +148,17 @@ section: top
     <h2>Where it sits among the alternatives</h2>
     <p>Six axes, stated in both directions. On most of them somebody else is stronger; on two of them nobody else is present.</p>
     <div class="table-wrap"><table class="compare">
-      <thead><tr><th></th><th>Conventional FMI chain</th><th>DvP on DLT pilots</th><th>MPC dark pools (Rialto, P2DEX, Renegade)</th><th>Prime Match (J.P. Morgan)</th><th>Auditable MPC (BDO 2014, Rivinius 2022)</th><th>zkFMI</th></tr></thead>
+      <thead><tr><th></th><th>Conventional FMI chain</th><th>DvP on DLT pilots</th><th>Canton (Daml applications)</th><th>MPC dark pools (Rialto, P2DEX, Renegade)</th><th>Prime Match (J.P. Morgan)</th><th>Auditable MPC (BDO 2014, Rivinius 2022)</th><th>zkFMI</th></tr></thead>
       <tbody>
-        <tr><td>venue sees the order</td><td class="no">yes</td><td class="no">yes</td><td class="yes">no</td><td class="part">semi-honest hub</td><td class="yes">no</td><td class="yes">no</td></tr>
-        <tr><td>settlement sees amount and price</td><td class="no">yes</td><td class="no">yes</td><td class="no">mostly</td><td class="no">yes</td><td class="no">out of scope</td><td class="yes">no</td></tr>
-        <tr><td>best execution provable by an outsider</td><td class="no">reports, abolished as unverifiable</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="part">circuit correctness</td><td class="yes">yes, the mechanism</td></tr>
-        <tr><td>clearing: novation, netting, waterfall</td><td class="yes">CCP</td><td class="part">partly</td><td class="no">no</td><td class="no">bank pipeline</td><td class="no">no</td><td class="yes">DeCCP, on commitments</td></tr>
-        <tr><td>robustness / accountability</td><td class="yes">legal</td><td class="part">consensus</td><td class="part">varies</td><td class="part">the bank</td><td class="yes">Rivinius: both, 11–20×</td><td class="part">rung 1 deployed; rung 5 built at n=9</td></tr>
-        <tr><td>in production</td><td class="yes">yes</td><td class="part">pilots</td><td class="part">some</td><td class="yes">yes</td><td class="no">no</td><td class="no">research, one host</td></tr>
+        <tr><td>venue sees the order</td><td class="no">yes</td><td class="no">yes</td><td class="no">own validator and app do</td><td class="part">a delegated relayer does</td><td class="part">semi-honest hub</td><td class="yes">no</td><td class="yes">no</td></tr>
+        <tr><td>settlement sees amount and price</td><td class="no">yes</td><td class="no">yes</td><td class="no">the parties' validators</td><td class="no">mostly</td><td class="no">yes</td><td class="no">out of scope</td><td class="yes">no</td></tr>
+        <tr><td>best execution provable by an outsider</td><td class="no">reports, abolished as unverifiable</td><td class="no">no</td><td class="part">parties re-execute the rules</td><td class="part">matching proof, not the order set</td><td class="no">no</td><td class="part">circuit correctness</td><td class="yes">yes, the mechanism</td></tr>
+        <tr><td>clearing: novation, netting, waterfall</td><td class="yes">CCP</td><td class="part">partly</td><td class="part">per application</td><td class="no">no</td><td class="no">bank pipeline</td><td class="no">no</td><td class="yes">DeCCP, on commitments</td></tr>
+        <tr><td>robustness / accountability</td><td class="yes">legal</td><td class="part">consensus</td><td class="part">parties + BFT ordering</td><td class="part">varies</td><td class="part">the bank</td><td class="yes">Rivinius: both, 11–20×</td><td class="part">rung 1 deployed; rung 5 built at n=9</td></tr>
+        <tr><td>in production</td><td class="yes">yes</td><td class="part">pilots</td><td class="yes">mainnet, commercial repo</td><td class="part">some</td><td class="yes">yes</td><td class="no">no</td><td class="no">research, one host</td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:.9rem">The <a href="docs/prior-art.html">prior-art page</a> has the paper-by-paper version, including the three claims retracted from earlier drafts.</p>
+    <p class="muted" style="font-size:.9rem">The <a href="docs/prior-art.html">prior-art page</a> has the paper-by-paper version, including the three claims retracted from earlier drafts. <a href="docs/comparison.html">Comparison with other systems</a> covers eighteen products and platforms, Canton in depth, from public materials of 2026-09-05.</p>
   </div>
 </section>
 
@@ -218,7 +218,7 @@ section: top
         <div class="tag">researcher · reviewer</div>
         <h3>Check the claims</h3>
         <ol>
-          <li><a href="docs/prior-art.html">Position against prior work</a></li>
+          <li><a href="docs/prior-art.html">Position against prior work</a> and <a href="docs/comparison.html">other systems</a></li>
           <li><a href="docs/measurements.html#misses">Predictions that missed</a></li>
           <li><a href="docs/accountability.html">Accountability and robustness</a></li>
           <li><a href="docs/status.html">Status</a> and the <a href="docs/principles.html">working rules</a></li>

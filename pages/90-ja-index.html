@@ -91,6 +91,13 @@ section: ja
 
 <section class="block">
   <div class="wrap">
+    <h2>他のシステムとの比較</h2>
+    <p class="intro">Canton、Renegade、Arcium、Zama、Corda、Kinexys、Fnality、Partior、Ownera、Swift、Chainlink、Progmat、ibet for Fin、Prime Match、Penumbra、Dusk、Aztec、Fabric の 18 件を、各社の仕様書・発表・監督当局資料から 2026-09-05 に読み比べました。順位表ではありません。差を述べられる軸、相手が先を行っている軸、その結果としてこの計画が言ってよい文と言わない文を整理したものです。最重要の比較対象は Canton です。必要な当事者だけが平文を読む方式（自社バリデータとアプリ運営者は読める）と、計算するノード自身にも完全な注文を渡さない方式との違いが、示せる可能性のある差です。予約と原子的な DvP は Canton の Token Standard が既に標準化しており、それ自体は差になりません。日本では JGB 担保・レポの実証が Canton 上で 3 件進んでおり、同じ業務の置き換えは提案せず、その中で計算主体にも隠す必要のある部分（注文、レート提示、担保配分）に焦点を絞る方針です。「世界初の金融 MPC」「唯一」「競合より速い」「全系統が耐量子」は使いません。詳細は <a href="../docs/comparison.html">Comparison with other systems（英語）</a>。</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
     <h2>この研究の進め方</h2>
     <div class="grid">
       <div class="card"><h3>数値は手で書かない</h3><p>掲載する数値はすべて artifact（JSON）と、それを書いた Rust バイナリを持ちます。DeFMI や監査の文書は JSON から生成し、散文の数字が計測から乖離しないようにしています。</p></div>

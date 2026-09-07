@@ -67,6 +67,7 @@ NAV_DOCS = [
         ("Security and trust boundary", "docs/security.html"),
         ("Post-quantum migration", "docs/post-quantum.html"),
         ("Position against prior work", "docs/prior-art.html"),
+        ("Comparison with other systems", "docs/comparison.html"),
         ("Regulation", "docs/regulation.html"),
         ("Status and acceptance", "docs/status.html"),
         ("Roadmap", "docs/roadmap.html"),
