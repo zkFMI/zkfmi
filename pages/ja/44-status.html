@@ -26,7 +26,7 @@ section: docs
 <tr><td>DeKYX</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>発行者のガバナンス、失効の運用、発行者にも連結不能な資格（BBS+/CL アダプタ）</td></tr>
 <tr><td>DeCCP</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>クロスマージン、部分的な保証の遷移、法的な更改</td></tr>
 <tr><td>Aethel</td><td><span class="pill ok">実装済み · 8 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コード外での法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
-<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">統合ブランチで受入済み · ホスト 1 台 · 8 のうち 4 が main</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。共通基盤 crate は NIST ACVP ベクタでゲート</td><td>リリース rev の固定、lock 再生成、ゲート再実行、main への統合（2026 年 9 月 7 日の週を目標）。ZK の関係式は古典のまま。WAN、HSM、FIPS、性能比較は未実施。<a href="post-quantum.html">詳細</a></td></tr>
+<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。共通基盤 crate は NIST ACVP ベクタでゲート</td><td>リリース rev の固定、lock 再生成、ゲート再実行、main への統合（2026 年 9 月 7 日の週を目標）。ZK の関係式は古典のまま。WAN、HSM、FIPS、性能比較は未実施。<a href="post-quantum.html">詳細</a></td></tr>
 <tr><td>企業向け PoC ガイド（日本語）</td><td><span class="pill ok">執筆済み</span></td><td>—</td><td>企業が自社のハードウェアで行う評価</td></tr>
 <tr><td>形式的な安全性定義と証明</td><td><span class="pill no">未受入</span></td><td>入力検査の健全性、責任者の名指し、秘匿性は証明済み。MPC は仮定。合成は論証</td><td>UC での扱い。OCLOB の安全性定義</td></tr>
 <tr><td>第三者監査</td><td><span class="pill no">なし</span></td><td>内部レビュー 2 回、所見を記録</td><td>独立した暗号・Rust・ホスト VM・統合の監査</td></tr>
