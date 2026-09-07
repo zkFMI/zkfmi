@@ -18,6 +18,7 @@ section: docs
 
 <h2 id="next">Next, by dependency</h2>
 <ul class="timeline">
+  <li><h4>Land the post-quantum integration on main</h4><p>Hybrid Ed25519 + ML-DSA-65 signatures and X25519 + ML-KEM-768 key exchange across all eight repositories passed a single-host native acceptance on 2026-09-06 on integration branches. Remaining: pin final revisions, regenerate locks, rerun the gates, merge. Then measure the performance overhead the plan asks for. See <a href="post-quantum.html">Post-quantum migration</a>.</p></li>
   <li><h4>Threshold settlement authority for OCLOB</h4><p>Replace the single research gateway that opens the participant's fixed-length settlement authority with threshold decryption or joint zkPI generation by the MPC nodes. The P0 item that keeps OCLOB off real assets.</p></li>
   <li><h4>Note rail on the L1 for OCLOB</h4><p>The L1 acceptance for QOMM runs with zero account records; OCLOB's authoritative state still uses commitment accounts and a reservation root.</p></li>
   <li><h4>Atomic admit-pledge-limit-pay</h4><p>Grant and admit are separate calls and no state locks pledged collateral. Written requirement, not built.</p></li>

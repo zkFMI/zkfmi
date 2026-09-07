@@ -1,0 +1,82 @@
+---
+title: Post-quantum migration
+description: Where the zkFMI stack stands on post-quantum cryptography. The shared zkfmi-crypto foundation (hybrid Ed25519 + ML-DSA-65 signatures, X25519 + ML-KEM-768 key exchange, canonical signing inputs, purpose-bound keys), the P0 to P6 plan, what has passed a single-host native acceptance on integration branches, what stays classical, and what is still pending before it reaches main.
+path: docs/post-quantum.html
+section: docs
+---
+<h1>Post-quantum migration</h1>
+<p class="lede">The migration is hybrid and fail-closed: every classical signature or key exchange that protects money gains a post-quantum partner, both must verify, and a peer that offers only the classical suite is refused. The work is on integration branches across all eight repositories and passed a single-host native acceptance on 2026-09-06. It is not on <code>main</code> yet.</p>
+<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json · status as of 2026-09-07</p>
+
+<h2 id="status">Status at a glance</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>item</th><th>state</th><th>evidence</th></tr></thead>
+<tbody>
+<tr><td>Foundation crate <code>zkfmi-crypto</code> (P0)</td><td><span class="pill ok">built · gated</span></td><td>fmt, strict clippy, release tests in the official Rust 1.97 image on one Linux host; 45 tests including 8 NIST ACVP vectors and RFC 8032</td></tr>
+<tr><td>Cryptographic inventory of the seven repositories (P0)</td><td><span class="pill ok">complete</span></td><td>507 files, 1,032 primitive entries; independent grep reconciliation with 0 missing and 0 extra</td></tr>
+<tr><td>Integration P1 to P6 across QOMM, zkPI, DeFMI, OCLOB, DeKYX, DeCCP, Aethel</td><td><span class="pill part">accepted on branches · 1 host</span></td><td>native run 2026-09-06, exit 0, 15 min 07 s: market, finality, lifecycle, P6 recovery; 1,119 source files hash-identical before and after</td></tr>
+<tr><td>Release pinning, lock regeneration, gate rerun, merge to <code>main</code></td><td><span class="pill part">in progress</span></td><td>the working target is the week of 7 September 2026; until then <code>main</code> is classical</td></tr>
+<tr><td>Zero-knowledge relations (commitments, range proofs, rings, quote proof, FROST)</td><td><span class="pill no">classical</span></td><td>by design for now; see below</td></tr>
+<tr><td>Independent operators, WAN, HSM, FIPS validation, performance comparison, external audit</td><td><span class="pill no">none</span></td><td>the acceptance record lists each as absent</td></tr>
+</tbody></table></div>
+
+<h2 id="foundation">The foundation: zkfmi-crypto</h2>
+<p>One crate that every other repository depends on by pinned git revision. It defines the vocabulary and the compositions; it does not replace the services' own key stores or DeKYX's issuer epochs, it gives them a common shape.</p>
+<ul>
+  <li><strong>Suite identifiers</strong>, closed and versioned: the classical suites in use (Ed25519, FROST over ristretto255, Pedersen and Bulletproofs over ristretto255, X25519 in TLS 1.3, SHA-256/512, SHAKE128), the post-quantum ones (ML-KEM-768, ML-DSA-65, ML-DSA-44, SLH-DSA-SHA2-128s) and the hybrids (X25519MLKEM768, Ed25519+ML-DSA-65). Each carries its purpose and its byte sizes, checked against the FIPS 203/204/205 constants in tests. Unknown suites and versions are refused, never defaulted.</li>
+  <li><strong>Canonical signing input</strong>: protocol, version, network, deployment, contract, transaction kind, object identifiers, sequence or nonce, expiry, suite and body hash, length-prefixed with fixed-width integers under the domain <code>ZKFMI:CANONICAL:v1</code>. Golden byte vectors are fixed in hex. The same body under a different purpose yields a different preimage, so a signature cannot be moved between uses.</li>
+  <li><strong>Purpose-bound keys</strong>: a key record names its participant, purpose (quote, settlement instruction, key rotation, governance, transport, attestation), suite, generation, validity window, revocation and rotation proof. Rotation is signed both ways: the old key signs the new, the new signs the old key's identifier.</li>
+  <li><strong>Hybrid signature</strong>: Ed25519 and ML-DSA-65 over the same canonical input. Verification accepts only when both verify; one failing, one missing or the two swapped is a rejection. The ML-DSA context string carries the purpose and suite.</li>
+  <li><strong>Hybrid key exchange</strong>: X25519 and ML-KEM-768 with independently generated secrets combined through HKDF-SHA256 over both shared secrets, both ciphertexts and the suite identifier. Substituting either half changes the derived key, which is tested.</li>
+  <li><strong>Backends</strong>: RustCrypto <code>ml-dsa</code> 0.1.1 and <code>ml-kem</code> 0.3.2 (pure Rust, Apache-2.0 OR MIT) behind byte-oriented traits so that a FIPS-validated backend such as aws-lc-rs could be substituted later; ed25519-dalek 2.2 and x25519-dalek 2.0 on the classical side. <code>#![forbid(unsafe_code)]</code>, secrets zeroized. The choice is an engineering choice, not a production, audit or FIPS claim.</li>
+</ul>
+
+<h2 id="sizes">What the bytes cost</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>scheme</th><th class="num">public key</th><th class="num">signature or ciphertext</th></tr></thead>
+<tbody>
+<tr><td>ML-KEM-768</td><td class="num">1,184 B (dk 2,400 B)</td><td class="num">1,088 B</td></tr>
+<tr><td>ML-DSA-44</td><td class="num">1,312 B</td><td class="num">2,420 B</td></tr>
+<tr><td>ML-DSA-65 (chosen)</td><td class="num">1,952 B</td><td class="num">3,309 B</td></tr>
+<tr><td>ML-DSA-87</td><td class="num">2,592 B</td><td class="num">4,627 B</td></tr>
+<tr><td>SLH-DSA-SHA2-128s</td><td class="num">32 B</td><td class="num">7,856 B</td></tr>
+</tbody></table></div>
+<p>Three ML-DSA-65 signatures for a 3-of-7 approval are 9,927 B. Against the settlement package sizes measured on the classical stack (57,971 B in the account-rail runs, 3,424 B with Bulletproofs at 64-bit rails), the extra signatures are not the dominant term, but the plan's provisional 16 KB target and 32 KB ceiling were written against a package definition that already exceeds them; they are to be re-set after the definition is fixed. On the policy-update path, ML-DSA-65 is about 15× the bytes of Ed25519, under three megabytes a second at the rates a real market maker uses. No post-quantum timing is claimed on this site until the comparison is measured.</p>
+
+<h2 id="phases">The plan, and where each phase stands</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>phase</th><th>what it covers</th><th>observed on the integration branches</th></tr></thead>
+<tbody>
+<tr><td><strong>P0</strong> inventory and baseline</td><td>machine-readable inventory of every cryptographic use; suite, key and version fields added to formats; baselines measured</td><td>inventory complete; foundation crate gated; the classical baseline measurements remain those on the <a href="measurements.html">measurements page</a></td></tr>
+<tr><td><strong>P1</strong> transport</td><td>hybrid key exchange on every persistent connection; no per-order KEM; downgrade refused</td><td>QOMM, OCLOB and DeFMI connections require TLS 1.3 with <code>X25519MLKEM768</code> and ML-DSA-65 certificate keys and chain signatures, including the trust anchor; the MP-SPDZ socket adapter enforces the same group, version and signature allow-lists with hostname verification; tickets and session caching disabled; OpenSSL 3.5 vendored so the base image does not change. Recipient envelopes for note openings use the hybrid KEM with AES-256-GCM, bound to recipient, purpose, suite and version</td></tr>
+<tr><td><strong>P2</strong> instruction and settlement approval</td><td>hybrid signatures on zkPI issuance and on reservation, fill and cancel approvals</td><td>typed, versioned execution wires; winner envelopes require roster-pinned Ed25519 and ML-DSA signatures over the same body; native settlement requires registered per-node ML-DSA approvals with exact quorum and roster checks</td></tr>
+<tr><td><strong>P3</strong> DeKYX</td><td>issuer signatures, status lists and holder possession proofs</td><td>registered hybrid authorisation, encrypted holder custody, independent holder possession keys, fail-closed legacy snapshots</td></tr>
+<tr><td><strong>P4</strong> DeCCP, guarantees, collateral, cross-domain</td><td>governance, clearing approvals, facilities, finality receipts</td><td>governance, participant, provider, guarantor/CSD, DeCCP, cross-domain and Aethel authority paths use registered hybrid keys; OCLOB participants hold independent one-time claim keys</td></tr>
+<tr><td><strong>P5</strong> public audit proofs</td><td>post-quantum zero knowledge for what is published</td><td>narrow: a STARK (Miden 0.32, upstream alpha, unaudited) proves public-root continuity, the settled flag and the receipt and zkPI digest context in fixed slots. It does not prove hidden pricing, conservation or the anonymous relations</td></tr>
+<tr><td><strong>P6</strong> retirement and recovery</td><td>retiring classical keys, archived recovery, replay</td><td>checkpoint provenance, key retirement, archived recovery and exact replay of randomised receipts exercised in deterministic and native gates; retirement of the classical suites themselves has not happened</td></tr>
+</tbody></table></div>
+
+<h2 id="acceptance">What the native acceptance ran</h2>
+<p>One frozen source snapshot of all eight repositories (1,119 files, hash-identical before and after the run) built into pinned images on one Linux host, then: seven MP-SPDZ processes over the hybrid TLS adapter, the DeFMI L1, and the OCLOB maker and taker APIs. Four scenarios passed in sequence, 15 minutes in total.</p>
+<ul>
+  <li><strong>market</strong>: three rounds, two autonomous settlements, four post-quantum response signatures, eight one-time keys, recovery after a lost response, zero duplicate settlements.</li>
+  <li><strong>finality</strong>: a signed private-state receipt returns byte-identical on retry in the same process, after reopen and from another process; double application refused; seven-node canonical observation; substitution refused; wallet reopen; three claims; two confidential facility witnesses recovered and spent into the next order.</li>
+  <li><strong>lifecycle</strong>: three fills, twelve new post-quantum keys, six response signatures, an ordered cancel after partial fills with exact replay and restart, expiry release, a seven-node restart checkpoint.</li>
+  <li><strong>P6 recovery</strong>: two recovery tests under freshly resolved immutable dependencies.</li>
+</ul>
+<p>Two defects were found by this run and fixed before it passed: a receipt whose ML-DSA signature was regenerated on every retry (the signed receipt is now persisted and replayed), and a refund opening re-authorised under a new operation identifier after a partial fill (the original claim context is now kept). Supporting gates on the branches: 125 OCLOB tests, 279 tests across the zkPI, DeKYX, DeCCP and P5 workspaces, QOMM transport and demo tests, Aethel end-to-end, all with strict clippy.</p>
+
+<h2 id="classical">What stays classical, and why</h2>
+<p>The migration covers signatures and key exchange. It does not, and cannot yet, cover the zero-knowledge relations the settlement layer runs on. Pedersen commitments, Bulletproofs range proofs, the one-of-many rings, the quote proof and the FROST threshold signature on the instruction all rest on the discrete logarithm. The <a href="binding.html#pq">binding page</a> has the full argument: hiding is unconditional and survives a quantum adversary, binding does not, and the maker's policy commitment that is opened against every quote for the life of the policy is the place where that bites first. VOLE-in-the-Head commitments were implemented and measured (5.9× to 11× Pedersen over a wide field, and one-time), lattice commitments break Shamir's reconstruction, and the open question remains a random-oracle-only commitment that opens many times. Until that exists, the post-quantum guarantee on this stack is about who signed and who can read the channel, not about the proofs.</p>
+<p>Two smaller things are also still classical on the branches: the FROST self-signature does not cover the added post-quantum key (per-node ML-DSA approvals sit beside FROST rather than inside it), and the viewing grants and spend disclosures outside consensus have not been migrated.</p>
+
+<h2 id="limits">Evidence limits</h2>
+<ul>
+  <li>Single host, one administrator. No independent operators, no WAN, no physical HSM.</li>
+  <li>No FIPS validation of the backends and no external audit.</li>
+  <li>No performance comparison yet: the plan's throughput and latency targets (≥95% of baseline, a p95 overhead target of 5 ms) are unmeasured, and the seven-process network fault tests are not seven-node WAN evidence.</li>
+  <li>Release pinning is pending: the integration branches reference the foundation by a pre-release revision; final immutable revisions across the eight repositories, regenerated locks and a rerun of the gates come before the merge to <code>main</code>.</li>
+  <li>The P5 prover depends on an upstream alpha (Miden 0.32) and proves a deliberately narrow statement.</li>
+</ul>
+
+<div class="next"><a href="security.html">← Security</a><a href="prior-art.html">Position against prior work →</a></div>

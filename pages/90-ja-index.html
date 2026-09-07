@@ -84,6 +84,13 @@ section: ja
 
 <section class="block">
   <div class="wrap">
+    <h2>耐量子化の状況</h2>
+    <p class="intro">署名と鍵交換をハイブリッドに移行中です。Ed25519 + ML-DSA-65（両方の検証が通ったときだけ受理）、X25519 + ML-KEM-768（全常設接続、古典方式への降格は拒否）。共通基盤 crate <code>zkfmi-crypto</code> を 8 リポジトリすべてが参照し、P1〜P6 の統合ブランチが 2026-09-06 に単一ホスト上のネイティブ受入（市場・finality・lifecycle・P6 復旧、15 分）を通過しました。最終 rev の固定・lock 再生成・ゲート再実行・main への統合が残っており、9 月 7 日の週を目標にしています。ゼロ知識の関係式（Pedersen、範囲証明、ring、quote proof、FROST）は意図的に古典のまま、性能比較・WAN・HSM・FIPS・外部監査は未実施です。詳細は <a href="../docs/post-quantum.html">Post-quantum migration（英語）</a>。</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
     <h2>この研究の進め方</h2>
     <div class="grid">
       <div class="card"><h3>数値は手で書かない</h3><p>掲載する数値はすべて artifact（JSON）と、それを書いた Rust バイナリを持ちます。DeFMI や監査の文書は JSON から生成し、散文の数字が計測から乖離しないようにしています。</p></div>

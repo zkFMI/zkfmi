@@ -179,6 +179,10 @@ section: top
         <p>Validators do not replay the private MP-SPDZ transcript. The share-to-proof handoff is closed by matching the field and a per-party input check, and that remaining committee trust boundary is stated in the wire specification rather than left implicit.</p>
       </div>
       <div class="card">
+        <h3>Post-quantum, half done on purpose</h3>
+        <p>Signatures and key exchange are moving to hybrids: Ed25519 + ML-DSA-65 and X25519 + ML-KEM-768, both halves required, downgrade refused. Accepted on integration branches on one host in September 2026, merge pending. The zero-knowledge relations stay on the discrete logarithm until a commitment that reopens many times exists without a group. <a href="docs/post-quantum.html">Status</a>.</p>
+      </div>
+      <div class="card">
         <h3>Anonymity is other people's traffic</h3>
         <p>A ring of 16 with no other settlements around it names its note with certainty. With sixteen settlements of traffic and recency-matched decoys the observer is at the nominal 1/16. A construction that hides you in a crowd does nothing in an empty room, and the measurements say so.</p>
       </div>

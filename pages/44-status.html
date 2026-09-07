@@ -6,7 +6,7 @@ section: docs
 ---
 <h1>Status and acceptance</h1>
 <p class="lede">"Built" means the code exists and its tests pass in the locked workspace. "Accepted" means it ran in the repository's release gate on the stated topology. Neither means production, and the stated topology for every multi-node acceptance is one Linux host under one administrator.</p>
-<p class="src">last checked against repository heads of 2026-09-05</p>
+<p class="src">last checked against repository heads of 2026-09-07</p>
 
 <h2 id="summary">One-paragraph summary</h2>
 <p>The end-to-end path exists and has been run: a participant splits an order or request, seven MPC processes compute it, a 3-of-7 quorum issues a threshold zkPI, and five AvalancheGo validators running the Rust VM settle both legs atomically, agree on a state root, refuse a replay, and recover one validator after a restart with the same root. That is evidence for native execution and recovery. It is not evidence for independent organisations, a WAN, HSM-held keys, a supervisor's key ceremony, or a legal finality regime, and none of those has been attempted.</p>
@@ -26,6 +26,7 @@ section: docs
 <tr><td>DeKYX</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>issuer governance, revocation ops, issuer-unlinkable credentials (BBS+/CL adapter)</td></tr>
 <tr><td>DeCCP</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>cross-margining, partial guarantee transitions, legal novation</td></tr>
 <tr><td>Aethel</td><td><span class="pill ok">built · 8 crates</span></td><td>test, clippy, fmt, release build</td><td>legal assignment, perfection, tax, bankruptcy treatment outside code</td></tr>
+<tr><td>Post-quantum migration (P0–P6, <code>zkfmi-crypto</code>)</td><td><span class="pill part">accepted on integration branches · 1 host</span></td><td>native acceptance 2026-09-06: market, finality, lifecycle, P6 recovery; foundation crate gated with NIST ACVP vectors</td><td>release pinning, lock regeneration, gate rerun, merge to main (targeted for the week of 7 Sep 2026); ZK relations remain classical; no WAN, HSM, FIPS or performance comparison. <a href="post-quantum.html">Details</a></td></tr>
 <tr><td>Enterprise PoC guides (JA)</td><td><span class="pill ok">written</span></td><td>—</td><td>a company-run evaluation on its own hardware</td></tr>
 <tr><td>Formal security definition and proofs</td><td><span class="pill no">not accepted</span></td><td>soundness of input check, naming, hiding proved; MPC assumed; composition argued</td><td>UC treatment; OCLOB security definition</td></tr>
 <tr><td>Third-party audit</td><td><span class="pill no">none</span></td><td>two internal review rounds, findings recorded</td><td>independent cryptographic, Rust, host-VM and integration audit</td></tr>

@@ -63,6 +63,8 @@ section: docs
 <p>A maker's policy commitment is not opened once. It sits for the life of the policy and is opened against every quote, and the mechanism is an auction. Rivinius et al. point out that computational binding decays over the life of a commitment: a party who eventually breaks the discrete log can shift another party's input undetectably, and "in an auction, this could be used to reduce other parties' bids". That is this stack's exact shape and it is the strongest argument in the literature for a post-quantum commitment here specifically: it does not need a quantum computer, only enough time.</p>
 <p>The measured alternatives: VOLE-in-the-Head commitments rest on a random oracle only but are one-time (Δ is public after the first opening), and an RFQ cannot queue openings because the coefficients depend on a request that has not arrived; lattice (BDLOP) commitments reopen freely at kilobytes each. The open question, stated on the <a href="prior-art.html#open">prior-art page</a>, is a random-oracle-only commitment over F_p that opens many times.</p>
 
+<p>The signature and key-exchange half of that question has a migration under way: hybrid Ed25519 + ML-DSA-65 and X25519 + ML-KEM-768 across all eight repositories, accepted on integration branches on one host and pending merge. The <a href="post-quantum.html">post-quantum page</a> has the status, the sizes and what stays classical.</p>
+
 <h2 id="tee">What is deliberately not in the trust boundary</h2>
 <p>Trusted execution environments. The CPU manufacturer's attestation key, the enclave implementation and microarchitectural side channels are not added to the boundary. OCLOB's threat model says so explicitly against Tesseract-style designs; the same stance holds across the stack.</p>
 
