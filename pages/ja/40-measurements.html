@@ -96,6 +96,21 @@ section: docs
 <tr><td>Solana: one-of-many 検証器、群 32</td><td class="num">951,503 CU（上限 1.4M）</td><td>solana_cu.json</td></tr>
 </tbody></table></div>
 
+<h2 id="post-quantum">従来方式と耐量子方式を並べる</h2>
+<p>各行は、同じ方法・同じホストで測った従来方式の値と耐量子方式の値の組である。方法、実行前に書いた予測、受領証は<a href="post-quantum.html#timing">耐量子のページ</a>にある。いずれも 1 回の計測である。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>量</th><th class="num">従来方式</th><th class="num">耐量子（ハイブリッド）</th><th class="num">比</th><th>計測場所</th></tr></thead>
+<tbody>
+<tr><td>署名を 1 本作る（中央値）</td><td class="num">13.6 µs（Ed25519）</td><td class="num">359.3 µs（Ed25519 + ML-DSA-65）</td><td class="num">26.4×</td><td>ビルドホストの 1 コア、RustCrypto 実装、2026-09-07</td></tr>
+<tr><td>署名を 1 本確かめる（中央値）</td><td class="num">38.4 µs</td><td class="num">173.7 µs</td><td class="num">4.5×</td><td>同上</td></tr>
+<tr><td>鍵交換、カプセル化 / 開封</td><td class="num">48.9 / 37.0 µs（X25519）</td><td class="num">88.1 / 79.6 µs（X25519 + ML-KEM-768）</td><td class="num">1.8× / 2.2×</td><td>同上</td></tr>
+<tr><td>署名のバイト数 / 公開鍵のバイト数</td><td class="num">64 / 32 B</td><td class="num">3,373 / 1,984 B</td><td class="num">52.7× / 62.0×</td><td>FIPS 204 の大きさ。ベンチでも一致</td></tr>
+<tr><td>TLS 1.3 の相互認証ハンドシェイク、ループバック</td><td class="num">1.07 ms（RSA-2048 証明書、公開していた構成）· 0.56 ms（Ed25519）</td><td class="num">2.19 ms（ML-DSA-65 証明書、X25519MLKEM768）</td><td class="num">2.0× · 3.9×</td><td>全行 OpenSSL 3.5.5、2026-09-08</td></tr>
+<tr><td>OCLOB の板に残る注文、所要時間（中央値）</td><td class="num">1,211.6 ms</td><td class="num">1,268.0 ms</td><td class="num">1.05×</td><td>公開していた二つの画像、空いている 64 コアのホスト、各 20 回、2026-09-08</td></tr>
+<tr><td>OCLOB の約定して決済する注文（中央値）</td><td class="num">1,707.2 ms</td><td class="num">1,781.0 ms</td><td class="num">1.04×</td><td>同上</td></tr>
+</tbody></table></div>
+<p>注文の 2 行が、デモの利用者が体感する時間である。その大半は MPC のラウンドで、どちらの画像も同じだけ払う。耐量子方式の分は注文 1 件あたり 56 ms と 74 ms で、その原因（ラウンドごとのエンジン受領証のハッシュ、42 回の相互認証ハンドシェイク、ハイブリッドのアプリ署名）は耐量子のページで切り分けている。</p>
+
 <h2 id="misses">外れた予測</h2>
 <p>各文書は実行前に予測を記録し、外れた予測を結果の横に残している。外れを見つけることが、計測の目的だからである。</p>
 <ul>
