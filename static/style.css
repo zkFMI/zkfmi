@@ -166,6 +166,11 @@ a.card:hover { text-decoration: none; border-color: var(--line-2); transform: tr
 .paths { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .paths .card ol { padding-left: 1.2rem; margin: 0.4rem 0 0; color: var(--fg-2); font-size: 0.95rem; }
 .compare th:first-child, .compare td:first-child { white-space: nowrap; }
+.compare.diff th:first-child, .compare.diff td:first-child { white-space: normal; min-width: 6.5rem; }
+.compare.diff td, .compare.diff th { vertical-align: top; font-size: 0.88rem; }
+.compare.diff tr.diff td { border-top: 0; padding-top: 0; padding-bottom: 1rem; color: var(--fg-2); font-size: 0.92rem; }
+.compare.diff .difflabel { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-right: 0.4rem; }
+.compare.diff tr.self td { background: var(--bg-2); }
 .yes { color: var(--accent); font-weight: 600; } .no { color: var(--fg-3); } .part { color: var(--accent-2); font-weight: 600; }
 
 /* docs layout */
