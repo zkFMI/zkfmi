@@ -6,11 +6,26 @@ Static site and technical documentation for the zkFMI stack
 ## Layout
 
 ```
-pages/     one HTML fragment per page, with a small header block
-static/    style.css, site.js, favicon.svg, CNAME, robots.txt
-build.py   wraps fragments in the shared template -> public/
-public/    the deployable site (generated; commit it or build in CI)
+pages/       one HTML fragment per page (English), with a small header block
+pages/ja/    the Japanese version of each page, same file name, same `path:`
+static/      style.css, site.js, favicon.svg, robots.txt
+charts.py    inline SVG charts, labels in both languages
+build.py     wraps fragments in the shared template -> public/ (en at /, ja at /ja/)
+tools/       check_ja.py: structural check of a Japanese page against its original
+public/      the deployable site (generated; built in CI)
 ```
+
+## Languages
+
+Every English page has a Japanese counterpart under `pages/ja/` with the same
+file name and header `path:`; the build writes it to `ja/<path>`, adds
+`hreflang` alternates, a language switch in the header, and a separate
+`ja/search.json`. Nav labels and UI strings live in `build.py` (`NAV_*`, `UI`),
+chart labels in `charts.py` (`JA`). Writing rules and the glossary are in
+`TRANSLATION_JA.md`; `python3 tools/check_ja.py` verifies that a translation
+keeps the structure, code, numbers and links of the original and contains no
+banned terms. A page without a translation still builds; its switch points at
+the other language's index.
 
 ## Build
 

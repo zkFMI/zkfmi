@@ -1,0 +1,72 @@
+---
+title: Aethel — 支払ストリームの債権化
+description: Aethel は署名された支払ストリームを金融可能な債権にし、独立した提供者が範囲を狭く限った権限（capability）を通じて与信判断、保証、資金、サービシングを供給できるようにする。決済は型付きの zkPI を DeFMI に発行して行い、資金・証券・権原は自身では保持しない。
+path: docs/aethel.html
+section: docs
+---
+<h1>Aethel: プログラム可能な支払ストリームの債権化</h1>
+<p class="lede">支払ストリームそのものが債権になる。Aethel は貸し手、格付けモデル、保証人、売買の場のいずれも作り込まない。提供者は明示的な権限（capability）を通じて参加し、自分が責任を負う artifact に署名し、ストリームの支払の意味を変えずに入れ替えたり組み合わせたりできる。Aethel が記録するのは商業上の意味とライフサイクルで、正本の資産とその決済は DeFMI にとどまる。</p>
+<p class="src">出典: aethel/README.md · 8 つの crate、中心は aethel-core · 研究実装、監査未実施</p>
+
+<h2 id="flow">全体の流れ</h2>
+<pre class="mermaid">
+flowchart LR
+    S["署名された支払ストリーム"] --> R["ストリームを登録"]
+    R --> RS["債権シリーズを作成"]
+    K["DeKYX<br/>資格を持つ主体"] --> C
+    C["与信提供者<br/>署名した判断を提出"] --> G
+    G["保証人<br/>保証範囲を確約"] --> F
+    F["資金提供者<br/>資金供給の見積を提出"] --> I
+    RS --> C
+    I["債権を発行"] --> P["zkPI<br/>決済指図"]
+    P --> D["DeFMI<br/>資産と資金の決済"]
+    I --> M{"支払ストリームの結果"}
+    M -->|支払済み| X["債権を終了"]
+    M -->|不履行| A["不履行の attestation"]
+    A --> W["DeCCP<br/>保証請求 / 損失配分"]
+    W --> D
+</pre>
+
+<h2 id="providers">開かれた提供者モデル</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>権限（capability）</th><th>責任</th></tr></thead>
+<tbody>
+<tr><td><code>StreamAttestor</code></td><td>支払ストリームとその更新が正当であることを attestation で示す</td></tr>
+<tr><td><code>CreditAssessor</code></td><td>資格を満たす債権について与信判断に署名する</td></tr>
+<tr><td><code>Guarantor</code></td><td>外部の与信ファシリティを裏付けとする保証を確約する</td></tr>
+<tr><td><code>LiquidityProvider</code></td><td>実行可能な資金供給の見積を提出する</td></tr>
+<tr><td><code>Servicer</code></td><td>許可されたサービシング行為を行う</td></tr>
+<tr><td><code>CredentialIssuer</code></td><td>DeKYX の発行者鍵を請け合う。貸し手や保証人にはならない</td></tr>
+</tbody></table></div>
+<p>権限は互いを含意しない。与信判断が暗黙に保証として働くことはなく、保証人は別途認められなければ資金供給の見積を出せない。提供者は停止も恒久的な失効もありうる。鍵交代の後も、以前有効だった鍵で署名された artifact は検証可能なまま残り、退役した鍵による新しい artifact は拒否される。</p>
+
+<h2 id="state">中核の状態</h2>
+<p><code>AethelBook</code> が検証済みの集約体である。その記録は、登録されたストリームとその状態、債権シリーズとその方針、与信判断、保証の確約と解放、資金供給の見積、債権の発行、不履行の attestation と保証請求、提供者の定義から成る。操作は安定した識別子、有効期間、nonce、方針のダイジェスト、署名を持つ。遷移は、重複、想定外のバージョン、誤った権限、期限切れの artifact、整合しない参照を拒否する。</p>
+
+<h2 id="qualification">資格と秘匿</h2>
+<p>シリーズは、与信判断や保証を受け入れる前に DeKYX の匿名提示を要求できる。提示は Aethel のドメイン、行為、未署名の artifact の言明、nonce、期限に厳密に束縛され、ある判断のための証明を別の判断に再利用することはできない。Aethel が保存するのは、検証済みのsubject lineへの束縛だけである。保証額は秘匿したままにできる。その場合 Aethel と DeCCP は、平文の金額ではなく commitment、状態のダイジェスト、識別子、検証済みの遷移受領証を交換する。</p>
+
+<h2 id="settlement">決済</h2>
+<p>発行や請求で資産が動くとき、ホストは型付きの zkPI を作成し、DeFMI に決済を求める。Aethel が最終状態を変えるのは、ホストが決済の証拠を検証した後だけである。配備によっては、保証を受け入れた時点で DeCCP の留保（hold）を予約し、発行時に束縛し、債務が終了した時点で解放または消費できる。</p>
+
+<h2 id="layout">crate 構成</h2>
+<pre><code>crates/
+├── aethel-types/              shared identifiers, digests, time and signature checks
+├── aethel-provider-sdk/       provider capabilities and signed artifacts
+├── aethel-core/               stream, receivable, guarantee and issuance semantics
+├── aethel-tokenization/       supply caps and external-ledger mint/burn intents
+├── aethel-distribution/       circulation admission, venue fills and settlement binding
+├── aethel-obligation-wallet/  bounded pre-authorisation and payment retry queue
+├── aethel-servicing/          payment evidence, delinquency, cure and default evidence
+└── aethel/                    composition boundary and end-to-end tests</code></pre>
+<p>正本の一覧は <code>cargo metadata --locked --no-deps</code> である。構成図は crate が出荷されたことの証拠ではない。</p>
+
+<h2 id="limits">現在の限界</h2>
+<ul>
+  <li>匿名資格証明の契約は scope 単位の仮名であり、発行者に対して連結不能ではない。</li>
+  <li>発行者をまたぐ Sybil 対策の方針には、crate の外での統治または登録簿の決定が必要である。</li>
+  <li>保証請求と解放は全額カバーの遷移を対象とする。部分的な遷移には拡張した状態モデルが必要である。</li>
+  <li>債権の法的な譲渡、対抗要件の具備、税務、会計、倒産時の扱いはコードの外にある。</li>
+</ul>
+
+<div class="next"><a href="oclob.html">← OCLOB</a><a href="use-cases.html">市場以外の業務システム →</a></div>

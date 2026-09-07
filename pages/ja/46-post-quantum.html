@@ -1,0 +1,82 @@
+---
+title: 耐量子化への移行
+description: zkFMI スタックの耐量子暗号の現在地。共通基盤 zkfmi-crypto（Ed25519 + ML-DSA-65 のハイブリッド署名、X25519 + ML-KEM-768 の鍵交換、正規化した署名入力、用途に束縛した鍵）、P0 から P6 の計画、統合ブランチ上で単一ホストのネイティブ受入を通過したもの、古典のまま残るもの、main に届く前に未了のもの。
+path: docs/post-quantum.html
+section: docs
+---
+<h1>耐量子化への移行</h1>
+<p class="lede">移行はハイブリッドかつ fail-closed である。資金を守る古典的な署名と鍵交換のすべてに耐量子の相方を付け、両方の検証が通ったときだけ受理し、古典方式しか提示しない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にあり、2026-09-06 に単一ホスト上のネイティブ受入を通過した。まだ <code>main</code> には入っていない。</p>
+<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json · 2026-09-07 時点の状況</p>
+
+<h2 id="status">状況の一覧</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th>状態</th><th>根拠</th></tr></thead>
+<tbody>
+<tr><td>基盤 crate <code>zkfmi-crypto</code>（P0）</td><td><span class="pill ok">実装済み · ゲート通過</span></td><td>公式 Rust 1.97 イメージ、Linux ホスト 1 台での fmt、strict clippy、release テスト。NIST ACVP ベクタ 8 本と RFC 8032 を含む 45 テスト</td></tr>
+<tr><td>7 リポジトリの暗号使用箇所の棚卸し（P0）</td><td><span class="pill ok">完了</span></td><td>507 ファイル、1,032 件のプリミティブ項目。独立した grep との照合で欠落 0、余剰 0</td></tr>
+<tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>2026-09-06 のネイティブ実行、exit 0、15 分 07 秒。市場、finality、lifecycle、P6 復旧。前後で 1,119 ソースファイルのハッシュが一致</td></tr>
+<tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill part">進行中</span></td><td>作業上の目標は 2026 年 9 月 7 日の週。それまで <code>main</code> は古典のまま</td></tr>
+<tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
+<tr><td>独立した運営者、WAN、HSM、FIPS 認証、性能比較、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録はそれぞれを未実施と記載している</td></tr>
+</tbody></table></div>
+
+<h2 id="foundation">基盤: zkfmi-crypto</h2>
+<p>他のすべてのリポジトリが git rev を固定して依存する一つの crate。語彙と組み合わせ方を定めるもので、各サービス自身の鍵保管や DeKYX の発行者 epoch を置き換えるのではなく、それらに共通の形を与える。</p>
+<ul>
+  <li><strong>スイート識別子</strong>。閉じていて版付き。使用中の古典スイート（Ed25519、ristretto255 上の FROST、ristretto255 上の Pedersen と Bulletproofs、TLS 1.3 の X25519、SHA-256/512、SHAKE128）、耐量子スイート（ML-KEM-768、ML-DSA-65、ML-DSA-44、SLH-DSA-SHA2-128s）、ハイブリッド（X25519MLKEM768、Ed25519+ML-DSA-65）。それぞれが用途とバイト長を持ち、テストで FIPS 203/204/205 の定数と照合する。未知のスイートや版は拒否し、既定値に落とすことはない。</li>
+  <li><strong>正規化した署名入力</strong>。プロトコル、版、ネットワーク、配置、契約、トランザクション種別、オブジェクト識別子、シーケンスまたは nonce、期限、スイート、本文ハッシュを、固定幅整数の長さ接頭辞付きでドメイン <code>ZKFMI:CANONICAL:v1</code> の下に並べる。golden バイトベクタは hex で固定してある。同じ本文でも用途が違えば前像が変わるので、署名を別の用途へ流用できない。</li>
+  <li><strong>用途に束縛した鍵</strong>。鍵レコードは参加者、用途（見積、決済指図、鍵の交代、統治、トランスポート、attestation）、スイート、世代、有効期間、失効、交代の証明を名指しする。交代は双方向に署名する。旧鍵が新鍵に署名し、新鍵が旧鍵の識別子に署名する。</li>
+  <li><strong>ハイブリッド署名</strong>。同じ正規化入力に対する Ed25519 と ML-DSA-65。両方の検証が通ったときだけ受理し、片方の失敗、片方の欠落、二つの入れ替わりはいずれも拒否する。ML-DSA のコンテキスト文字列は用途とスイートを含む。</li>
+  <li><strong>ハイブリッド鍵交換</strong>。独立に生成した秘密による X25519 と ML-KEM-768 を、両方の共有秘密、両方の暗号文、スイート識別子にわたる HKDF-SHA256 で結合する。どちらの半分を差し替えても導出鍵が変わることをテストで確かめている。</li>
+  <li><strong>バックエンド</strong>。RustCrypto の <code>ml-dsa</code> 0.1.1 と <code>ml-kem</code> 0.3.2（純 Rust、Apache-2.0 OR MIT）をバイト指向のトレイトの背後に置き、aws-lc-rs のような FIPS 認証済みバックエンドに後で差し替えられるようにしてある。古典側は ed25519-dalek 2.2 と x25519-dalek 2.0。<code>#![forbid(unsafe_code)]</code>、秘密は zeroize する。この選択は工学上の選択であり、本番・監査・FIPS の主張ではない。</li>
+</ul>
+
+<h2 id="sizes">バイト数はどれだけ増えるか</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>方式</th><th class="num">公開鍵</th><th class="num">署名または暗号文</th></tr></thead>
+<tbody>
+<tr><td>ML-KEM-768</td><td class="num">1,184 B (dk 2,400 B)</td><td class="num">1,088 B</td></tr>
+<tr><td>ML-DSA-44</td><td class="num">1,312 B</td><td class="num">2,420 B</td></tr>
+<tr><td>ML-DSA-65（採用）</td><td class="num">1,952 B</td><td class="num">3,309 B</td></tr>
+<tr><td>ML-DSA-87</td><td class="num">2,592 B</td><td class="num">4,627 B</td></tr>
+<tr><td>SLH-DSA-SHA2-128s</td><td class="num">32 B</td><td class="num">7,856 B</td></tr>
+</tbody></table></div>
+<p>3-of-7 の承認に必要な ML-DSA-65 署名 3 本で 9,927 B になる。古典スタックで計測した決済パッケージの大きさ（口座レールの実行で 57,971 B、64 ビットのレールでの Bulletproofs で 3,424 B）に対して、追加の署名は支配的な項ではない。ただし計画にある暫定の目標 16 KB と上限 32 KB は、すでにそれを超えるパッケージ定義を前提に書かれたものであり、定義を確定した後に再設定する。ポリシー更新の経路では ML-DSA-65 は Ed25519 の約 15× のバイト数で、実際のマーケットメイカーが使う頻度でも毎秒 3 メガバイト未満である。比較を計測するまで、このサイトでは耐量子の所要時間を主張しない。</p>
+
+<h2 id="phases">計画と、各フェーズの現在地</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>フェーズ</th><th>対象</th><th>統合ブランチで確認したこと</th></tr></thead>
+<tbody>
+<tr><td><strong>P0</strong> 棚卸しと基準値</td><td>暗号を使うすべての箇所の機械可読な一覧。形式にスイート、鍵、版のフィールドを追加。基準値を計測</td><td>棚卸しは完了。基盤 crate はゲート通過。古典の基準値の計測は引き続き<a href="measurements.html">計測値のページ</a>にあるもの</td></tr>
+<tr><td><strong>P1</strong> トランスポート</td><td>すべての常設接続でハイブリッド鍵交換。注文ごとの KEM はしない。降格は拒否</td><td>QOMM、OCLOB、DeFMI の接続は、<code>X25519MLKEM768</code> と、ML-DSA-65 の証明書鍵およびチェーン署名（トラストアンカーを含む）を持つ TLS 1.3 を要求する。MP-SPDZ のソケットアダプタも同じグループ・版・署名の許可リストをホスト名検証付きで強制する。チケットとセッションキャッシュは無効。OpenSSL 3.5 を vendor してベースイメージは変えない。note の開封値を届ける受取人向けの封筒は、ハイブリッド KEM と AES-256-GCM を使い、受取人、用途、スイート、版に束縛する</td></tr>
+<tr><td><strong>P2</strong> 指図と決済承認</td><td>zkPI の発行、および予約・約定・取消の承認へのハイブリッド署名</td><td>型付きで版付きの実行 wire。勝者の封筒は、名簿に固定した Ed25519 と ML-DSA の署名を同じ本文に対して要求する。ネイティブ決済は、登録済みのノード別 ML-DSA 承認を、定足数と名簿の厳密な検査付きで要求する</td></tr>
+<tr><td><strong>P3</strong> DeKYX</td><td>発行者署名、状態一覧、保持者の所持証明</td><td>登録済みのハイブリッド認可、暗号化した保持者側の保管、独立した保持者所持鍵、旧形式のスナップショットは fail-closed</td></tr>
+<tr><td><strong>P4</strong> DeCCP、保証、担保、ドメイン間</td><td>統治、清算承認、保証枠、finality 受領証</td><td>統治、参加者、提供者、保証人/CSD、DeCCP、ドメイン間、Aethel の各権限経路は登録済みのハイブリッド鍵を使う。OCLOB の参加者は独立した一回限りの請求鍵を保持する</td></tr>
+<tr><td><strong>P5</strong> 公開監査証明</td><td>公開するものに対する耐量子ゼロ知識</td><td>範囲は狭い。STARK（Miden 0.32、本家の alpha 版、未監査）が、公開ルートの連続性、settled フラグ、固定スロット内の受領証と zkPI ダイジェストのコンテキストを証明する。隠された値付け、保存、匿名の関係式は証明しない</td></tr>
+<tr><td><strong>P6</strong> 退役と復旧</td><td>古典鍵の退役、アーカイブからの復旧、リプレイ</td><td>チェックポイントの来歴、鍵の退役、アーカイブからの復旧、乱数を含む受領証の厳密なリプレイを、決定的ゲートとネイティブゲートで実行した。古典スイート自体の退役はまだ行っていない</td></tr>
+</tbody></table></div>
+
+<h2 id="acceptance">ネイティブ受入で動かしたもの</h2>
+<p>8 リポジトリすべての凍結したソーススナップショット 1 つ（1,119 ファイル、実行の前後でハッシュが一致）を Linux ホスト 1 台で固定イメージにビルドし、そこから、ハイブリッド TLS アダプタ上の 7 つの MP-SPDZ プロセス、DeFMI の L1、OCLOB のメイカー API とテイカー API を動かした。4 つのシナリオが順に通り、合計 15 分。</p>
+<ul>
+  <li><strong>市場</strong>: 3 ラウンド、自律決済 2 件、耐量子の応答署名 4 本、一回限りの鍵 8 本、応答を失った後の復旧、重複決済ゼロ。</li>
+  <li><strong>finality</strong>: 署名付きの秘匿状態の受領証が、同じプロセス内の再試行、再オープン後、別プロセスからのいずれでもバイト単位で同一に返る。二重適用は拒否。7 ノードの正規化された観測。差し替えは拒否。ウォレットの再オープン。請求 3 件。秘匿保証枠の witness 2 件を復旧し、次の注文で消費。</li>
+  <li><strong>lifecycle</strong>: 約定 3 件、新しい耐量子鍵 12 本、応答署名 6 本、部分約定後の順序付き取消（厳密なリプレイと再起動を含む）、期限切れによる解放、7 ノードの再起動チェックポイント。</li>
+  <li><strong>P6 復旧</strong>: 新たに解決した不変な依存関係の下での復旧テスト 2 件。</li>
+</ul>
+<p>この実行で 2 件の欠陥が見つかり、通過前に修正した。再試行ごとに ML-DSA 署名を再生成していた受領証（署名済みの受領証を永続化して再送するようにした）と、部分約定後に新しい操作識別子で再認可されていた返金の開封値（元の請求コンテキストを保持するようにした）。ブランチ上の補助ゲート: OCLOB のテスト 125 件、zkPI・DeKYX・DeCCP・P5 ワークスペースにわたる 279 テスト、QOMM のトランスポートとデモのテスト、Aethel のエンドツーエンド、すべて strict clippy 付き。</p>
+
+<h2 id="classical">古典のまま残るもの、その理由</h2>
+<p>この移行が扱うのは署名と鍵交換である。決済層が依拠するゼロ知識の関係式は扱わないし、まだ扱えない。Pedersen commitment、Bulletproofs の範囲証明、one-of-many ring、quote proof、指図への FROST 閾値署名はいずれも離散対数に立っている。<a href="binding.html#pq">束縛のページ</a>に議論の全体がある。秘匿（hiding）は無条件で量子敵にも耐えるが、束縛（binding）は耐えない。ポリシーの有効期間中すべての見積に対して開かれるメイカーのポリシー commitment が、それが最初に効いてくる場所である。VOLE-in-the-Head の commitment は実装して計測した（広い体上で Pedersen の 5.9× から 11×、かつ一回限り）。格子 commitment は Shamir の再構成を壊す。未解決の問いは、ランダムオラクルだけに依拠して何度でも開ける commitment のままである。それが存在するまで、このスタックの耐量子保証は、誰が署名したか、誰がチャネルを読めるかについてのものであり、証明についてのものではない。</p>
+<p>他にも二つの小さな点がブランチ上で古典のまま残る。FROST の自己署名は追加した耐量子鍵を覆っていない（ノード別の ML-DSA 承認は FROST の内側ではなく隣に置いてある）。また、コンセンサスの外にある閲覧の許可と支出の開示は移行していない。</p>
+
+<h2 id="limits">根拠の限界</h2>
+<ul>
+  <li>ホスト 1 台、管理者 1 人。独立した運営者、WAN、物理 HSM はない。</li>
+  <li>バックエンドの FIPS 認証も外部監査もない。</li>
+  <li>性能比較はまだない。計画の処理量と遅延の目標（基準値の ≥95%、p95 のオーバーヘッド目標 5 ms）は未計測で、7 プロセスのネットワーク障害テストは 7 ノード WAN の根拠ではない。</li>
+  <li>リリース rev の固定は未了。統合ブランチはプレリリースの rev で基盤を参照している。8 リポジトリにわたる最終の不変 rev、lock の再生成、ゲートの再実行が <code>main</code> への統合の前に来る。</li>
+  <li>P5 の証明器は本家の alpha 版（Miden 0.32）に依存し、意図的に狭い命題を証明する。</li>
+</ul>
+
+<div class="next"><a href="security.html">← 安全性と信頼境界</a><a href="prior-art.html">先行研究との位置関係 →</a></div>

@@ -1,0 +1,129 @@
+---
+title: zkPI — 証明付き決済指図
+description: zkPI 指図。何を commitment 化するか、市場が何を確かめるか、フィールド長付きの version 2 の wire 配置、テストベクタ、検証器、そして専用 Avalanche VM を選ぶに至った実行層の比較。
+path: docs/zkpi.html
+section: docs
+---
+<h1>zkPI: ゼロ知識証明付き決済指図</h1>
+<p class="lede">証明を携えた指図。市場の判断を、それを生んだ入力なしに証明できる形にしたもの。決済層が知るのは、登録済みのどこかの主体が指図を持っていて、その金額と価格は申告された範囲に入り、価格は定足数が署名したものと一致し、期限は過ぎておらず、nullifier は未使用である、ということだけである。それ以外は何も知らない。</p>
+<p class="src">出典: zkpi/ZKPI_WIRE.md、zkpi/README.md、defmi/POSITION.md §7 · crate: qomm-zk、qomm-zkpi、qomm-proofs</p>
+
+<h2 id="what">何が越え、何が越えないか</h2>
+<pre class="mermaid">
+flowchart LR
+    subgraph known["定足数が計算に使うもの"]
+        direction TB
+        R["依頼<br/>銘柄、数量、売買方向"]
+        P["各メイカーの<br/>値付け規則"]
+        W["勝者と<br/>その価格"]
+    end
+    subgraph published["公開されるもの"]
+        direction TB
+        C["commitment 化した<br/>指図"]
+        N["nullifier"]
+        D["期限"]
+        S["定足数<br/>署名"]
+    end
+    subgraph venue["決済する側が確かめるもの"]
+        direction TB
+        V["範囲内<br/>未使用<br/>期限内<br/>定足数の署名あり"]
+    end
+    R --> C
+    P --> C
+    W --> C
+    C --> V
+    N --> V
+    D --> V
+    S --> V
+    known -. "越えない" .-> venue
+    classDef secret stroke:#f2b880,stroke-width:2px
+    classDef mech stroke:#9bb0ff,stroke-width:2px
+    classDef ok stroke:#5ee0c1,stroke-width:2px
+    class R,P,W secret
+    class C,N,D,S mech
+    class V ok
+</pre>
+
+<p>この指図が存在するのは、公開検証可能な MPC が出力を開いた時点で終わるからである。開いてから平文で決済した見積は、計算が守っていたものをすべて漏らしている。銘柄、数量、取引当事者、そして差分から値付け規則まで。zkPI は決済指図そのものを commitment と証明にする。これにより、監査された値と決済された値が、開かれていない同じ commitment になる。</p>
+
+<h2 id="proves">指図が証明すること</h2>
+<ul>
+  <li><strong>承認。</strong>市場のノードのうち 3-of-7 の定足数による、ristretto255 上の FROST 閾値署名。検証器はグループ鍵を持つだけで、どの 3 台が署名したかは知らない。</li>
+  <li><strong>金額と価格の範囲。</strong>範囲証明 2 本。それぞれ各ノードが手元の Shamir シェアから出した寄与を合わせて組み立てるので、witness を単独で持つノードはない。バージョン 2 はこれを閾値範囲証明として運ぶ。バージョン 1 は通常の Bulletproofs を 2 本運んでいた。</li>
+  <li><strong>監査された判断への束縛。</strong>完全な公開 quote proof の SHA-256 ダイジェスト。ダイジェストからは、詰め込まれた勝者も価格も分からない。検証者は指図と並べて完全な証明を受け取り、独立に確かめる。</li>
+  <li><strong>一度だけの使用。</strong>32 バイトの nonce から nullifier を導出する。決済は nullifier を登録し、二度目の提示はどの証明を調べるよりも前に拒否される。</li>
+  <li><strong>取引当事者は handle として。</strong>圧縮した点 2 つ。handle は一つの seed から市場ごとに導出するので、同じ法人でも市場ごとに無関係な点になる。台帳は署名された 2 つの handle から 4 つの口座名を導出する。指図とパッケージで口座が食い違えば拒否される。</li>
+</ul>
+
+<h2 id="wire">wire 上の配置、バージョン 2</h2>
+<p>全体がビッグエンディアン。各フィールドは固定長か長さ接頭辞付きで、この順に並ぶ。省略できるものはない。フィールドが一つ欠けた指図は短い指図ではなく、壊れた指図である。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>フィールド</th><th class="num">バイト</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>magic</td><td class="num">8</td><td><code>QOMMZKPI</code></td></tr>
+<tr><td>version</td><td class="num">2</td><td>現在は 2。知らない version に出会った検証器は<strong>止まる</strong>。配置を推測しない。誤って解釈した commitment も有効な点になってしまうからである。</td></tr>
+<tr><td>金額の commitment</td><td class="num">32</td><td>圧縮 Ristretto</td></tr>
+<tr><td>価格の commitment</td><td class="num">32</td><td>圧縮 Ristretto</td></tr>
+<tr><td>資産の commitment</td><td class="num">32</td><td>圧縮 Ristretto</td></tr>
+<tr><td>支払側の handle</td><td class="num">32</td><td>圧縮 Ristretto</td></tr>
+<tr><td>受取側の handle</td><td class="num">32</td><td>圧縮 Ristretto</td></tr>
+<tr><td>期限</td><td class="num">8</td><td>Unix epoch からの秒数</td></tr>
+<tr><td>nonce</td><td class="num">32</td><td>nullifier を一意にするもの</td></tr>
+<tr><td>quote proof ダイジェスト</td><td class="num">32</td><td>完全な公開 quote proof の SHA-256</td></tr>
+<tr><td>署名</td><td class="num">64</td><td>Ristretto255 上の FROST</td></tr>
+<tr><td>金額証明の長さ</td><td class="num">4</td><td></td></tr>
+<tr><td>金額の範囲証明</td><td class="num">n</td><td>共同で組み立てた閾値範囲証明</td></tr>
+<tr><td>価格証明の長さ</td><td class="num">4</td><td></td></tr>
+<tr><td>価格の範囲証明</td><td class="num">n</td><td>共同で組み立てた閾値範囲証明</td></tr>
+</tbody></table></div>
+<p>数量 16 ビット、価格 32 ビットの範囲での固定製品ベクタは <strong>9,726 バイト</strong>。バージョン 1 の互換ベクタは 1,572 バイト。差は閾値での組み立ての代価であり、小さい旧 wire を製品コストとして示すのではなく、差として明記する。</p>
+
+<h3>意図して省いたもの</h3>
+<p>圧縮なし、自己記述型のコンテナなし、前方互換性なし。いずれも二つの実装が読んだ内容について食い違う原因になる。上の表からなら 1 日で実装できる。</p>
+
+<h2 id="vectors">実装を確かめる</h2>
+<p>テストベクタは <code>artifacts/zkpi_vectors/</code> にある。wire バージョンごとに受理される指図 1 件と、それを 5 通りに壊した形。受理されるベクタは<strong>復号して再符号化したときに同じバイト列に戻る</strong>必要がある。これは「パースできた」より強い。フィールドを捨てて再導出する実装は後者の試験に通って前者に落ちる。そして二つの市場が同じ指図を決済するかどうかを決めるのは前者である。</p>
+<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
+qomm-zkpi-verify --self-test                       # issue v2, encode, decode, verify
+qomm-zkpi-verify --quorum &lt;hex&gt; --now &lt;seconds&gt; &lt; instruction.bin
+qomm-zkpi-verify &lt; instruction.bin                 # layout only, and it says so</code></pre>
+<p>終了コード 0 は受理、1 は拒否、2 は判定不能。定足数の鍵がなければツールは配置だけを確かめ、これはパースであって検証ではないと明言する。形式が整っただけの未署名の指図に「ok」と出すツールは、無いほうがましである。</p>
+
+<h2 id="where">どこで動くか、なぜ他では動かないか</h2>
+<p>実装対象は、<a href="defmi.html#l1">DeFMI のページ</a>で述べる専用の非 EVM Avalanche L1 である。信頼境界は明示されている。ノード委員会は署名の前に閾値範囲証明 2 本と完全な quote proof を検証する。各検証者は状態遷移を適用する前に、3-of-7 の Ed25519 承認、型付きの指図、完全な quote proof、共同で組み立てた両方の範囲、テイカーの価格制限、資産の紐付け、DvP の関係、チェーンとレールのドメイン、期限、シーケンス番号、直前の 状態ルート、nullifier を独立に確かめる。検証者は非公開の MP-SPDZ トランスクリプトを再実行しないし、各ノード内でシェアが証明へ受け渡される部分も証明しない。</p>
+
+<h3>実行層の比較、記録として残す</h3>
+<p>専用 VM ができる前に、バージョン 1 の検証器がどこに収まるかを計測した。その検証は約 1.6 ms の曲線演算で、大半を Bulletproofs 2 本が占める。</p>
+<ul>
+  <li><strong>EVM バイトコード。</strong>ed25519 スカラー乗算 1 回で 302,401 gas を計測した。不採用。</li>
+  <li><strong>Subnet-EVM のプリコンパイル。</strong>実現可能である。検証器は自分で書く Go コードになり、ガス価格も自分で決められる。代価は曲線のコードが自分のものになることで、そこにあるバグは、他に誰も見ていないチェーン上のコンセンサスのバグになる。</li>
+  <li><strong>Solana。</strong>ランタイムには ristretto255 の syscall があり、ここで使う曲線そのものである。しかし Groth–Kohlweiss の検証器は、点に触れる前に commitment ごとに次数 log₂(n) の多項式をスカラー体で評価する。Solana にはスカラー体の syscall がない。</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>Solana 上の演算（Agave 4.2.1）</th><th class="num">計算単位（compute units）</th></tr></thead>
+<tbody>
+<tr><td>スカラー体: 乗算 1 回</td><td class="num">5,450</td></tr>
+<tr><td>スカラー体: 加算 1 回</td><td class="num">350</td></tr>
+<tr><td>Merlin トランスクリプト、32 バイトの要素 1 つあたり</td><td class="num">3,688</td></tr>
+<tr><td>同じ処理を <code>sha256</code> syscall 経由で</td><td class="num">132</td></tr>
+<tr><td>プログラム内での基点スカラー乗算 1 回</td><td class="num">~863,000</td></tr>
+<tr><td>syscall としての ristretto スカラー乗算 1 回（公表値）</td><td class="num">2,208</td></tr>
+<tr><td>one-of-many 検証器、crowd 16</td><td class="num">398,825</td></tr>
+<tr><td>one-of-many 検証器、crowd 32</td><td class="num">951,503</td></tr>
+<tr><td>crowd 128（予測。上限は 1,400,000）</td><td class="num">~5,200,000</td></tr>
+</tbody></table></div>
+<p class="src">artifact: defmi/artifacts/solana_cu.json · stylus_gas.json</p>
+<p>計算単位は時間を測るのではなく仮想機械が数えるので、これらの値は単位まで再現でき、ホストのラベルではなくツールチェーンのラベルを持つ。ボトルネックは曲線ではなく体であり、これで問題は決着した。検証器がネイティブ Rust で動く VM を採る。</p>
+
+<h2 id="handles">handle: コードになるまでは散文だった性質</h2>
+<p>設計書は当初から、法人の handle は市場ごとに導出し、一つの法人が二つの無関係な点になると述べていた。しかし最初のライブラリには導出する手段がなく、素直に統合すると一つの名前を至る所で使うことになった。PvP の連結不能性の計測では、観察者がどのスワップ回数でも確率 1.000 で両脚を結び付けていた。いまは <code>qomm_zkpi::handles</code> が一つの seed から導出する。隣に置いた試験は、最初に思いつく方式（一つの秘密を市場ごとの公開係数で倍する）を走らせ、それが公開情報だけで連結できることを示す。導出した handle では観察者は 1/k に落ち、そこに留まる。この二つの行の間で暗号は何も変わっていない。変わったのは名前だけである。</p>
+
+<h2 id="not">zkPI がしないこと</h2>
+<ul>
+  <li>価格が妥当だったか、銘柄が正しかったかは言わない。それは定足数の主張であり、署名が運ぶ。</li>
+  <li>note が後に使われたことを送り手から隠さない。送り手は自分が作った <code>g^S</code> を知っている。第三者にとっては、ring の大きさが知り得ることの限界である。</li>
+  <li>ノードが配られたシェアをそのまま計算エンジンに入れたことは証明しない。この隙間は QOMM の束縛文書の主題であり、委員会の信頼境界として残る。</li>
+  <li>バージョン 1 は移行用の形式である。タグが付いていれば今も復号と再符号化はするが、製品としての発行経路ではない。</li>
+</ul>
+
+<div class="next"><a href="architecture.html">← 全体構成</a><a href="defmi.html">DeFMI: 決済層 →</a></div>

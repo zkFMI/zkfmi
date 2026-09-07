@@ -1,0 +1,150 @@
+---
+title: DeFMI — 決済層
+description: 分散型金融市場基盤 DeFMI。何を保証し、それは何によって成り立つか。残高の幅で決まるコスト、asset tag、ネッティングの各モデルと日中限度、デフォルト・ウォーターフォールと更改、note 台帳と ring の実際の価値、二つの台帳をまたぐ PvP、正本台帳との照合、監査人向けの scope 付き閲覧、審査証明（vetting）、Avalanche L1。
+path: docs/defmi.html
+section: docs
+---
+<h1>DeFMI: 取引を一度も読まない決済層</h1>
+<p class="lede">分散型金融市場基盤（decentralized financial market infrastructure）。この術語は意図的に借りている。FMI とは CPMI-IOSCO 原則が対象とするもの、すなわち資金決済システム、証券決済システム、清算機関である。ここでの主張は、これがその一つであり、単一の運営者に依らず、決済する内容を読めない、ということである。株式専用の台帳ではない。チェーンに依存しない状態機械が、現金、証券、ファンド、商品、炭素クレジット、その他の制度の下で管理される資産を登録する。</p>
+<p class="src">出典: defmi/DEFMI.md（計測 JSON から生成。手で書いた数値はない）· 特記なければ host-c、rustc 1.97.1、群は ed25519。較正値: スカラー乗算 38.4 ± 4.1 µs、40 ビット範囲証明 20.88 ms。</p>
+
+<h2 id="guarantees">保証するもの、しないもの</h2>
+<p>DeFMI が検査できるのは、何も開かずに算術だけで決着がつくことに限られる。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>保証</th><th>成り立たせるもの</th></tr></thead>
+<tbody>
+<tr><td>価値が生成も消滅もしていない</td><td>残高の commitment の積が発行時の積に等しい（準同型性のみ）</td></tr>
+<tr><td>残高が負にならない</td><td>差分に対する範囲証明</td></tr>
+<tr><td>両脚が一緒に動く</td><td>どちらかを適用する前に両方を検査する</td></tr>
+<tr><td>一つの指図は一度だけ決済される</td><td>nullifier の登録</td></tr>
+<tr><td>資金脚 = 数量 × 価格</td><td>三つの commitment にわたる積の証明</td></tr>
+<tr><td>証券脚は指図どおりの数量である</td><td>生成元をまたぐ等価証明</td></tr>
+</tbody></table></div>
+<p>DeFMI が検査しないのは、価格が妥当だったか、それが正しい銘柄だったか、である。それらの意味は計算ノードの定足数から来て、指図の署名に載って運ばれる。決済層にそれを再導出させるなら、決済層に平文を渡すことになる。</p>
+
+<h2 id="width">コストは残高の幅で決まり、それ以外には依らない</h2>
+<p>線形バックエンドの証明は台帳の残高範囲をビット分解したものなので、幅に対して線形になるはずである。実際にそうなった。構築が <strong>0.98 ms/bit</strong>、決済が <strong>0.80 ms/bit</strong>、wire 上が <strong>896 B/bit</strong>。決済側の切片 <strong>2.1 ms</strong> は zkPI 指図そのものの検証である。40 ビットでは決済に 34.0 ms かかり、そのうち約 6% が指図で、残りは台帳側の範囲証明である。</p>
+<p>ここから導かれるのは、暗号ではなく銘柄登録時の判断である。決済を速くしたいなら、残高の幅を見直せばよい。証券の数量と現金の金額は桁が何段も違うので、レールごとに別の幅を与える。証券を 24 ビット、現金を 48 ビットにすると、両方 48 ビットの場合より 24% 速く決済でき、送るバイト数は 10,752 B 減る。暗号には何の変更もない。</p>
+
+{{chart:settle_width}}
+{{chart:package_width}}
+<h3>Bulletproof バックエンド</h3>
+<p>最適化したバックエンドは監査済みの <code>bulletproofs</code> crate を使い、証明サイズを線形から対数に変える。細かい幅は失われる（2 の冪のみ）ので、幅をまたいで公平に比べられるのは、40 ビットの線形バックエンドと 64 ビットの Bulletproof バックエンドである。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>残高の幅</th><th class="num">決済（線形）</th><th class="num">決済（Bulletproof）</th><th class="num">倍率</th><th class="num">パッケージ（線形）</th><th class="num">パッケージ（Bulletproof）</th></tr></thead>
+<tbody>
+<tr><td>8 bit</td><td class="num">8.5 ms</td><td class="num">2.09 ms</td><td class="num">4.1×</td><td class="num">29,267 B</td><td class="num">2,656 B</td></tr>
+<tr><td>16 bit</td><td class="num">14.8 ms</td><td class="num">2.78 ms</td><td class="num">5.3×</td><td class="num">36,435 B</td><td class="num">2,912 B</td></tr>
+<tr><td>32 bit</td><td class="num">27.6 ms</td><td class="num">4.26 ms</td><td class="num">6.5×</td><td class="num">50,771 B</td><td class="num">3,168 B</td></tr>
+<tr><td>40 bit 線形 vs 64 bit BP</td><td class="num">34.0 ms</td><td class="num">7.02 ms</td><td class="num">4.8×</td><td class="num">57,939 B</td><td class="num">3,424 B</td></tr>
+</tbody></table></div>
+<p class="src">artifact: defmi.json、rust_bench.json · 最適化バックエンドは host-a（較正値 25.8 µs）、基準は host-c。採用の根拠に使う前に、両方を同じホストで再計測すること</p>
+<p>1 コアあたり毎秒 29.4 件から 142.5 件の決済に相当する。独立したパッケージの検証は何も共有しないので、完全に並列化できる。1 ノードで <strong>8 ワーカー 217 件/秒</strong>を計測した（1 ワーカーの 7.40×）。決済ノードの容量は調達の問題である。</p>
+
+<h2 id="tags">どの銘柄かを、決済層からも隠す</h2>
+<p>MPC は依頼がどの資産のものかを隠す。決済の段で取引を銘柄ごとのレールに載せれば、それが元に戻ってしまう。一方、全銘柄を一本のレールに載せると、価値の保存は銘柄をまたいでしか成り立たず、資産 A を資産 B として持ち出せてしまう。</p>
+<p>そこで使う構成が <strong>asset tag</strong> である。資産 a を q 単位持つとは <code>A_a^q · h^r</code> を持つことであり、移転ごとに新しい y で <code>H = A_a · h^y</code> を公開し、すべての範囲証明は H に対して作る。この偽装を実在の資産に束縛するのは差分に対する範囲証明である。支払側の残高はすでに <code>A_a</code> の下にあるので、他の tag ではそれを開けない。決済一件あたりの追加は 32 B と生成元をまたぐシグマ証明一つで、時間の増分は計測の 0.2 ms のノイズの中に収まる。one-of-many 所属証明（Groth–Kohlweiss）は残高を口座に発行するときに一度だけ必要で、検証は 4 銘柄で 0.58 ms、64 銘柄で 2.24 ms。</p>
+<p>計測した攻撃の系統: 別の資産として登録済みの tag で残高を持ち出す、登録されたことのない点を使う、のどちらも "remainder does not equal balance minus amount" で拒否される。パッケージは 64 銘柄のどれであってもバイト単位で同一である。</p>
+
+<h2 id="netting">ネッティング: gross-gross、gross-net、net-net</h2>
+<p>これらは BIS の DvP モデル 1、2、3 であり、同時に、範囲証明が何本どこに落ちるかの問題でもある。gross のレールは注文ごとに取引後のポジションが非負であることを証明するので、構成上、決済不履行は起こり得ない。その代償が順序依存である。net のレールは期間中は準同型に累積するだけで何も証明せず、締めの時点で参加者ごとに一度、net 額の充足を示す。commitment は大きさだけでなく符号も隠すので、途中で負になったポジションからは何も漏れない。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>N</th><th>P</th><th>方式</th><th class="num">注文ごとの検証</th><th class="num">締め</th><th class="num">合計</th><th class="num">gross-gross 比</th></tr></thead>
+<tbody>
+<tr><td>64</td><td>8</td><td>gross-gross</td><td class="num">6.25 ms</td><td class="num">0</td><td class="num">400.0 ms</td><td class="num">1.00×</td></tr>
+<tr><td>64</td><td>8</td><td>gross-net</td><td class="num">4.84 ms</td><td class="num">10.3 ms</td><td class="num">320.1 ms</td><td class="num">1.25×</td></tr>
+<tr><td>64</td><td>8</td><td>net-net</td><td class="num">3.54 ms</td><td class="num">20.7 ms</td><td class="num">247.5 ms</td><td class="num">1.62×</td></tr>
+<tr><td>64</td><td>8</td><td>net-net + attestation</td><td class="num">0.00 ms</td><td class="num">20.5 ms</td><td class="num">20.6 ms</td><td class="num">19.40×</td></tr>
+</tbody></table></div>
+{{chart:netting}}
+<p>最初の予測は外れた。範囲証明の本数だけを数えれば net-net は 1/8 の仕事になるはずだったが、計測では 1.62× にとどまった。注文ごとの 3.5 ms が zkPI 指図そのものの検証で、取引ごとに一度は必要であり、ネッティングはそれを取り除かないからである。取り除くのは指図の粒度を変えることである。定足数がサイクル全体に署名すれば、決済層の仕事は取引数に依存しなくなる。そのとき配分は証明ではなく定足数の attestation になる。これは清算機関が昔からやってきたことそのもので、ここではそれを明示的にしただけである。それを守れる形にする場所が <a href="deccp.html">DeCCP</a> である。</p>
+
+<h3 id="limit">commitment としての日中当座貸越</h3>
+<p>実務では、net のポジションを負にする注文をすべて拒否するわけではない。差し入れた担保に対して限度を与える。これはまさに日本銀行の日中当座貸越である。ここでは限度が commitment であり、充足は <code>position + limit</code> について証明するので、証明はポジションがゼロのどちら側にあったかを決して語らない。限度のコストは実質ゼロである。なしで 9.4 ms、ありで 9.2 ms、同じ幅の範囲証明を別の commitment に対して作るだけである。限度の付与は構築 9.4 ms、検証 1.3 ms で、一度きりである。</p>
+<div class="note warn">受付、担保差入、当座貸越、支払は一つの事象であるべきだが、現在のコードでは一つの事象になっていない。<code>PositionBook::grant</code> と <code>Cycle::admit</code> は別々の呼び出しで、差し入れた担保をロックする状態もない。限度のコストは計測済みだが、原子性は文書に書かれた要件であって、実装されていない。</div>
+
+<h3 id="waterfall">デフォルト・ウォーターフォール</h3>
+<p>net のレールは締めの時点で不履行になり得る。その不履行をどの順序で処理するかがこの取り決めの本体なので、順序を強制する。トランシェ k はトランシェ k−1 が尽きた後にしか引き出せない、という条件を <code>draw_k × remaining_{k−1} = 0</code> と書き、その積の commitment を単位元に固定する。コストはトランシェあたり構築 11.2 ms、検証約 1.4 ms の線形で、デフォルトごとに一度である。</p>
+
+<h3 id="novation">清算機関を間に入れる</h3>
+<p>更改の下では、検証すべき二者間の分割は残らない。A と B の取引は、A 対清算機関と清算機関対 B になる。債務は commitment なので、一本の辺を二本に置き換えるのは乗算二回で、証明は要らない。清算機関の帳簿は同じ構成によってフラット（差引ゼロ）になる。参加者 8 で計測すると、net-net は取引数とともに増える（16 件で 66 ms、256 件で 794 ms）が、清算済みサイクルは増えない（19 ms から 38 ms）。更改のコストは<strong>取引あたり 0.53 µs</strong>。これで得られるのは、attestation 系統が守れる形になることである。名前の分かる清算機関が反対側に立ち、その帳簿がフラットであることは誰でも検査でき、その証拠金は commitment された上限であり、その資本は CPMI-IOSCO と EMIR が置くとおりウォーターフォールの中にある。</p>
+<p>やらないことが四つある。債務グラフは資産ごとなので、銘柄をまたぐ更改は拒否する。異なる提供者にあるポジションを一括の証拠金で相殺することはしない。算術上の妥当性は法的な妥当性について何も言わない。そして清算機関は取引を落とすことはできる。ただし取引をでっち上げることはもうできない。<code>check_novation</code> が、更改前グラフのすべての辺に両当事者の署名を要求するからである。</p>
+
+<h2 id="notes">誰が誰に払ったかを隠す: note 台帳</h2>
+<p>asset tag は<em>何を</em>を隠す。口座型の台帳では、決済ごとに四つの handle が平文で名指しされたままで、繰り返し現れる handle は取引相手のグラフを描いてしまう。そこで口座を note に置き換えた。note は <code>C = g^S · A_a^v · h^r</code> で、S を構成できるのは受取人だけである。使用時は S を隠したまま、ring のうち一つがこの S を持つことを Groth–Kohlweiss で示す。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>ring の大きさ</th><th class="num">証明（支払側）</th><th class="num">検証（ノード）</th><th class="num">wire</th></tr></thead>
+<tbody>
+<tr><td>2</td><td class="num">10.9 ms</td><td class="num">1.8 ms</td><td class="num">37,024 B</td></tr>
+<tr><td>16</td><td class="num">11.7 ms</td><td class="num">2.6 ms</td><td class="num">37,696 B</td></tr>
+<tr><td>64</td><td class="num">14.5 ms</td><td class="num">3.7 ms</td><td class="num">38,144 B</td></tr>
+<tr><td>512</td><td class="num">40.3 ms</td><td class="num">9.3 ms</td><td class="num">38,816 B</td></tr>
+</tbody></table></div>
+{{chart:ring}}
+<p>この非対称性こそが狙いである。wire は倍にするごとに 224 B 増え、検証は ring 512 まで 10 ms を下回る。増えるのは証明で、それは支払側自身の機器で行う。つまり匿名集合の上限を決めるのは支払側であって、決済ノードではない。受取人は note あたり 0.063 ms、スカラー乗算一回でプールを走査し、プールに比例するコストはこれだけである。同じアドレスへの二つの支払は連結できない。</p>
+<p>Rust 移植では、二本の note レール上の同じ DvP が ring 8 で 51.9 ms で決済され、パッケージは <strong>5,476 B</strong>。退役した実装では 50,827 B だったので、ここでも Bulletproofs 対ビット分解の効果が出ている。そこでの構築列には 3-of-7 FROST の儀式全体が含まれており、端から端までの構築コストである。</p>
+
+<h3 id="ring-worth">ring の実際の価値</h3>
+<p>ring が匿名集合であるのは、おとりが本物の note と見分けられないときに限る。実際の使用は、直前に受け取った note の使用である。決済とはそういうものだからである。一様に選んだおとりはたいてい古いので、ring のうち最新のものを当てる観察者は、ただそれだけで 1/R を上回る。この戦略は実行前に明記した。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>おとり</th><th>ring</th><th class="num">通信量 0</th><th class="num">通信量 4</th><th class="num">通信量 16</th><th class="num">名目 1/R</th></tr></thead>
+<tbody>
+<tr><td>一様</td><td>16</td><td class="num">1.000</td><td class="num">0.547</td><td class="num">0.359</td><td class="num">0.062</td></tr>
+<tr><td>新しさを合わせる</td><td>16</td><td class="num">1.000</td><td class="num">0.062</td><td class="num">0.062</td><td class="num">0.062</td></tr>
+</tbody></table></div>
+<p class="src">artifact: rings.json（host-a）·「通信量」は、受け取ってから払うまでの間に入る他の決済の件数</p>
+{{chart:ring_worth}}
+<blockquote>note レール上の匿名集合とは他人の通信量のことであり、おとりの規則はそのうちどれだけを ring が使えるかを決めるに過ぎない。</blockquote>
+<p>他の通信量がなければ、どちらの規則でも、どんな大きさでも ring の価値はゼロである。16 件の決済の通信量があると、新しさを合わせたおとり（<code>ring_recent</code>、30 行）は観察者をちょうど名目値まで押し戻すが、一様なおとりではその 5.8× にとどまる。</p>
+
+<h3 id="root">履歴とともに増えなくなった状態ルート</h3>
+<p>ring のベンチマークで、検証がプールとともに増えていくのが見つかった。<code>check_spend</code> の中にプールに比例するものはない。あったのは状態ルートで、保持したことのあるすべての note を再圧縮し、使用済みのすべての serial を再整列することを、決済一件につき四回行っていた。4,096 note では、暗号 8 ms の横で 61.3 ms の帳簿付けをしていたことになる。note は追記のみ、serial は挿入のみなので、ルートは今では変更ごとに一度延長する走行ハッシュになった。0.15 µs で一定、全走査の 15.3 ms に対して。</p>
+
+<h2 id="pvp">二つの台帳をまたぐ PvP</h2>
+<p>状態を共有しない二つの台帳には両脚を動かす関数がなく、第三者なしの公正な交換は一般には不可能なので、何かが両者の間を渡らなければならない。ハッシュロックでは前像を渡すが、それは両方の台帳に平文で残るので、両方を読める者は両脚を結び付けられる。代わりに使うのが <strong>adaptor signature</strong> である。先手側が一方の台帳で claim すると後手側にスカラーが渡り、各台帳に記録されるのは、相手の台帳と何も共通点のないふつうの署名である。</p>
+<pre><code>1. Bob   -> Alice : Y = g^y
+2. Alice           prepares leg A; her money leaves her account
+   Alice -> Bob   : a pre-signature over "leg A", adapted to Y
+3. Bob             prepares leg B, and sends his own pre-signature
+4. Bob             claims on A  -> he is paid, and y becomes readable
+5. Alice           reads A, recovers y, claims on B  -> she is paid</code></pre>
+<p>Bob が秘密を引いて先に動くので、Bob は決してリスクに晒されない。Alice が晒されるのは手順 4 と 5 の間のちょうど一つの窓で、二つの期限の隙間が彼女の反応時間を覆っているとき、かつそのときに限り安全である。この隙間が、この取り決めのヘルシュタット・リスクである。32 ビットのレールで計測すると、脚の準備 1.29 ms、先手側の claim 0.05 ms、<strong>後手側の反応 0.06 ms</strong>、期限切れの脚の巻き戻し 0.55 µs。資金をリスクに晒すのは暗号ではない。期限の隙間は二つの台帳の決済 finality が決め、それは 3 桁から 5 桁大きい。窓を短くしたい配備は、速い証明ではなく finality を選んで調達すべきである。</p>
+<p>一つのチェーン上なら、二つの DeFMI 市場を一つのトランザクションから呼ぶこともできる。追加コストなしで原子的、露出ゼロ、そしてそのトランザクション自体が結び付きになる。adaptor 系統は呼び出しが 4 倍、検証が 3.0% 増え、その代わりに連結不能性が得られるが、それも handle を市場ごとに導出しているときに限る。<a href="zkpi.html#handles">zkPI のページ</a>の表は、一つの名前をどこでも使うと観察者が 1.000、市場ごとの handle なら 1/k になることを、暗号は変えずに示している。</p>
+
+<h2 id="reconcile">正本台帳と一致させる</h2>
+<p>日本の振替制度の下では、この台帳は振替口座簿にはなれない。権利は振替機関と口座管理機関が保持する記録に依る。したがって DeFMI は鏡であり、照合はその取り決めの代価である。それは一行の代数である。commitment は乗算できるので残高の積はその和への commitment になり、asset tag の下で正本台帳の数字を割り出せば、残るものは h の純粋な冪でなければならない。その指数を知っていることを証明すれば、合計が一致することが証明され、それ以外は何も語らない。証明は台帳の中身が何であれ <strong>96 B</strong> で、4,096 ポジションの検査は 0.65 ms。3-of-7 の定足数は同じ命題を合計の blinding のシェアから 4.5 ms で組み立てるので、誰も合計を持たない。合計を持つ者は台帳全体を開けてしまうので、これは重要である。</p>
+<p>不一致は合否でしか出ない。<em>どこ</em>が違うかを見つけるには小計が要り、主張した小計はすべて公開になって、一ポジション、つまり一つの残高まで降りていく。これは DeFMI の中で唯一、意図的に開示する操作であり、何かがおかしい日にこそ手が伸びる操作でもある。ポジションごとに数字を持つ正本台帳なら、追加コストなしに場所を特定できる。</p>
+
+<h2 id="viewing">監査人に一切れだけ見せる</h2>
+<p>note のウォレットは閲覧鍵（view key）と支出鍵（spend key）からなる。scope の区切りは鍵の中ではなく、アドレスの中にある。scope（銘柄、四半期、mandate）はウォレットの seed からハッシュで自身のアドレスを導出し、そこへ送られた note はその scope の閲覧鍵で見つかり、他の何によっても見つからない。付与は発行 0.08 ms、検査 0.07 ms。scope を持つ者はプールのうち付与された 5 分の 1 にちょうど届き、serial は一つも復元できない。serial には支出鍵が要るからである。</p>
+<p>消えない限界が三つある。付与は取り消せないので、失効とは次の scope へ移ることであり、それはアドレス管理の行為である。<code>Rolling</code> はその予定表を、規律ではなく対象物にする。閲覧鍵は入金側だけで、出金は別の開示になる。そして scope の細かさは支払側の協力の範囲にとどまる。前四半期のアドレスを使う支払側は note を前四半期の scope に入れてしまい、<code>arrived_off_schedule</code> がそれを検知するが、防ぐものはない。</p>
+
+<h2 id="vetting">handle を持てるのは誰か</h2>
+<p>handle は誰でも選べる。許可が要るのは審査を通ることで、審査名簿が保持するのは handle ではなく封印された封筒 <code>C = a·G + r·h</code> なので、一つ追加しても一様ランダムな点が現れるだけで、加入のタイミングはどの項目がその人のものかを何も語らない。所属は固定した群に対する one-of-many で証明する。証明ごとに新しい ring を作ればより秘匿されるように見えるが実際は逆で、重なった ring は交わるからである。Schnorr 証明が handle を封筒が定める一つに固定するので、一つの審査から出るのは一つの handle であり、一族ではない。<code>Roll::vetted()</code> と <code>Roll::crowd()</code> は公開で、匿名集合の大きさは誰でも検査できる。審査の事象を隠すことと群の大きさを証明することは同じ情報であり、設計は後者を選ぶ。</p>
+{{chart:vetting}}
+<p>検証は群とともに倍になると予測したが、実際は約 1.4× にとどまり、まとめて行うマルチスカラー乗算の効果が現れた。群 128 で検査は 3.84 ms、証明は 1,676 B なので、<strong>128 を既定値</strong>とする（<code>vetting::CROWD</code>）。数千の群には回路の中の Merkle 木が要り、ここにあるシグマ・プロトコルや Bulletproofs とは別の証明系になる。</p>
+
+<h2 id="l1">Avalanche L1</h2>
+<p>配備済みの実行経路は <code>avalanche/defmivm/</code> にある専用の非 EVM カスタム VM で、AvalancheGo が RPCChainVM プロトコル 45 で起動する。ネイティブの状態遷移: 資産登録、口座開設、事前承認済みの予約、原子的な複数脚の決済。完全な受入ゲートは、口座を持たない note、事前承認済みの予約、7 者 MPC の zkPI、複数 RFQ の原子的決済、法人単位で共有する上限、再起動復旧、状態ルートの一致を覆う。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">観測値</th></tr></thead>
+<tbody>
+<tr><td>ローカルの AvalancheGo プロセス</td><td class="num">5</td></tr>
+<tr><td>受理された高さ</td><td class="num">1, 2, 3, 4, 5</td></tr>
+<tr><td>決済の受理</td><td class="num">207.3 ms</td></tr>
+<tr><td>口座開設 2 件</td><td class="num">424.6 ms</td></tr>
+<tr><td>ノードの再起動と状態復旧</td><td class="num">1454.7 ms</td></tr>
+<tr><td>再起動の前後で状態ルートが同じ</td><td class="num">yes</td></tr>
+</tbody></table></div>
+<p class="src">artifact: avalanche_l1_acceptance.json、avalanche_qomm_full_acceptance.json（高さ 53 で一つの原子的バッチに 2 件の RFQ、高さ 54 で claim の確定、検証者の再起動でルートが同一）</p>
+<p>この実行は 1 台のホスト上の 5 プロセスを使う。証明するのは、ネイティブ合意による受理、冪等なクラッシュ復旧、状態ルートの一致である。5 つの独立した組織や、公開ネットワークへの準備が整っていることは証明しない。</p>
+
+<h2 id="missing">まだ欠けているもの</h2>
+<ul>
+  <li>検証者は提出された証明一式を完全に検証するが、非公開の MP-SPDZ トランスクリプトを再実行することも、シェアから証明への受け渡しを証明することもしない。この委員会への信頼を取り除くには、非公開の計算全体の証明と、別途の合意ベンチマークが要る。</li>
+  <li>受付、担保差入、限度、支払は一つの原子的な事象になっていない。</li>
+  <li>note を送った者は、それが使われたことが分かる。この構成では避けられない。</li>
+  <li>第二の決済通貨を追加するのは口座開設の判断であり、コード変更ではない。tag 付きの資金脚は、口座の建値通貨に対して開くからである。</li>
+</ul>
+
+<div class="next"><a href="zkpi.html">← zkPI</a><a href="dekyx.html">DeKYX: 資格 →</a></div>

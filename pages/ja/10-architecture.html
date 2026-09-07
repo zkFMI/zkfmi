@@ -1,0 +1,178 @@
+---
+title: 全体構成
+description: zkFMI の構成要素がどう組み合わさるか。依頼から、内容を見ない値付け、証明付き指図、専用 Avalanche L1 上の原子的決済まで。各秘密は、それを保持する構成要素に割り当てる。
+path: docs/architecture.html
+section: docs
+---
+<h1>全体構成</h1>
+<p class="lede">zkFMI は、従来の基盤が一体にしている三つの仕事を切り離す。取引を決めること、その決済を指図すること、決済すること。各仕事は、その仕事に必要な秘密だけを持つ構成要素の中で動く。構成要素どうしの継ぎ目を渡るのは commitment、証明、署名であり、平文は渡らない。</p>
+
+<h2 id="shape">システムの形</h2>
+<p>このサイトでは三つの語を厳密に使い分ける。<strong>指図の発行元</strong>は、移転を決めて zkPI を発行するものすべてを指す。<strong>市場</strong>は、多数の当事者の注文や見積を突き合わせて決める発行元である（QOMM、OCLOB）。<strong>業務システム</strong>は、自らの業務規則で決める発行元である（ファンド管理者、担保エンジン、銀行の審査、Aethel）。決済層にはこれらの区別がつかない。それこそが狙いである。</p>
+<pre class="mermaid">
+flowchart LR
+    subgraph up["指図の発行元: 決める"]
+        Q["QOMM<br/>依頼を見ない RFQ"]
+        O["OCLOB<br/>注文を見ない板"]
+        A["Aethel<br/>債権"]
+        X["任意の業務システム<br/>ファンド、担保、銀行"]
+    end
+    subgraph gate["資格"]
+        K["DeKYX<br/>匿名の資格証明"]
+    end
+    subgraph inst["指図する"]
+        Z["zkPI<br/>commitment 化した指図<br/>+ 定足数署名<br/>+ 範囲証明"]
+    end
+    subgraph clear["清算する（任意）"]
+        C["DeCCP<br/>ネッティング、証拠金、ウォーターフォール"]
+    end
+    subgraph settle["決済する"]
+        D["DeFMI<br/>note、asset tag、<br/>DvP / PvP、照合"]
+        L["Avalanche L1<br/>検証者 5、Rust VM"]
+        D --- L
+    end
+    K -.->|"検証済みの資格"| Q
+    K -.->|"検証済みの資格"| O
+    K -.->|"検証済みの資格"| C
+    Q --> Z
+    O --> Z
+    A --> Z
+    X --> Z
+    Z --> C --> D
+    Z --> D
+    D -->|"受領証、状態ルート"| up
+    classDef secret stroke:#f2b880,stroke-width:2px
+    classDef mech stroke:#9bb0ff,stroke-width:2px
+    classDef ok stroke:#5ee0c1,stroke-width:2px
+    class Q,O,A,X secret
+    class Z,K,C mech
+    class D,L ok
+</pre>
+
+<p>この形から三つの性質が導かれる。サイトの他のページを読むあいだも、この三つは念頭に置いておく価値がある。</p>
+<ul>
+  <li><strong>決済層は意味について何も判断しない。</strong>DeFMI が確かめるのは算術である。価値の保存、非負性、積の関係、原子性、一度だけの使用。価格が妥当だったか、銘柄が正しかったかは指図の発行元の判断であり、定足数署名に載って運ばれる。それを DeFMI に再導出させるなら平文を渡すことになり、この構成はまさにそれを避けるために存在する。</li>
+  <li><strong>境界を越えるのは指図だけである。</strong>依頼、値付け規則、負けた見積は指図の発行元の外に出ない。市場が公開するのは commitment 化した指図、nullifier、期限、署名である。</li>
+  <li><strong>指図の発行元はどれも入れ替えられる。</strong>QOMM を最初に作ったが、ファンド管理者、担保エンジン、銀行の制裁リスト照会も同じ型の指図を発行できる。<a href="use-cases.html">業務システムのページ</a>では、それらを実現しやすさの順に並べている。</li>
+</ul>
+
+<h2 id="flow">一件の決済を端から端まで</h2>
+<p>二つの指図の発行元を追う。一つ目は RFQ 市場である。これまでに作った中で最も完全な経路であり、すべての証明を通るからである。二つ目はファンド管理者である。MPC もオークションもなく、同じ型の指図で同じ決済層に到達する。<a href="use-cases.html">業務システムのページ</a>はこれを最初の製品に位置づけている。OCLOB は一つ目の値付けの段を照合に置き換えたもので、指図以降はすべて共通である。</p>
+<h3>RFQ 市場を通る経路</h3>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant T as テイカー
+    participant N as MPC ノード 7 台
+    participant M as メイカー（値付け規則は事前に配布済み）
+    participant Q as 3-of-7 の定足数
+    participant V as DeFMI 検証者（5）
+    T->>N: （銘柄、数量、売買方向）の加法シェアを一定の間隔で送る
+    M-->>N: commitment 化した値付け規則を Shamir シェアとして配布
+    N->>N: 全メイカーの値付け、資格による絞り込み、二分トーナメント
+    N->>N: 鍵を一つだけ開く: 勝者と commitment 化した価格
+    N->>N: quote proof: 勝者は commitment 化した鍵の最小値
+    N->>Q: 閾値範囲証明 2 本（金額、価格）を組み立てる
+    Q->>Q: 指図に FROST 署名（nonce、期限、ダイジェスト）
+    Q->>V: zkPI + 完全な quote proof + DvP パッケージ
+    V->>V: 承認、指図、証明、価格制限、資産の紐付け、各ルート、nullifier を検証
+    V->>V: 両脚を原子的に適用するか、どちらも適用しない
+    V-->>T: 高さ、受領証、前後の 状態ルート
+</pre>
+
+<h3>ファンド管理者を通る経路</h3>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant I as 投資家
+    participant K as KYC 提供者（DeKYX）
+    participant F as ファンド管理者
+    participant Q as 発行定足数
+    participant V as DeFMI 検証者
+    I->>K: このファンドへの資格を証明（scope、上限、期限）
+    K-->>F: 検証済みの資格、subject line のみ
+    I->>F: 申込依頼、現金は commitment 化した note として予約
+    F->>F: 上限、残り口数、基準価額（NAV）の時点を確認
+    F->>Q: 判断を型付きの指図にする: 現金脚、口数脚、期限、nonce
+    Q->>V: 範囲証明と定足数署名を付けた zkPI
+    V->>V: 検証し、口数の発行と現金の移動を原子的に行うか、どちらも行わない
+    V-->>I: 受領証と 状態ルート
+</pre>
+<p>決済層のどこも、指図がオークションから来たのか申込書から来たのかを知らない。それがこの設計の狙いであり、後述の crate 名が誤解を招く理由でもある。</p>
+
+<h2 id="secrets">誰がどの秘密を持つか</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>秘密</th><th>保持者</th><th>決済層に見えるか</th><th>仕組み</th></tr></thead>
+<tbody>
+<tr><td>依頼（銘柄、数量、売買方向）</td><td>テイカー。ノードはシェアを持つ</td><td>見えない</td><td>中継を経由する加法シェア。誰かが依頼したかどうかに関係なく通信の痕跡が同じになるよう、一定の間隔で送る</td></tr>
+<tr><td>メイカーの値付け規則</td><td>メイカー。ノードはシェアを持つ</td><td>見えない</td><td>commitment 化し、署名付きシェアとして配布する。監査はこの commitment に対して述べられる</td></tr>
+<tr><td>負けた見積</td><td>トーナメント後は誰も持たない</td><td>見えない</td><td>開かれる鍵は一つだけ</td></tr>
+<tr><td>勝った価格</td><td>平文では誰も持たない</td><td>見えない</td><td>Pedersen commitment のまま、証明、署名、指図、台帳を通る</td></tr>
+<tr><td>金額、数量</td><td>取引当事者</td><td>見えない</td><td>commitment、範囲証明、積の証明</td></tr>
+<tr><td>どの銘柄か</td><td>取引当事者</td><td>見えない</td><td>blinded asset tag。所属は発行時に一度だけ証明する</td></tr>
+<tr><td>誰が誰に払ったか</td><td>取引当事者</td><td>見えない</td><td>note 台帳、Groth–Kohlweiss の one-of-many ring、市場ごとの handle</td></tr>
+<tr><td>誰が資格を持つか</td><td>DeKYX の発行者と保持者</td><td>scope 付きの subject line だけ</td><td>audience、action、nonce、期限に束縛した匿名提示</td></tr>
+<tr><td>監査の閲覧範囲</td><td>名指しの監査人、一つの scope</td><td>—</td><td>銘柄別または期間別に導出する scope 付きの閲覧鍵。受け取った note だけが見え、使う能力はない</td></tr>
+</tbody></table></div>
+
+<h2 id="repos">リポジトリと crate</h2>
+<p>リポジトリは 8 つ。最初の 3 つは一つの共有研究ツリーから生成したもので、配置が揃っているのも、いくつかの crate がいまも <code>qomm-</code> 接頭辞を持つのもそのためである。QOMM はこのスタック上に最初に作った市場で、台帳、指図、ゼロ知識のガジェットは、分離される前にその名で呼ばれていた。接頭辞は歴史的なものであり、依存関係を意味しない。層ごとに名付けた単一所有の crate への統合を計画している。他のリポジトリは、明示的なポートを持つ独立したワークスペースである。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>リポジトリ</th><th>役割</th><th>主な crate</th><th>依存先</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図と証明のガジェット</td><td><code>qomm-zk</code>、<code>qomm-zkpi</code>、<code>qomm-proofs</code></td><td>curve25519-dalek、bulletproofs、frost-ristretto255</td></tr>
+<tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>決済台帳と Avalanche VM</td><td><code>qomm-defmi</code>、<code>qomm-avalanche-vm</code>、<code>zkpi-defmi-sdk</code>、<code>qomm-harness</code></td><td>aethel、deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-dsl</code>、<code>qomm-mpc</code>、<code>qomm-transport</code>、<code>qomm-audit</code>、<code>qomm-law</code></td><td>MP-SPDZ（外部）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>注文を見ない板</td><td><code>oclob-core</code>、<code>oclob-edge</code>、<code>oclob-node</code>、<code>oclob-ordering</code>、<code>oclob-mpc</code>、<code>oclob-settlement</code></td><td>dekyx、zkPI/DeFMI SDK、MP-SPDZ</td></tr>
+<tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>資格のクレデンシャル</td><td><code>dekyx-core</code>、<code>dekyx-aethel</code></td><td>なし</td></tr>
+<tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>清算の状態機械</td><td><code>deccp-core</code>、<code>deccp-aethel</code></td><td>なし（ポート経由）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と兄弟 crate 7 つ</td><td>dekyx</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td>進行中</td><td>なし</td></tr>
+</tbody></table></div>
+
+<h2 id="primitives">暗号プリミティブは書き直さず使う</h2>
+<p>すべて ristretto255 の上に載る。曲線、範囲証明、閾値署名は監査済みの crate が供給し、このプロジェクト自身のガジェットはその上のシグマ・プロトコルである。</p>
+<pre class="mermaid">
+flowchart TB
+    subgraph ext["監査済み crate"]
+        DALEK["curve25519-dalek<br/>ristretto255"]
+        BP["bulletproofs<br/>範囲証明"]
+        FROST["frost-ristretto255<br/>閾値署名"]
+    end
+    subgraph zk["qomm-zk"]
+        PED["pedersen<br/>commitment、asset tag"]
+        SIG["sigma<br/>開示、生成元間の等価、積"]
+        RNG["range"]
+        OOM["oneofmany<br/>Groth-Kohlweiss"]
+        ORD["or_dleq"]
+        ADP["adaptor<br/>事前署名、適応、抽出"]
+        SHA["shamir<br/>Reed-Solomon 復号器"]
+    end
+    subgraph pi["qomm-zkpi"]
+        ISS["issuer<br/>KYB クレデンシャル"]
+        INS["instruction<br/>commitment 化、束縛、nullifier 導出"]
+        QUO["quorum"]
+        HAN["handles<br/>一つの seed から市場ごとに無関係な点"]
+    end
+    DALEK --> PED
+    DALEK --> HAN
+    BP --> RNG
+    FROST --> QUO
+    PED --> SIG
+    PED --> OOM
+    PED --> ORD
+    SIG --> ADP
+    SIG --> INS
+    RNG --> INS
+    OOM --> ISS
+    ORD --> ISS
+    INS --> QUO
+    HAN --> INS
+</pre>
+<p>体は意図して一致させている。MPC は commitment 群の位数と同じ素数の上で走るので、シェアへの commitment は監査人が再演できる線形の言明になる。この一致こそが、監査可能性のコストを通信量 2.00× だけに留めているものであり、同時に、このスタックを格子ではなく離散対数仮定に留めているものでもある。この引き換えの両面がなぜともに成り立つかは、<a href="prior-art.html">先行研究のページ</a>で説明する。</p>
+
+<h2 id="execution">実行環境</h2>
+<p>配置する経路は専用の非 EVM Avalanche L1 である。AvalancheGo は外部のコンセンサス・ホストとして、RPCChainVM プロトコル 45 で Rust VM を起動する。VM は資産登録、口座開設、事前承認済みの予約、複数脚の原子的決済をネイティブの状態遷移として持つ。受入経路に Solidity も EVM バイトコードもプリコンパイルも含まれない。</p>
+<p>EVM と Solana を採らなかった理由は、思い込みではなく記録として残している。EVM バイトコードでの ed25519 スカラー乗算 1 回は 302,401 gas と計測された。Solana では、ランタイムに曲線の syscall はあるがスカラー体の syscall がないため、Groth–Kohlweiss 検証器のスカラー体上の多項式評価が crowd 64 で計算上限を超える。表は <a href="zkpi.html#where">zkPI のページ</a>にある。</p>
+
+<div class="next"><a href="index.html">← ドキュメント一覧</a><a href="principles.html">この研究の進め方 →</a></div>

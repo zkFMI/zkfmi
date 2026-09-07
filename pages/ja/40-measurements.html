@@ -1,0 +1,111 @@
+---
+title: 計測値
+description: zkFMI スタックの、判断に関わる数値を一か所に集めたもの。それぞれに artifact とホストのラベルを付す。幅別の決済費用、note の ring、PvP の露出、照合、審査証明、ノードの処理量、Avalanche の受理、配置別の RFQ 遅延、監査可能性の費用、そして外れた予測。
+path: docs/measurements.html
+section: docs
+---
+<h1>計測値</h1>
+<p class="lede">掲載する数値にはすべて <code>artifacts/</code> 配下の artifact と、それを書き出した Rust バイナリがある。計測に同梱していないもの（MP-SPDZ、2 台目のホスト、市場のフィード）が要る場合、バイナリはそう告げて失敗し、既定値で代用しない。ホストは名前ではなくラベルで示す。何かを比べる前に、まず較正値を比べること。</p>
+
+<h2 id="calibration">較正</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>ホスト</th><th class="num">スカラー乗算</th><th class="num">40 ビット範囲証明</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>host-c</td><td class="num">38.4 ± 4.1 µs</td><td class="num">20.88 ms</td><td>DeFMI の表の大半、線形バックエンド、審査証明</td></tr>
+<tr><td>host-a</td><td class="num">25.8 µs</td><td class="num">—</td><td>Bulletproof バックエンド、ring、PvP、単一チェーンでの連結不能性、VOLEitH</td></tr>
+</tbody></table></div>
+<p>同じ機械が別の時刻には 1.5 倍遅かったこともある。ホストをまたぐ比にはホスト差が含まれる。採用の根拠に使う前に、両方の arm を一つのホストで再実行すること。</p>
+
+<h2 id="settlement">決済</h2>
+{{chart:settle_width}}
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">数値</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>DvP 1 件の決済、40 ビットのレール、線形バックエンド</td><td class="num">34.0 ms · 57,939 B</td><td>defmi.json</td></tr>
+<tr><td>DvP 1 件の決済、64 ビットのレール、Bulletproof バックエンド</td><td class="num">7.02 ms · 3,424 B</td><td>rust_bench.json</td></tr>
+<tr><td>決済費用の傾き（線形バックエンド）</td><td class="num">0.80 ms/bit · 896 B/bit</td><td>defmi.json</td></tr>
+<tr><td>決済内の zkPI 検証（切片）</td><td class="num">2.1 ms</td><td>defmi.json</td></tr>
+<tr><td>証券 24 ビット・資金 48 ビット、両方 48 ビットとの比較</td><td class="num">時間 −24% · −10,752 B</td><td>defmi.json</td></tr>
+<tr><td>ノード 1 台、8 ワーカー、検証のみ</td><td class="num">216.6 件/秒（7.40×）</td><td>defmi.json</td></tr>
+<tr><td>決済 1 件あたりの asset tag</td><td class="num">+32 B · 時間は 0.2 ms のノイズの内側</td><td>defmi.json</td></tr>
+<tr><td>発行時の資産所属証明、64 銘柄</td><td class="num">検証 2.24 ms · 1,344 B</td><td>defmi.json</td></tr>
+<tr><td>Rust での note DvP、ring 8、3-of-7 FROST 儀式を含む</td><td class="num">構築 37.6 ms · 決済 51.9 ms · 5,476 B</td><td>note_dvp_rust.json</td></tr>
+<tr><td>状態ルートの保持と全走査の比較、4,096 note</td><td class="num">0.23 µs 対 15,325 µs</td><td>note_dvp_rust.json</td></tr>
+</tbody></table></div>
+
+<h2 id="instruction">指図と quote proof</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">数値</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>zkPI v2 本体のテストベクタ</td><td class="num">9,726 B</td><td>zkpi_vectors/accepted-v2.bin</td></tr>
+<tr><td>zkPI v1 互換テストベクタ</td><td class="num">1,572 B</td><td>zkpi_vectors/</td></tr>
+<tr><td>quote proof、メイカー 4 社</td><td class="num">証明 152 ms · 検証 173 ms</td><td>quote_proof.json (host-a)</td></tr>
+<tr><td>quote proof、メイカー 8 社</td><td class="num">証明 307 ms · 検証 350 ms</td><td>quote_proof.json</td></tr>
+<tr><td>監査可能性の追加費用（一致体）</td><td class="num">壁時計 1.07× · 通信量 2.00× · ラウンド 1.00×</td><td>binding_chain.json</td></tr>
+<tr><td>参加者ごとの入力検査</td><td class="num">+1 ラウンド · 通信量 +0.39% · 健全性 2⁻²⁴⁵</td><td>input_check.json</td></tr>
+<tr><td>Pedersen 対 VOLE-in-the-Head、167 値、n=30</td><td class="num">18.6/15.5 ms、5,440 B 対 73.1/69.9 ms、45,616 B</td><td>voleith.json (host-a)</td></tr>
+</tbody></table></div>
+
+<h2 id="privacy">プライバシーの値段</h2>
+{{chart:ring}}
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">数値</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>ring 64: 証明 / 検証 / wire</td><td class="num">14.5 ms / 3.7 ms / 38,144 B</td><td>defmi.json</td></tr>
+<tr><td>ring 512: 証明 / 検証</td><td class="num">40.3 ms / 9.3 ms</td><td>defmi.json</td></tr>
+<tr><td>受取側の走査、note 1 件あたり</td><td class="num">0.063 ms</td><td>defmi.json</td></tr>
+<tr><td>観測者対 ring 16、一様なおとり、通信 16 件</td><td class="num">0.359（名目 0.062）</td><td>rings.json</td></tr>
+<tr><td>観測者対 ring 16、最近のおとり、通信 16 件</td><td class="num">0.062</td><td>rings.json</td></tr>
+<tr><td>PvP: 後手側の反応</td><td class="num">0.06 ms</td><td>pvp.json (host-a)</td></tr>
+<tr><td>単一チェーンの adaptor 対 単一トランザクション、16 スワップ</td><td class="num">検証 +3.0% · 呼び出し 4×</td><td>same_chain.json</td></tr>
+<tr><td>観測者による PvP 両脚の結び付け、市場ごとの handle、同時 16 件</td><td class="num">0.062</td><td>same_chain.json</td></tr>
+<tr><td>観測者による PvP 両脚の結び付け、どこでも同じ名前</td><td class="num">1.000</td><td>same_chain.json</td></tr>
+<tr><td>実 MPC スロット対 cover（おとり）スロット</td><td class="num">同じラウンド数（286）、同じバイト数（22.2 MB）、Δ 0.01 s</td><td>audit_slots.json</td></tr>
+<tr><td>scope 付き閲覧権限: 発行 / 検査</td><td class="num">0.08 / 0.07 ms</td><td>viewing.json</td></tr>
+<tr><td>MPC 内での DP 公表、n=7</td><td class="num">28 ラウンド · 63.9 MB（ラウンドの 92.9% はノイズ生成）</td><td>distributed_publication.json</td></tr>
+</tbody></table></div>
+
+<h2 id="clearing">清算と照合</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">数値</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>net-net 対 gross-gross、64 取引、8 参加者</td><td class="num">1.62×</td><td>defmi.json</td></tr>
+<tr><td>サイクル単位の attestation 対 gross-gross</td><td class="num">19.40×</td><td>defmi.json</td></tr>
+<tr><td>DeCCP の清算済みサイクル、256 取引</td><td class="num">38.3 ms 対 net-net の 794.6 ms（20.7×）</td><td>deccp.json, ccp_rust.json</td></tr>
+<tr><td>取引 1 件あたりの更改（novation）</td><td class="num">0.53 µs</td><td>deccp.json</td></tr>
+<tr><td>日中限度: カバー証明あり / なし</td><td class="num">9.2 / 9.4 ms</td><td>defmi.json</td></tr>
+<tr><td>デフォルト・ウォーターフォール、トランシェあたり</td><td class="num">構築 11.2 ms · 検証 ~1.4 ms</td><td>defmi.json</td></tr>
+<tr><td>照合証明、サイズ不問</td><td class="num">96 B · 4,096 ポジションで検査 0.65 ms</td><td>reconcile.json, reconcile_rust.json</td></tr>
+<tr><td>審査証明、群 128: 証明 / 検証 / 証明サイズ</td><td class="num">9.02 / 3.84 ms / 1,676 B</td><td>vetting.json</td></tr>
+</tbody></table></div>
+
+<h2 id="network">ネットワークと合意</h2>
+{{chart:placement}}
+{{chart:batching}}
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th class="num">数値</th><th>artifact</th></tr></thead>
+<tbody>
+<tr><td>Avalanche L1: 検証者 · 決済受理 · 再起動復旧</td><td class="num">5 · 207.3 ms · 1,454.7 ms</td><td>avalanche_l1_acceptance.json</td></tr>
+<tr><td>L1 上の QOMM 全経路: 高さ 53 で RFQ 2 件を原子的に、54 で claim、同一ルートで再起動</td><td class="num">受入済み</td><td>avalanche_qomm_full_acceptance.json</td></tr>
+<tr><td>RFQ 見積 1 件、M=16、7 ノード: 同一ラック / 都市圏 / 15 ms / 120 ms</td><td class="num">0.17 / 0.62 / 3.88 / 26.1 s</td><td>placement.json, sites.json</td></tr>
+<tr><td>近く 6 台、遠く 1 台（120 ms）</td><td class="num">23.0 s（全部遠い場合の 86%）</td><td>sites.json</td></tr>
+<tr><td>見積 1 件あたりの MPC ラウンド数</td><td class="num">70、メイカー数と資産数に対して一定</td><td>rounds.json</td></tr>
+<tr><td>地域をまたぐ見積 1 件の間の価格の動き対ブロック内の散らばり（UniswapX）</td><td class="num">1.01×（中央値）</td><td>staleness.json</td></tr>
+<tr><td>頑健な ATLAS、n=9、t=2: 乗算 1 回・参加者 1 人あたりの元の数</td><td class="num">18.2 対 配備中の 64.2</td><td>robust_atlas.json, robust_atlas_host_c.json</td></tr>
+<tr><td>EVM: ed25519 スカラー乗算 1 回</td><td class="num">302,401 gas</td><td>stylus_gas.json</td></tr>
+<tr><td>Solana: one-of-many 検証器、群 32</td><td class="num">951,503 CU（上限 1.4M）</td><td>solana_cu.json</td></tr>
+</tbody></table></div>
+
+<h2 id="misses">外れた予測</h2>
+<p>各文書は実行前に予測を記録し、外れは結果の横に残す。外れこそが計測の目的だったからである。</p>
+<ul>
+  <li><strong>net-net は gross-gross の 8 分の 1 と予測した</strong>が、計測は 1.62× だった。取引ごとの zkPI 検証はネッティングで消えないからである。</li>
+  <li><strong>note DvP は部品の足し算で予測した</strong>が、2 倍以上外れた。</li>
+  <li><strong>審査証明の検証は群の大きさとともに倍になると予測した</strong>が、1.4× にとどまった。この外れが既定の群を 16 から 128 に引き上げた。</li>
+  <li><strong>120 ms 配置は 18 s と予測した</strong>。15 ms で 1.4% の精度で検証されたモデルからの予測だったが、計測は 23 s で、28% の過小予測だった。</li>
+  <li><strong>頑健な復元は 1.6× 低く予測した。</strong></li>
+  <li><strong>「探りは 10 回程度」</strong>は論文に三度現れ、artifact には一度も現れなかった。計測すると、予算を増やしても相関は大きくならず、大きくなるのは確信だけである。</li>
+  <li><strong>二つの arm が 413 ms、標準偏差 9 ms と 20 ms を示した</strong>。負荷のかかった機械上で、本来 14 ms あるはずの差に対してである。ゼロと計測されたのではない。計測できなかったのであり、再実行した。</li>
+</ul>
+
+<div class="next"><a href="use-cases.html">← 市場以外の業務システム</a><a href="security.html">安全性と信頼境界 →</a></div>

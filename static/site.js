@@ -1,4 +1,5 @@
 (function () {
+  var JA = document.documentElement.lang === 'ja';
   var root = document.documentElement;
   function isDark() {
     var t = root.getAttribute('data-theme');
@@ -83,13 +84,13 @@
 
   // ---- heading anchors + copy buttons
   document.querySelectorAll('.doc h2[id]').forEach(function (h) {
-    var a = document.createElement('a'); a.className = 'anchor'; a.href = '#' + h.id; a.textContent = '#'; a.setAttribute('aria-label', 'Link to this section'); h.appendChild(a);
+    var a = document.createElement('a'); a.className = 'anchor'; a.href = '#' + h.id; a.textContent = '#'; a.setAttribute('aria-label', JA ? 'この節へのリンク' : 'Link to this section'); h.appendChild(a);
   });
   document.querySelectorAll('pre:not(.mermaid)').forEach(function (pre) {
-    var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'copy';
+    var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = JA ? 'コピー' : 'copy';
     b.addEventListener('click', function () {
       var code = pre.querySelector('code'); var text = (code || pre).innerText;
-      navigator.clipboard.writeText(text).then(function () { b.textContent = 'copied'; setTimeout(function () { b.textContent = 'copy'; }, 1200); });
+      navigator.clipboard.writeText(text).then(function () { b.textContent = JA ? 'コピーした' : 'copied'; setTimeout(function () { b.textContent = JA ? 'コピー' : 'copy'; }, 1200); });
     });
     pre.appendChild(b);
   });
@@ -116,7 +117,7 @@
   function openSearch() {
     if (!modal) return;
     modal.hidden = false; input.value = ''; results.innerHTML = ''; sel = -1; input.focus();
-    if (!index) fetch(rel + 'search.json').then(function (r) { return r.json(); }).then(function (j) { index = j; });
+    if (!index) fetch(document.body.getAttribute('data-search') || (rel + 'search.json')).then(function (r) { return r.json(); }).then(function (j) { index = j; });
   }
   function closeSearch() { if (modal) modal.hidden = true; }
   function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -147,7 +148,7 @@
       li.innerHTML = '<a href="' + rel + r.e.u + '"><span class="st">' + mark(r.e.t, terms) + (r.e.h ? '<small>› ' + mark(r.e.h, terms) + '</small>' : '') + '</span><span class="sx">' + mark(snippet.slice(0, 160), terms) + '</span></a>';
       results.appendChild(li);
     });
-    if (!hits.length) results.innerHTML = '<li><span class="sx" style="padding:.6rem 1.1rem;display:block">No matches.</span></li>';
+    if (!hits.length) results.innerHTML = '<li><span class="sx" style="padding:.6rem 1.1rem;display:block">' + (JA ? '該当なし。' : 'No matches.') + '</span></li>';
   }
   if (modal) {
     document.querySelectorAll('[data-search-open]').forEach(function (b) { b.addEventListener('click', openSearch); });

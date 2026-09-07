@@ -1,0 +1,78 @@
+---
+title: DeKYX — 資格
+description: DeKYX は資格の層である。発行者が scope 付きのクレデンシャルに署名し、保持者は一つの行為に必要な資格だけを証明し、業務システムは身元の記録ではなく scope 付きの資格結果を受け取る。nullifier、失効、鍵交代、リプレイ、そして scope 内で仮名であるとは何かを述べる。
+path: docs/dekyx.html
+section: docs
+---
+<h1>DeKYX: 分散型 Know Your X</h1>
+<p class="lede">一つの行為に必要な以上の身元を知ることなく資格を検証しなければならないシステムのための、再利用できる身元と参加資格の層。X は人でも、法人でも、機器でも、サービスでも、自律エージェントでもよい。業務システムは保持者の秘密を決して受け取らず、検証済みの scope 付きの結果を受け取る。</p>
+<p class="src">出典: dekyx/README.md · crate: dekyx-core、dekyx-aethel · 研究実装であり、KYC/KYB システムとしての認証は受けていない</p>
+
+<h2 id="flow">クレデンシャルと提示の流れ</h2>
+<pre class="mermaid">
+sequenceDiagram
+    participant G as 統治
+    participant I as クレデンシャル発行者
+    participant H as 保持者
+    participant D as DeKYX 検証器
+    participant A as 業務システム
+    G->>D: 発行者、鍵 epoch、名前空間、ポリシーを登録
+    H->>H: 主体秘密と commitment を生成
+    H->>I: クレデンシャル要求 + 所持の証明
+    I->>H: 署名済みの scope 付きクレデンシャル
+    I->>D: 署名済みの失効状態一覧
+    A->>H: 提示の文脈と要件を厳密に指定
+    H->>D: 匿名提示 + 選んだ資格の証明
+    D->>D: 発行者、署名、状態、scope、文脈、リプレイを検証
+    D-->>A: VerifiedEligibility / scope 付きの subject line
+</pre>
+
+<h2 id="objects">主要オブジェクト</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>オブジェクト</th><th>役割</th></tr></thead>
+<tbody>
+<tr><td><code>IssuerDefinition</code></td><td>発行者、その鍵 epoch、名前空間、主体の種別、有効期間</td></tr>
+<tr><td><code>IssuerDirectory</code></td><td>検証済みの発行者 epoch と現在の失効一覧</td></tr>
+<tr><td><code>CredentialRequest</code></td><td>保持者が作った commitment を発行証明に束縛する</td></tr>
+<tr><td><code>Credential</code></td><td>発行者が署名した scope、ポリシー、commitment、資格のルート</td></tr>
+<tr><td><code>RevocationStatusList</code></td><td>発行者が署名した、epoch 順の失効クレデンシャル・ダイジェストの集合</td></tr>
+<tr><td><code>PresentationContext</code></td><td>証明を一つの audience、action、要求、nonce、期限に束縛する</td></tr>
+<tr><td><code>AnonymousPresentation</code></td><td>その文脈について、所持と選んだ資格を証明する</td></tr>
+<tr><td><code>VerifiedEligibility</code></td><td>検証の後にだけ生成される、シリアライズ不能な結果</td></tr>
+<tr><td><code>PresentationLedger</code></td><td>nullifier と文脈の組を消費し、リプレイを拒否する</td></tr>
+</tbody></table></div>
+
+<h2 id="privacy">プライバシーの範囲</h2>
+<p>保持者が主体秘密を生成し、発行時に commitment の開示値を知っていることを証明する。発行者は秘密を受け取らない。資格の葉は Merkle ルートに commitment 化され、提示では業務システムのポリシーが要求する葉だけを開き、それが署名済みのルートに属することを証明する。チャレンジには audience、action、要求、nonce、期限が含まれるので、ある操作のトランスクリプトを別の操作に流用することはできない。</p>
+<p><strong>subject line</strong>（scope の中で主体を指す仮名の識別子）は、発行者、scope、ポリシー、scope nullifier から導出する。同じ保持者が交代後の発行者鍵で差し替えのクレデンシャルを受け取っても変わらないので、業務システムは法的な身元を知らずに、一主体に一つの枠や一つの限度を強制できる。scope が異なれば nullifier の基点も異なり、commitment も再ランダム化される。OCLOB はこれで一法人の同時注文数に上限を設け、DeCCP は名前ではなく subject line で清算参加者を受け入れる。</p>
+<div class="note warn">この版は<strong>scope 内で仮名であって、発行者に対して連結不能ではない</strong>。Ed25519 で署名した commitment は一つのクレデンシャルの中で固定であり、発行者側の発行記録と突き合わせられる可能性がある。発行との連結不能性が必要な配置では、査読済みの BBS+ や CL 署名のアダプタのような、再ランダム化できるクレデンシャル方式が要る。README に書いてあることをここで繰り返すのは、読者が最も当然視しやすい性質だからである。</div>
+
+<h2 id="revocation">失効、鍵交代、リプレイ</h2>
+<ul>
+  <li>受け入れる発行者鍵の epoch には、すべて署名済みの状態一覧が必要である。一覧が無いか古ければ <strong>fail closed</strong>（閉じて止まる）。古い一覧で新しい一覧を置き換えることはできない。</li>
+  <li>鍵交代は厳密に大きい epoch を登録し、それ以前の epoch を猶予時刻で区切る。猶予時刻を旧鍵の開始より前に置くのが、即時の鍵漏洩に対する経路である。すでに検証済みの業務システム側の記録は業務システムの状態として残るが、退役した鍵で新しい提示を承認することはできない。</li>
+  <li><code>PresentationLedger</code> は scope nullifier と提示文脈の組を消費する。証明を再ランダム化しても、同じ行為を使い回せるようにはならない。ホストはこの台帳を認証付き記憶域に永続化しなければならない。巻き戻せばリプレイが再び可能になるからである。</li>
+</ul>
+
+<h2 id="boundary">永続化の境界</h2>
+<p><code>IssuerRegistry</code> は検証を迂回してデシリアライズできない。<code>IssuerDirectory</code> は検証済みレコードからの変換を通してのみ復元される。クレデンシャル、状態一覧、提示、文脈は wire データであり、使う前に検証する。<code>VerifiedEligibility</code> は意図してシリアライズ不能にしている。これは検証の出力であって、信頼できる入力になることは決してない。</p>
+
+<h2 id="integration">統合</h2>
+<pre class="mermaid">
+flowchart TB
+    CORE["dekyx-core<br/>クレデンシャルと提示の検証"]
+    AA["dekyx-aethel<br/>任意の artifact 束縛"]
+    A["Aethel<br/>与信と保証の資格"]
+    C["DeCCP<br/>清算参加者の受入"]
+    O["OCLOB、QOMM ほか<br/>ポリシー別の資格"]
+    CORE --> AA --> A
+    CORE --> C
+    CORE --> O
+    Z["zkPI / DeFMI"] -. "クレデンシャルへの直接依存なし" .-> CORE
+</pre>
+<p>zkPI と DeFMI はクレデンシャルを定義しない。ホストは、指図の作成や決済の前に DeKYX の資格を要求してよい。<code>qomm-zkpi</code> の issuer モジュールは、同じ one-of-many と or-DLEQ のガジェット上に独自の KYB クレデンシャル経路を持つ。これは DeKYX より前からあるもので、<a href="defmi.html#vetting">DeFMI のページ</a>で述べる審査証明（vetting）済みの名簿である。</p>
+
+<h2 id="not">配置側がなお定めなければならないこと</h2>
+<p>発行者の統治、証拠の基準、企業グループの名寄せ、失効の運用、データ保持方針、法域ごとの KYC/KYB 義務。発行者をまたぐ Sybil 対策の方針は、crate の外で共有の統治か登録簿の決定を必要とする。公開した rev は、固定した依存グラフのもとで Linux 上の test、clippy、fmt、release ビルドを通過した。これはビルドの gate であって監査ではない。</p>
+
+<div class="next"><a href="defmi.html">← DeFMI</a><a href="deccp.html">DeCCP: 清算 →</a></div>

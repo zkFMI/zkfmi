@@ -98,12 +98,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-fam
 .tools button { background: var(--bg-2); border: 1px solid var(--line); color: var(--fg-2); border-radius: 7px; height: 32px; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 0.55rem; cursor: pointer; font: 500 0.82rem var(--sans); }
 .tools button:hover { color: var(--fg); border-color: var(--line-2); }
 .search-btn kbd { margin-left: 0.2rem; }
+.tools .lang { display: inline-flex; align-items: center; gap: 0.35rem; height: 32px; padding: 0 0.6rem; border: 1px solid var(--line); border-radius: 7px; background: var(--bg-2); color: var(--fg-2); font: 500 0.82rem var(--sans); text-decoration: none; }
+.tools .lang:hover { color: var(--fg); border-color: var(--line-2); }
+body.ja { --sans: "Inter", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", -apple-system, BlinkMacSystemFont, sans-serif; }
+body.ja h1, body.ja h2, body.ja h3 { letter-spacing: 0; }
 .tools .menu { display: none; font-size: 1.2rem; }
 @media (max-width: 900px) {
   .topnav { display: none; position: absolute; top: 60px; left: 0; right: 0; background: var(--bg); border-bottom: 1px solid var(--line); flex-direction: column; padding: 0.8rem 1.25rem; gap: 0.6rem; }
   .topnav.open { display: flex; }
   .tools .menu { display: inline-flex; }
   .search-btn span, .search-btn kbd { display: none; }
+  .tools .lang span { display: none; }
 }
 
 /* search */

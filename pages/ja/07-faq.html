@@ -1,0 +1,44 @@
+---
+title: よくある質問
+description: 暗号に詳しい読者や市場基盤に詳しい読者が zkFMI について最初に尋ねること。トークンはあるか、ブロックチェーンか、なぜ EVM ではなく Avalanche か、なぜ TEE を使わないか、なぜ 7 ノードか、規制当局は何を見られるか、耐量子か、ダークプールや Prime Match と何が違うか、何が本番でないか。
+path: docs/faq.html
+section: docs
+---
+<h1>よくある質問</h1>
+<p class="lede">短い答えと、それぞれの根拠があるページへの案内。</p>
+
+<div class="faq">
+<h2 id="basics">基本</h2>
+<details><summary>トークンはあるか</summary><p>ない。トークンも販売もなく、ここにあるものは何も投資対象ではない。リポジトリは MIT ライセンスの研究コードである。ノードが差し入れ、不正行為で没収される bond は運用側の決定であり、運用側が選ぶ単位で建てる。コードは相対的な重みしか持たない。</p></details>
+<details><summary>zkFMI はブロックチェーンか</summary><p>決済層は専用の非 EVM Avalanche L1 として動く。AvalancheGo が合意を担い、RPCChainVM プロトコル越しに Rust の仮想機械を起動する。市場（QOMM、OCLOB）はどのチェーン上にもなく、指図を発行する 7 ノードの秘密計算である。DeKYX、DeCCP、Aethel はホストが組み込む決定的状態機械である。したがって「ブロックチェーン」は構成要素の一つを指す語であり、この設計は指図をネイティブに検証できる台帳ならどれの上でも決済できる。<a href="architecture.html">全体構成</a>を参照。</p></details>
+<details><summary>ここでの「ゼロ知識」は具体的に何を意味するか</summary><p>決済層は Pedersen commitment 上の範囲証明、積の証明、等値証明、one-of-many の ring 証明を検証する。価値が保存された、残高が負にならなかった、資金が数量と価格の積に等しい、両脚が同時に動いた、指図は未使用である、ということを、金額、価格、銘柄、当事者を知らずに確認する。市場は、返した見積が commitment された見積の中の最小値であったことの証明を、負けた見積や値付け規則を明かさずに作る。これらはシグマ・プロトコルと Bulletproofs であって SNARK ではない。シグマ・プロトコルの応答は witness について線形なので、witness を一度も持たない定足数が組み立てられるからである。<a href="zkpi.html">zkPI</a> と <a href="defmi.html">DeFMI</a> を参照。</p></details>
+<details><summary>誰が作っていて、どこかに配備されているか</summary><p>コードは <a href="https://github.com/zkFMI">github.com/zkFMI</a> で公開している。1 台の Linux ホスト上で端から端まで動いた。検証者 5、MPC 参加者 7、板のコンテナ 7 である。独立した組織をまたいで、WAN 上で、あるいは実資産を使って動いたことはない。<a href="status.html">現状</a>を参照。</p></details>
+
+<h2 id="design">設計上の選択</h2>
+<details><summary>なぜ EVM のコントラクトや Solana のプログラムではなく、専用の Avalanche VM か</summary><p>検証器の算術が収まらないからである。EVM バイトコードでの ed25519 スカラー乗算 1 回は計測で 302,401 gas だった。Solana には ristretto255 の syscall はあるがスカラー体の syscall がなく、one-of-many 検証器の多項式評価は群 64 で計算上限を超える。Subnet-EVM の precompile は可能だったが、他に誰も見ていないチェーン上で曲線のコードを合意のバグにしてしまう。ネイティブの Rust VM なら検証器は監査対象の crate の中に留まる。<a href="zkpi.html#where">実行層の比較</a>を参照。</p></details>
+<details><summary>より速い TEE（信頼実行環境）を使わないのはなぜか</summary><p>TEE は CPU 製造者の attestation 鍵、エンクレーブの実装、マイクロアーキテクチャのサイドチャネルを信頼境界に加えるからであり、この市場の前提は注文の流れをどの当事者にも預けないことだからである。脅威モデルは Tesseract 型の設計に対してそう明記している。<a href="security.html#tee">安全性</a>を参照。</p></details>
+<details><summary>なぜ 7 ノードで、そのうち 3 つが揃うと何が得られるか</summary><p>閾値 T=2 の 7 ノードは honest majority の Shamir 設定であり、malicious 安全のコストは壁時計時間で約 1.2× である。3 ノードが共謀すればすべての秘密を復元できる。これは隠さず明記している。7 はまた、頑健な復元に一歩足りない数でもある。n ≥ 4t+1、つまり 9 ノードなら復号器だけで出力の到達が保証され、それは実装・計測済みである。ノードを 2 つ増やすコストは、機関を 2 つ増やすことである。<a href="accountability.html">説明責任</a>を参照。</p></details>
+<details><summary>なぜ SNARK ではなくシグマ・プロトコルか</summary><p>シグマ・プロトコルの応答 z = k + c·w は witness についてアフィンなので、w の share を持つ 7 ノードがそれぞれ自分の分を計算し、それを Lagrange 補間で合わせると通常の検証器が受理する証明になる。その間、どのノードも w を持たない。汎用の SNARK にはそのような構造がなく、協調型 SNARK は証明者全体を MPC の中で動かす。代価は、MPC を commitment 群のスカラー体上で動かさなければならないことで、通信量 2.00×、壁時計時間 1.07× がかかる。<a href="binding.html">束縛</a>を参照。</p></details>
+<details><summary>見積がなぜ秒単位と遅いのか、それは問題か</summary><p>MPC は 70 ラウンドの深さがあり、各ラウンドがネットワークの往復なので、見積は同一都市圏で 0.6 s、ノードが二大陸に分かれると 26 s かかる。問題かどうかは価格が動いたかで決まる。UniswapX での計測では、26 s のずれは、その市場が 1 ブロック内に既に持っている散らばりと同じ大きさだった。入手できる中で最も条件の厳しい基盤上での値である。<a href="deployment.html#staleness">配置の選び方</a>を参照。</p></details>
+<details><summary>耐量子か</summary><p>部分的にそうであり、その線は正確に引いてある。署名と鍵交換はハイブリッドへ移行中である。Ed25519 + ML-DSA-65 は両方の検証が通る必要があり、X25519 + ML-KEM-768 はすべての常設接続で使い、古典方式への降格は拒否する。この作業は 2026-09-06 に統合ブランチで単一ホスト上のネイティブ受入を通過し、main へ統合中である。ゼロ知識の関係式は耐量子ではない。Pedersen commitment、範囲証明、ring、quote proof、FROST は離散対数に依拠する。その秘匿性は無条件だが束縛性はそうではなく、数か月にわたって有効なメイカーの値付け規則の commitment が、それが最初に効いてくる場所である。VOLE-in-the-Head commitment は計測済み（広い体上で Pedersen の 5.9× から 11×、かつ一回限り）、格子 commitment は Shamir の復元を壊す。未解決の問いは、F_p 上でランダムオラクルだけに依拠し、何度でも開ける commitment である。<a href="post-quantum.html">耐量子化への移行</a>と<a href="binding.html#pq">束縛</a>を参照。</p></details>
+
+<h2 id="privacy">プライバシーと監督</h2>
+<details><summary>規制当局や監査人は何を見られるか</summary><p>三つの粒度の選択的開示が実装済みである。一つの commitment 済みフィールドだけを、他を開かずに開く。ウォレットの一つの scope（銘柄、四半期、mandate）を、その scope の受取 note を読めるが使うことはできない閲覧鍵として、名指しの監査人に渡す。そして、誰も単独では持たない合計について定足数が組み立てる照合の陳述。付与は署名され、受領者を名指しするので、あるべきでない場所で見つかった鍵は付与まで遡れる。実装していないのは、実際の監督者の鍵儀式と法的要請の手続きである。<a href="defmi.html#viewing">DeFMI</a> と<a href="regulation.html">規制</a>を参照。</p></details>
+<details><summary>市場は探りを入れてメイカーの値付け規則を知ることができるか</summary><p>部分的にできる。暗号はここに手を出さない。確定価格を返すことこそがこのプロトコルの存在理由だからである。計測では、探りと在庫の相関は約 0.53 で、探りの予算を増やしても大きくならない。大きくなるのは確信度である。したがって主体ごとの上限は、像が得られるかどうかではなく、像をどれだけ頻繁に更新できるかを決める。勝った見積の公開は、MPC の中で引いた差分プライバシーの予算の下にある。<a href="deployment.html#decisions">配置</a>と <a href="qomm.html#dp">QOMM</a> を参照。</p></details>
+<details><summary>note による決済は実際どれほど匿名か</summary><p>ちょうど他人の通信量の分だけ匿名である。受け取ってから支払うまでの間に他の決済がない ring 16 は、その note を確実に名指しする。16 件分の決済の通信量と新しさを合わせたおとりがあれば観測者は名目どおりの 1/16 にいるが、一様なおとりではその 5.8× になる。adaptor signature による PvP も同じ形をしている。<a href="defmi.html#ring-worth">ring の価値</a>を参照。</p></details>
+<details><summary>決済層は誰が取引したかを知るか</summary><p>note レールでは ring、nullifier、commitment を見る。口座レールでは handle を見る。handle は一つの seed から市場ごとに導出するので、同じ法人は市場ごとに無関係な点になる。口座が署名された handle と一致しないパッケージは拒否する。note の送り手は、自分がその note を作ったのだから、それが使われたことを常に知ることができる。これは避けられず、明記している。</p></details>
+
+<h2 id="compare">比較</h2>
+<details><summary>ダークプールや、Renegade、P2DEX、Rialto のような MPC DEX と何が違うか</summary><p>それらは秘密の注文を照合する。MPC の中で行うものもあり、それを新しいとは主張しない。OCLOB が試す違いは、バッチではなく連続処理、部分約定と複数約定を伴う可変数量、内容を開く前に 5-of-7 で確定する受付順、価格帯別の合計だけの公開板、照合後に署名を要しない決済である。QOMM の違いは、監査されるのが回路の正しさではなく市場機構（最良執行）であること、そして同じ未開封の commitment が決済まで運ばれることである。<a href="prior-art.html">先行研究</a>を参照。</p></details>
+<details><summary>J.P. Morgan の Prime Match とはどう比べられるか</summary><p>Prime Match は本番稼働しており、より速い。ハブにいる semi-honest な銀行を信頼し、その結果は第三者が監査できない。QOMM には semi-honest な当事者がなく、監査可能な最良執行の証明を作り、どう読んでも速くはない。両面を明記している。<a href="prior-art.html#prime">先行研究</a>を参照。</p></details>
+<details><summary>中央銀行の実証のような「DLT 上の DvP」か</summary><p>DLT 上の DvP は価格が公開であることを前提にする。ここでは価格は commitment であり、quote proof がそれを最小値と示し、定足数が署名し、指図が運び、台帳の積の証明が消費する。一度も開かない。ネッティング、当座貸越限度、ウォーターフォール、更改（novation）の構成は標準的な FMI のもので、数値の代わりに commitment を置いている。<a href="defmi.html">DeFMI</a> を参照。</p></details>
+<details><summary>これは清算機関（CCP）や CSD を置き換えるか</summary><p>置き換えない。二当事者のトークンの同時交換は更改（novation）ではない。DeCCP は更改、ネッティング、証拠金、ウォーターフォールを供する構成要素だが、状態機械であって免許を受けた清算機関ではない。日本の振替制度の下では DeFMI は振替口座簿にはなれず、鏡として照合する。どちらも「主張してはいけない」一覧に載っている。<a href="regulation.html#claims">規制</a>を参照。</p></details>
+
+<h2 id="practical">実務</h2>
+<details><summary>QOMM なしで zkPI と DeFMI を使えるか</summary><p>使える。移転を決める主体なら、ファンド管理者、担保エンジン、銀行の制裁審査、名義管理者など、どれでも型付きの指図を発行できる。最初の製品として勧めるのはファンドの申込・解約である。<a href="use-cases.html">市場以外の業務システム</a>を参照。</p></details>
+<details><summary>今日いちばん小さく動かせるものは何か</summary><p>どのリポジトリでも <code>cargo test --locked --workspace</code>、次に zkPI のテストベクタ検証。検証者 5 台の Avalanche ゲートには Linux と、明示的に与えた AvalancheGo が必要である。<a href="get-started.html">始め方</a>を参照。</p></details>
+<details><summary>本番に行くには何が必要か</summary><p>単一の当事者が開けない決済権限、算術上だけでなく実際に独立した運営者、認証付き記憶域での状態世代の永続化、本物の認証と鍵管理、検証者が検証できる秘密計算の証明、法的 finality。それぞれ現状と併記して列挙している。<a href="status.html#p0">現状</a>と<a href="roadmap.html">今後の計画</a>を参照。</p></details>
+<details><summary>なぜ文書の多くが、動かないことについて書いているのか</summary><p>あるシステムが何をするかという主張は、何をしないかという主張の隣にあって初めて意味を持つからであり、設計上の決定の大半が外れた予測から来たからである。<a href="principles.html">この研究の進め方</a>を参照。</p></details>
+</div>
+
+<div class="next"><a href="principles.html">← この研究の進め方</a><a href="get-started.html">始め方 →</a></div>

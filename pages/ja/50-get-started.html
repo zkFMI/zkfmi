@@ -1,0 +1,68 @@
+---
+title: 始め方
+description: zkFMI のリポジトリを clone し、lock 済みのテスト一式を走らせ、zkPI のテストベクタを検査し、検証者 5 台の Avalanche L1 受入を実行し、QOMM の座席デモを試し、企業向け PoC ガイドを見つけるまで。
+path: docs/get-started.html
+section: docs
+---
+<h1>始め方</h1>
+<p class="lede">すべて Rust で、lock ファイルはリポジトリに含めてある。ライブラリのテストは Rust が動く場所ならどこでも走る。ネットワーク系の受入ゲートには Linux と、明示的に用意した AvalancheGo が必要で、MPC を通る経路には公式の MP-SPDZ の checkout も要る。スクリプトが外部バイナリを勝手にダウンロードすることはない。</p>
+
+<h2 id="clone">clone してテストする</h2>
+<pre><code>git clone https://github.com/zkFMI/defmi.git
+cd defmi/rust
+cargo test -j 4 --locked --workspace</code></pre>
+<p>同じコマンドが <code>zkpi</code> と <code>qomm</code> でも使える。単体の crate は四つのゲートを順に通す形になる。</p>
+<pre><code>git clone https://github.com/zkFMI/dekyx.git   # or deccp, aethel
+cd dekyx
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo fmt --all -- --check
+cargo build --workspace --release --locked</code></pre>
+<p><code>rust-toolchain.toml</code> は置いていない。評価を始めるときに <code>rustc --version</code> を記録し、ビルドに使う機械の間で同じ版に固定すること。統合用の Docker ビルドは現在 Rust 1.97.1 を参照している。</p>
+
+<h2 id="vectors">指図のテストベクタを検査する</h2>
+<pre><code>qomm-zkpi-verify --check-vectors artifacts/zkpi_vectors
+qomm-zkpi-verify --self-test</code></pre>
+<p>終了コード 0 は受理、1 は拒否、2 は判定に至らなかったことを表す。受理されるベクタは、復号して再符号化したときに同じバイト列に戻らなければならない。<code>--vectors &lt;dir&gt;</code> でベクタを作り直すのは形式が変わったときだけで、検査結果が食い違ったからという理由で作り直してはならない。</p>
+
+<h2 id="l1">検証者 5 台の L1 ゲートを走らせる</h2>
+<p><code>defmi/</code> から、承認済みの版の AvalancheGo と avalanche-network-runner を用意した上で実行する。</p>
+<pre><code>cargo build --release --manifest-path rust/Cargo.toml -p qomm-avalanche-vm -p qomm-harness
+# launchers and configuration under avalanche/defmivm/
+cargo run --release --manifest-path rust/Cargo.toml -p qomm-harness --bin run_avalanche_l1_acceptance</code></pre>
+<p>実行すると <code>artifacts/avalanche_l1_acceptance.json</code> が書き出される。<a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">企業向け PoC ガイド</a>（日本語）は、ソースの固定、VM のビルド、ネットワークの起動、取引シナリオ、追加の署名なしで通る QOMM 経路、必須の拒否試験と障害試験、保存すべき証拠、合格条件を順に案内し、その先の企業による評価に向けて、ハードウェアの見積、プロセス分離、ネットワーク設計、genesis、鍵管理、バックアップ、監視、障害注入まで続く。</p>
+
+<h2 id="demo">QOMM の座席デモを試す</h2>
+<pre><code>cd qomm
+cargo run -j 4 --release --manifest-path rust/Cargo.toml -p qomm-harness --bin serve_demo
+# then hand out seats:
+#   http://&lt;host&gt;:8800/?seat=taker
+#   http://&lt;host&gt;:8800/?seat=maker:1&amp;label=Ann
+#   http://&lt;host&gt;:8800/?seat=node:3&amp;label=Rin
+#   http://&lt;host&gt;:8800/?seat=observer</code></pre>
+<p>各ブラウザには、その役割が見るはずのものだけが送られる。observer の座席はすべてを表示し、どの配備にも存在しない眺めであることを毎フレーム明示する。</p>
+
+<h2 id="oclob">OCLOB のゲートを走らせる</h2>
+<p>OCLOB のビルドとテストはリモートホスト上の Linux コンテナの中でだけ行う。Makefile がソースをそこへ送る。</p>
+<pre><code>make release-gate REMOTE_TEST_HOST=&lt;linux-host&gt; REMOTE_TEST_REUSE_IMAGE=0
+make remote-distributed-e2e REMOTE_TEST_HOST=&lt;linux-host&gt;
+make remote-integrated-e2e  REMOTE_TEST_HOST=&lt;linux-host&gt;</code></pre>
+<p>結果は <code>artifacts/oclob_rough_e2e.json</code>、<code>oclob_distributed_e2e.json</code>、<code>oclob_distributed_avalanche_acceptance.json</code> に書き出され、それぞれが自身の <code>non_claims</code> と <code>privacy_boundary</code> のフィールドを持つ。</p>
+
+<h2 id="measure">文書を artifact から作り直す</h2>
+<pre><code>cd defmi
+make defmi-doc      # DEFMI.md from artifacts/*.json; no number typed by hand
+cd ../qomm
+make audit-doc      # AUDIT.md likewise</code></pre>
+
+<h2 id="poc">企業向け PoC ガイド</h2>
+<ul>
+  <li><a href="https://github.com/zkFMI/defmi/blob/main/docs/ENTERPRISE_POC_JA.md">DeFMI</a>: 導入、役割分離、障害事例、証拠、受入、そして 41 節の運用指針。</li>
+  <li><a href="https://github.com/zkFMI/qomm/blob/main/docs/ENTERPRISE_POC_JA.md">QOMM</a>、<a href="https://github.com/zkFMI/dekyx/blob/main/docs/ENTERPRISE_POC_JA.md">DeKYX</a>、<a href="https://github.com/zkFMI/deccp/blob/main/docs/ENTERPRISE_POC_JA.md">DeCCP</a>、<a href="https://github.com/zkFMI/aethel/blob/main/docs/ENTERPRISE_POC_JA.md">Aethel</a>、<a href="https://github.com/zkFMI/oclob/blob/main/docs/POC_GUIDE_JA.md">OCLOB</a>。</li>
+</ul>
+<p>いずれも日本語。合成資産、使い捨ての鍵、インターネットに出さないネットワークを前提とし、後から監査人が言葉を信じるのではなく実行そのものを検査できるよう、どの証拠を残すべきかを述べている。</p>
+
+<h2 id="license">ライセンス</h2>
+<p>7 リポジトリすべて MIT。取り込んだコードが求める場合には第三者の表示を添えている。</p>
+
+<div class="next"><a href="roadmap.html">← 今後の計画</a><a href="glossary.html">用語集 →</a></div>
