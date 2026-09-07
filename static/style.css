@@ -166,11 +166,22 @@ a.card:hover { text-decoration: none; border-color: var(--line-2); transform: tr
 .paths { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .paths .card ol { padding-left: 1.2rem; margin: 0.4rem 0 0; color: var(--fg-2); font-size: 0.95rem; }
 .compare th:first-child, .compare td:first-child { white-space: nowrap; }
-.compare.diff th:first-child, .compare.diff td:first-child { white-space: normal; min-width: 6.5rem; }
-.compare.diff td, .compare.diff th { vertical-align: top; font-size: 0.88rem; }
-.compare.diff tr.diff td { border-top: 0; padding-top: 0; padding-bottom: 1rem; color: var(--fg-2); font-size: 0.92rem; }
-.compare.diff .difflabel { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-right: 0.4rem; }
-.compare.diff tr.self td { background: var(--bg-2); }
+.cmp-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; font-size: 0.82rem; margin: 0 0 1rem; }
+.cmp-legend .v::before, .cmp .v dt::before { content: ""; display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 2px; margin-right: 0.45rem; vertical-align: middle; background: currentColor; }
+.cmpgrid { display: grid; gap: 0.9rem; margin: 0 0 1.4rem; }
+.cmp { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 0.9rem 1.1rem 0.2rem; }
+.cmp.self { border-color: var(--accent); background: var(--bg-2); }
+.cmp header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1rem; margin-bottom: 0.6rem; }
+.cmp h4 { margin: 0; font-size: 1.05rem; }
+.cmp .stage { font-family: var(--mono); font-size: 0.75rem; color: var(--fg-3); }
+.cmp .verdicts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1.2rem; margin: 0 0 0.7rem; }
+@media (min-width: 1100px) { .cmp .verdicts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .cmp .verdicts { grid-template-columns: 1fr; } }
+.cmp .v { border-left: 2px solid currentColor; padding-left: 0.6rem; }
+.cmp .v dt { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 0.15rem; }
+.cmp .v dd { margin: 0; font-size: 0.86rem; color: var(--fg-2); font-weight: 400; line-height: 1.45; }
+.cmp .diff { font-size: 0.92rem; color: var(--fg); margin: 0 0 0.8rem; border-top: 1px dashed var(--line); padding-top: 0.6rem; }
+.cmp .difflabel { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-right: 0.4rem; }
 .yes { color: var(--accent); font-weight: 600; } .no { color: var(--fg-3); } .part { color: var(--accent-2); font-weight: 600; }
 
 /* docs layout */

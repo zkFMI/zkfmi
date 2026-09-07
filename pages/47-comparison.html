@@ -23,50 +23,106 @@ section: docs
 <p>zkFMI's own baseline, read the same day: research software on one host, with smoke evidence for two fills settled in one transaction and for two continuous trading rounds. Asset identifiers and settlement metadata on the native note path are public. Post-quantum hybrids were standalone at that date and have since passed a single-host integration acceptance; see <a href="post-quantum.html">Post-quantum migration</a>. Aethel is excluded from the eighteen because it is an application on the stack, not a competitor.</p>
 
 <h2 id="glance">All eighteen against zkFMI</h2>
-<p>One row per target, Canton included, and the zkFMI row last under the same columns. The four verdict columns ask the questions the comparison found decisive. <span class="yes">Green</span> means the property holds in the documented standard path, <span class="part">amber</span> that it holds in part or depends on the application, <span class="no">grey</span> that it does not or is out of scope. Under each row is the one sentence that distinguishes zkFMI from that target. It is a difference, not a ranking: on the stage column every row is ahead of zkFMI.</p>
-<div class="table-wrap"><table class="compare diff">
-<thead><tr><th>target</th><th>operator does not see the order</th><th>rules verifiable by an outsider</th><th>reservation → atomic settlement</th><th>settlement hides amount and price</th><th>stage</th></tr></thead>
-<tbody>
-<tr><td>Canton <a class="muted" href="#canton" style="font-size:.75rem;color:var(--fg-3)">(in depth)</a></td><td class="no">no, own validator and application read plaintext views</td><td class="part">relevant parties re-execute Daml; no portable proof in the standard path</td><td class="yes">yes, Token Standard allocations, one transaction, in plaintext</td><td class="part">from unrelated parties and synchronisers only</td><td>mainnet 2024, commercial repo platform, live Treasury trade, three Japanese PoCs</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Canton limits <em>who</em> reads the plaintext; zkFMI withholds the complete order from every computing node under a 2-of-7 bound and lets an outsider verify the rule from a proof. Canton is ahead on everything else, and could host a zkPI verifier.</td></tr>
-<tr><td>Renegade</td><td class="part">the delegated relayer reads them; a self-run relayer avoids it</td><td class="part">matching correctness is proved; the order set and admission order are not</td><td class="part">match settled on-chain; no advance reservation described</td><td class="yes">confidential wallet state</td><td>mainnet, Arbitrum One</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Midpoint crossing at an external price versus price-time priority or RFQ over a finalised admission order; a relayer boundary versus participant-side splitting; no eligibility or reservation leg.</td></tr>
-<tr><td>Prime Match</td><td class="part">a semi-honest bank hub between two clients</td><td class="no">no</td><td class="no">bank pipeline</td><td class="no">bank sees it</td><td>live at J.P. Morgan, 2023 paper</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Two-party inventory matching with the bank in the middle and no settlement leg; zkFMI is seven-node, provable and settled. Prime Match is the prior that refutes any "first" claim.</td></tr>
-<tr><td>Penumbra</td><td class="no">swap inputs and amounts are public in the current specification</td><td class="part">chain-verified batch execution</td><td class="no">no reservation concept</td><td class="part">transfers and claims yes, swaps no</td><td>specification confirmed; sealed-bid batches are a future feature</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> A per-block batch auction with public swap inputs versus a continuous secret book or RFQ. Unlinkable wallets and secret prices are different rows and Penumbra has the first, not the second.</td></tr>
-<tr><td>Dusk</td><td class="part">model dependent; the exchange path uses public accounts</td><td class="part">chain validation</td><td class="part">DvP designs described</td><td class="part">confidential transfers optional</td><td>mainnet specifications, NPEX collaboration</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> A confidential ledger for regulated assets without confidential market computation; zkFMI adds the venue and the proof of best execution. Neither has a licensed clearing house behind its clearing code.</td></tr>
-<tr><td>Arcium</td><td class="yes">MPC, confidentiality with one honest party</td><td class="part">application defined</td><td class="part">application defined</td><td class="part">application defined</td><td>mainnet alpha</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> A general MPC platform, dishonest-majority with abort; zkFMI is one specific workflow, admission to settlement, on honest-majority MPC. The same workflow could be built on Arcium, which is the alternative to evaluate.</td></tr>
-<tr><td>Zama</td><td class="yes">FHE; decryption by a threshold KMS, t &lt; n/3</td><td class="part">input proofs of knowledge and coprocessor signatures, not a proof of the business result</td><td class="part">application defined</td><td class="part">application defined</td><td>mainnet 2025-12, a sealed-bid auction 2026-01</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Encrypted-state computation with a separate decryption authority versus MPC with proofs; a platform versus a workflow. Cost and completion behaviour under one workload are unmeasured on both sides.</td></tr>
-<tr><td>Aztec</td><td class="yes">client-side proving, the witness never leaves the client</td><td class="yes">for the client's own transaction</td><td class="part">application defined</td><td class="yes">private state</td><td>alpha V5; proving-system vulnerability disclosed 2026-08</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> One party proving over its own secrets versus several firms computing over each other's; zkFMI's matching needs the second. Neither is audited.</td></tr>
-<tr><td>Hyperledger Fabric</td><td class="no">authorised peers read the private data</td><td class="no">no</td><td class="part">chaincode</td><td class="part">hidden from other organisations only</td><td>specification confirmed, widely deployed</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Access control decides which organisations see the data; zkFMI is for the case where the computing organisation itself must not. Where that case is absent, Fabric is the simpler answer.</td></tr>
-<tr><td>R3 Corda</td><td class="part">participants see; a non-validating notary sees state references</td><td class="no">participants validate, no outside proof</td><td class="part">contract state and uniqueness</td><td class="part">from non-participants</td><td>adopted for CSD Prague settlement</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Limited sharing among the parties to a contract, no confidential computation and no proof of a market rule; a large adoption record. An integration candidate for the zkPI.</td></tr>
-<tr><td>Kinexys</td><td class="no">the bank</td><td class="no">no</td><td class="part">bank-run workflows</td><td class="no">the bank</td><td>commercial, JPM Coin on Base 2026-04</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> A bank's own payment and tokenisation service with customers; zkFMI has no cash leg and would need one like it.</td></tr>
-<tr><td>Fnality</td><td class="no">the system operator</td><td class="no">no</td><td class="part">payment arrangements</td><td class="no">operator</td><td>sterling system operating under Bank of England limits</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Central-bank-backed digital cash; the cash leg zkFMI lacks. No secret price formation is intended.</td></tr>
-<tr><td>Partior</td><td class="no">participating banks</td><td class="no">no</td><td class="part">PvP; a DvP proof of concept</td><td class="no">banks</td><td>live payments</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Bank-network PvP with plaintext among members; zkFMI's PvP passes a scalar by adaptor signature between ledgers that share nothing. Candidate cash leg.</td></tr>
-<tr><td>Ownera / FinP2P</td><td class="no">each institution's router</td><td class="no">signatures and receipts</td><td class="yes">intents, holds, orchestration per ledger capability</td><td class="no">routers</td><td>APIs and orchestration plans published</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> The closest to where zkPI sits: it coordinates instructions across ledgers in plaintext with signatures. zkPI binds a proof of hidden propositions to the instruction. "Connecting ledgers" is not the difference.</td></tr>
-<tr><td>Swift shared ledger</td><td class="no">Swift and the banks</td><td class="no">no</td><td class="part">commitments between banks, final settlement in existing systems</td><td class="no">banks</td><td>ready for initial use 2026-07, pilots preparing</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Interbank coordination of tokenised deposits at Swift's scale; nothing hidden from the banks, nothing computed. Monitor.</td></tr>
-<tr><td>Chainlink</td><td class="part">plaintext inside a TEE</td><td class="part">oracle-network signatures</td><td class="part">cross-chain messages</td><td class="part">private tokens described</td><td>features described 2026-05</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Trust placed in hardware enclaves and a signing network versus MPC and proofs; the word "verifiable" covers different things. A candidate carrier for a zkPI.</td></tr>
-<tr><td>Progmat</td><td class="no">issuer, trust and distributor</td><td class="no">no</td><td class="part">ST practice on the platform</td><td class="no">the roles</td><td>commercial ST issuance; Avalanche L1 migration announced; JGB repo PoC on Canton</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> Japanese security-token issuance and administration in production; zkFMI would be an add-on for eligibility and collateral computation hidden from those roles. Priority Japanese comparison.</td></tr>
-<tr><td>BOOSTRY / ibet for Fin</td><td class="no">consortium members</td><td class="no">no</td><td class="part">standard contracts</td><td class="no">members</td><td>operating since 2021</td></tr>
-<tr class="diff"><td colspan="6"><span class="difflabel">difference from zkFMI</span> A member-run Japanese ST network with standardised contracts; the same add-on relation as Progmat.</td></tr>
-<tr class="self"><td><strong>zkFMI</strong></td><td class="yes">no node holds a complete order, at most two of seven malicious; traffic observable</td><td class="yes">zkPI verifier and quote proof, for the stated order set, not the whole market</td><td class="yes">maker and taker reservations, batch DvP, smoke evidence</td><td class="yes">amount and price hidden; asset tag and metadata public on the native rail</td><td>research, one host, one administrator</td></tr>
-<tr class="diff self"><td colspan="6"><span class="difflabel">difference from zkFMI</span> The composition: secret from the computing nodes, rule proved to an outsider, reservation carried unopened into settlement. No production, no independent operators, no audit.</td></tr>
-</tbody></table></div>
-<p>Read down the first two verdict columns and the shape of the field appears. The institutional rows are grey on both because they are built for a world where the operator is trusted; the infrastructure rows are green on the first and amber on the second because they leave the workflow to the application; the trading rows split. zkFMI is green on both, and grey on stage, which is the whole position in one line.</p>
+<p>One card per target, Canton included, and zkFMI last under the same four questions, the ones the comparison found decisive. <span class="yes">Green</span> means the property holds in the documented standard path, <span class="part">amber</span> that it holds in part or depends on the application, <span class="no">grey</span> that it does not or is out of scope. Under each card is the one sentence that distinguishes zkFMI from that target. It is a difference, not a ranking: on stage, every target is ahead of zkFMI.</p>
+<div class="cmp-legend"><span class="v yes">holds in the documented standard path</span><span class="v part">in part, or depends on the application</span><span class="v no">does not, or out of scope</span></div>
+<div class="cmpgrid">
+<article class="cmp">
+<header><h4>Canton <a class="muted" href="#canton" style="font-size:.75rem;color:var(--fg-3)">(in depth)</a></h4><span class="stage">mainnet 2024, commercial repo platform, live Treasury trade, three Japanese PoCs</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>no, own validator and application read plaintext views</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>relevant parties re-execute Daml; no portable proof in the standard path</dd></div><div class="v yes"><dt>reservation → atomic settlement</dt><dd>yes, Token Standard allocations, one transaction, in plaintext</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>from unrelated parties and synchronisers only</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Canton limits <em>who</em> reads the plaintext; zkFMI withholds the complete order from every computing node under a 2-of-7 bound and lets an outsider verify the rule from a proof. Canton is ahead on everything else, and could host a zkPI verifier.</p>
+</article>
+<article class="cmp">
+<header><h4>Renegade</h4><span class="stage">mainnet, Arbitrum One</span></header>
+<dl class="verdicts"><div class="v part"><dt>operator does not see the order</dt><dd>the delegated relayer reads them; a self-run relayer avoids it</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>matching correctness is proved; the order set and admission order are not</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>match settled on-chain; no advance reservation described</dd></div><div class="v yes"><dt>settlement hides amount and price</dt><dd>confidential wallet state</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Midpoint crossing at an external price versus price-time priority or RFQ over a finalised admission order; a relayer boundary versus participant-side splitting; no eligibility or reservation leg.</p>
+</article>
+<article class="cmp">
+<header><h4>Prime Match</h4><span class="stage">live at J.P. Morgan, 2023 paper</span></header>
+<dl class="verdicts"><div class="v part"><dt>operator does not see the order</dt><dd>a semi-honest bank hub between two clients</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v no"><dt>reservation → atomic settlement</dt><dd>bank pipeline</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>bank sees it</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Two-party inventory matching with the bank in the middle and no settlement leg; zkFMI is seven-node, provable and settled. Prime Match is the prior that refutes any "first" claim.</p>
+</article>
+<article class="cmp">
+<header><h4>Penumbra</h4><span class="stage">specification confirmed; sealed-bid batches are a future feature</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>swap inputs and amounts are public in the current specification</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>chain-verified batch execution</dd></div><div class="v no"><dt>reservation → atomic settlement</dt><dd>no reservation concept</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>transfers and claims yes, swaps no</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> A per-block batch auction with public swap inputs versus a continuous secret book or RFQ. Unlinkable wallets and secret prices are different rows and Penumbra has the first, not the second.</p>
+</article>
+<article class="cmp">
+<header><h4>Dusk</h4><span class="stage">mainnet specifications, NPEX collaboration</span></header>
+<dl class="verdicts"><div class="v part"><dt>operator does not see the order</dt><dd>model dependent; the exchange path uses public accounts</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>chain validation</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>DvP designs described</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>confidential transfers optional</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> A confidential ledger for regulated assets without confidential market computation; zkFMI adds the venue and the proof of best execution. Neither has a licensed clearing house behind its clearing code.</p>
+</article>
+<article class="cmp">
+<header><h4>Arcium</h4><span class="stage">mainnet alpha</span></header>
+<dl class="verdicts"><div class="v yes"><dt>operator does not see the order</dt><dd>MPC, confidentiality with one honest party</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>application defined</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>application defined</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>application defined</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> A general MPC platform, dishonest-majority with abort; zkFMI is one specific workflow, admission to settlement, on honest-majority MPC. The same workflow could be built on Arcium, which is the alternative to evaluate.</p>
+</article>
+<article class="cmp">
+<header><h4>Zama</h4><span class="stage">mainnet 2025-12, a sealed-bid auction 2026-01</span></header>
+<dl class="verdicts"><div class="v yes"><dt>operator does not see the order</dt><dd>FHE; decryption by a threshold KMS, t &lt; n/3</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>input proofs of knowledge and coprocessor signatures, not a proof of the business result</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>application defined</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>application defined</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Encrypted-state computation with a separate decryption authority versus MPC with proofs; a platform versus a workflow. Cost and completion behaviour under one workload are unmeasured on both sides.</p>
+</article>
+<article class="cmp">
+<header><h4>Aztec</h4><span class="stage">alpha V5; proving-system vulnerability disclosed 2026-08</span></header>
+<dl class="verdicts"><div class="v yes"><dt>operator does not see the order</dt><dd>client-side proving, the witness never leaves the client</dd></div><div class="v yes"><dt>rules verifiable by an outsider</dt><dd>for the client's own transaction</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>application defined</dd></div><div class="v yes"><dt>settlement hides amount and price</dt><dd>private state</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> One party proving over its own secrets versus several firms computing over each other's; zkFMI's matching needs the second. Neither is audited.</p>
+</article>
+<article class="cmp">
+<header><h4>Hyperledger Fabric</h4><span class="stage">specification confirmed, widely deployed</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>authorised peers read the private data</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>chaincode</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>hidden from other organisations only</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Access control decides which organisations see the data; zkFMI is for the case where the computing organisation itself must not. Where that case is absent, Fabric is the simpler answer.</p>
+</article>
+<article class="cmp">
+<header><h4>R3 Corda</h4><span class="stage">adopted for CSD Prague settlement</span></header>
+<dl class="verdicts"><div class="v part"><dt>operator does not see the order</dt><dd>participants see; a non-validating notary sees state references</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>participants validate, no outside proof</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>contract state and uniqueness</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>from non-participants</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Limited sharing among the parties to a contract, no confidential computation and no proof of a market rule; a large adoption record. An integration candidate for the zkPI.</p>
+</article>
+<article class="cmp">
+<header><h4>Kinexys</h4><span class="stage">commercial, JPM Coin on Base 2026-04</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>the bank</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>bank-run workflows</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>the bank</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> A bank's own payment and tokenisation service with customers; zkFMI has no cash leg and would need one like it.</p>
+</article>
+<article class="cmp">
+<header><h4>Fnality</h4><span class="stage">sterling system operating under Bank of England limits</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>the system operator</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>payment arrangements</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>operator</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Central-bank-backed digital cash; the cash leg zkFMI lacks. No secret price formation is intended.</p>
+</article>
+<article class="cmp">
+<header><h4>Partior</h4><span class="stage">live payments</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>participating banks</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>PvP; a DvP proof of concept</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>banks</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Bank-network PvP with plaintext among members; zkFMI's PvP passes a scalar by adaptor signature between ledgers that share nothing. Candidate cash leg.</p>
+</article>
+<article class="cmp">
+<header><h4>Ownera / FinP2P</h4><span class="stage">APIs and orchestration plans published</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>each institution's router</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>signatures and receipts</dd></div><div class="v yes"><dt>reservation → atomic settlement</dt><dd>intents, holds, orchestration per ledger capability</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>routers</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> The closest to where zkPI sits: it coordinates instructions across ledgers in plaintext with signatures. zkPI binds a proof of hidden propositions to the instruction. "Connecting ledgers" is not the difference.</p>
+</article>
+<article class="cmp">
+<header><h4>Swift shared ledger</h4><span class="stage">ready for initial use 2026-07, pilots preparing</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>Swift and the banks</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>commitments between banks, final settlement in existing systems</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>banks</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Interbank coordination of tokenised deposits at Swift's scale; nothing hidden from the banks, nothing computed. Monitor.</p>
+</article>
+<article class="cmp">
+<header><h4>Chainlink</h4><span class="stage">features described 2026-05</span></header>
+<dl class="verdicts"><div class="v part"><dt>operator does not see the order</dt><dd>plaintext inside a TEE</dd></div><div class="v part"><dt>rules verifiable by an outsider</dt><dd>oracle-network signatures</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>cross-chain messages</dd></div><div class="v part"><dt>settlement hides amount and price</dt><dd>private tokens described</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Trust placed in hardware enclaves and a signing network versus MPC and proofs; the word "verifiable" covers different things. A candidate carrier for a zkPI.</p>
+</article>
+<article class="cmp">
+<header><h4>Progmat</h4><span class="stage">commercial ST issuance; Avalanche L1 migration announced; JGB repo PoC on Canton</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>issuer, trust and distributor</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>ST practice on the platform</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>the roles</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> Japanese security-token issuance and administration in production; zkFMI would be an add-on for eligibility and collateral computation hidden from those roles. Priority Japanese comparison.</p>
+</article>
+<article class="cmp">
+<header><h4>BOOSTRY / ibet for Fin</h4><span class="stage">operating since 2021</span></header>
+<dl class="verdicts"><div class="v no"><dt>operator does not see the order</dt><dd>consortium members</dd></div><div class="v no"><dt>rules verifiable by an outsider</dt><dd>no</dd></div><div class="v part"><dt>reservation → atomic settlement</dt><dd>standard contracts</dd></div><div class="v no"><dt>settlement hides amount and price</dt><dd>members</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> A member-run Japanese ST network with standardised contracts; the same add-on relation as Progmat.</p>
+</article>
+<article class="cmp self">
+<header><h4><strong>zkFMI</strong></h4><span class="stage">research, one host, one administrator</span></header>
+<dl class="verdicts"><div class="v yes"><dt>operator does not see the order</dt><dd>no node holds a complete order, at most two of seven malicious; traffic observable</dd></div><div class="v yes"><dt>rules verifiable by an outsider</dt><dd>zkPI verifier and quote proof, for the stated order set, not the whole market</dd></div><div class="v yes"><dt>reservation → atomic settlement</dt><dd>maker and taker reservations, batch DvP, smoke evidence</dd></div><div class="v yes"><dt>settlement hides amount and price</dt><dd>amount and price hidden; asset tag and metadata public on the native rail</dd></div></dl>
+<p class="diff"><span class="difflabel">difference from zkFMI</span> The composition: secret from the computing nodes, rule proved to an outsider, reservation carried unopened into settlement. No production, no independent operators, no audit.</p>
+</article>
+</div>
+<p>Read the first two questions across the cards and the shape of the field appears. The institutional rows are grey on both because they are built for a world where the operator is trusted; the infrastructure rows are green on the first and amber on the second because they leave the workflow to the application; the trading rows split. zkFMI is green on both, and grey on stage, which is the whole position in one line.</p>
 
 <h2 id="decisions">Nine decisions</h2>
 <p>The comparison closes on nine numbered decisions. They were reviewed a second time, at maximum effort, with Canton added; all nine were retained and several gained evidence.</p>
