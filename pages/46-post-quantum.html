@@ -5,8 +5,8 @@ path: docs/post-quantum.html
 section: docs
 ---
 <h1>Post-quantum migration</h1>
-<p class="lede">The migration is hybrid and fail-closed: every classical signature or key exchange that protects money gains a post-quantum partner, both must verify, and a peer that offers only the classical suite is refused. The work is on integration branches across all eight repositories and passed a single-host native acceptance on 2026-09-06. It is not on <code>main</code> yet.</p>
-<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json · status as of 2026-09-07</p>
+<p class="lede">The migration is hybrid and fail-closed: every classical signature or key exchange that protects money gains a post-quantum partner, both must verify, and a peer that offers only the classical suite is refused. The work is on integration branches across all eight repositories and passed a single-host native acceptance on 2026-09-06 and again on 2026-09-07 after the zero-relation opening fix was merged in. Four repositories (zkfmi-crypto, zkPI, DeKYX, DeCCP) have the accepted state on <code>main</code>; DeFMI, QOMM, OCLOB and Aethel stay on the branch until a dependency cycle between DeFMI and QOMM is broken.</p>
+<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json · status as of 2026-09-07</p>
 
 <h2 id="status">Status at a glance</h2>
 <div class="table-wrap"><table>
@@ -14,8 +14,8 @@ section: docs
 <tbody>
 <tr><td>Foundation crate <code>zkfmi-crypto</code> (P0)</td><td><span class="pill ok">built · gated</span></td><td>fmt, strict clippy, release tests in the official Rust 1.97 image on one Linux host; 45 tests including 8 NIST ACVP vectors and RFC 8032</td></tr>
 <tr><td>Cryptographic inventory of the seven repositories (P0)</td><td><span class="pill ok">complete</span></td><td>507 files, 1,032 primitive entries; independent grep reconciliation with 0 missing and 0 extra</td></tr>
-<tr><td>Integration P1 to P6 across QOMM, zkPI, DeFMI, OCLOB, DeKYX, DeCCP, Aethel</td><td><span class="pill part">accepted on branches · 1 host</span></td><td>native run 2026-09-06, exit 0, 15 min 07 s: market, finality, lifecycle, P6 recovery; 1,119 source files hash-identical before and after</td></tr>
-<tr><td>Release pinning, lock regeneration, gate rerun, merge to <code>main</code></td><td><span class="pill part">in progress</span></td><td>the working target is the week of 7 September 2026; until then <code>main</code> is classical</td></tr>
+<tr><td>Integration P1 to P6 across QOMM, zkPI, DeFMI, OCLOB, DeKYX, DeCCP, Aethel</td><td><span class="pill part">accepted on branches · 1 host</span></td><td>native runs 2026-09-06 (exit 0, 15 min 07 s) and 2026-09-07 (PASS, after merging the zero-relation opening fix): market, finality, lifecycle, P6 recovery; source hash-identical before and after each run</td></tr>
+<tr><td>Release pinning, lock regeneration, gate rerun, merge to <code>main</code></td><td><span class="pill part">partial</span></td><td>2026-09-07: all nine workspaces pass the locked check; zkfmi-crypto, zkPI, DeKYX and DeCCP merged to <code>main</code>. DeFMI, QOMM, OCLOB and Aethel cannot be pinned by immutable revisions because DeFMI consumes six QOMM crates while QOMM consumes three DeFMI crates; they build only as sibling checkouts. Breaking that cycle is the crate consolidation on the <a href="architecture.html#repos">architecture page</a>.</td></tr>
 <tr><td>Zero-knowledge relations (commitments, range proofs, rings, quote proof, FROST)</td><td><span class="pill no">classical</span></td><td>by design for now; see below</td></tr>
 <tr><td>Independent operators, WAN, HSM, FIPS validation, performance comparison, external audit</td><td><span class="pill no">none</span></td><td>the acceptance record lists each as absent</td></tr>
 </tbody></table></div>
@@ -75,7 +75,7 @@ section: docs
   <li>Single host, one administrator. No independent operators, no WAN, no physical HSM.</li>
   <li>No FIPS validation of the backends and no external audit.</li>
   <li>No performance comparison yet: the plan's throughput and latency targets (≥95% of baseline, a p95 overhead target of 5 ms) are unmeasured, and the seven-process network fault tests are not seven-node WAN evidence.</li>
-  <li>Release pinning is pending: the integration branches reference the foundation by a pre-release revision; final immutable revisions across the eight repositories, regenerated locks and a rerun of the gates come before the merge to <code>main</code>.</li>
+  <li>Release pinning is partial: four repositories are on <code>main</code> with the accepted state; DeFMI, QOMM, OCLOB and Aethel remain on the integration branch because a DeFMI ⇄ QOMM dependency cycle cannot be expressed as immutable git pins. The branch builds as sibling checkouts under one root, which is how the remote gates run it.</li>
   <li>The P5 prover depends on an upstream alpha (Miden 0.32) and proves a deliberately narrow statement.</li>
 </ul>
 

@@ -5,8 +5,8 @@ path: docs/post-quantum.html
 section: docs
 ---
 <h1>耐量子化への移行</h1>
-<p class="lede">移行はハイブリッドかつ fail-closed である。資金を守る古典的な署名と鍵交換のすべてに耐量子の相方を付け、両方の検証が通ったときだけ受理し、古典方式しか提示しない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にあり、2026-09-06 に単一ホスト上のネイティブ受入を通過した。まだ <code>main</code> には入っていない。</p>
-<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json · 2026-09-07 時点の状況</p>
+<p class="lede">移行はハイブリッドかつ fail-closed である。資金を守る古典的な署名と鍵交換のすべてに耐量子の相方を付け、両方の検証が通ったときだけ受理し、古典方式しか提示しない相手は拒否する。作業は 8 リポジトリすべての統合ブランチ上にあり、2026-09-06 に単一ホスト上のネイティブ受入を通過し、零関係の開封証明の修正を取り込んだ 2026-09-07 にも再び通過した。4 リポジトリ（zkfmi-crypto、zkPI、DeKYX、DeCCP）は受入済みの状態が <code>main</code> に入っている。DeFMI、QOMM、OCLOB、Aethel は、DeFMI と QOMM の間の依存の循環が解けるまでブランチに留まる。</p>
+<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json · 2026-09-07 時点の状況</p>
 
 <h2 id="status">状況の一覧</h2>
 <div class="table-wrap"><table>
@@ -14,8 +14,8 @@ section: docs
 <tbody>
 <tr><td>基盤 crate <code>zkfmi-crypto</code>（P0）</td><td><span class="pill ok">実装済み · ゲート通過</span></td><td>公式 Rust 1.97 イメージ、Linux ホスト 1 台での fmt、strict clippy、release テスト。NIST ACVP ベクタ 8 本と RFC 8032 を含む 45 テスト</td></tr>
 <tr><td>7 リポジトリの暗号使用箇所の棚卸し（P0）</td><td><span class="pill ok">完了</span></td><td>507 ファイル、1,032 件のプリミティブ項目。独立した grep との照合で欠落 0、余剰 0</td></tr>
-<tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>2026-09-06 のネイティブ実行、exit 0、15 分 07 秒。市場、finality、lifecycle、P6 復旧。前後で 1,119 ソースファイルのハッシュが一致</td></tr>
-<tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill part">進行中</span></td><td>作業上の目標は 2026 年 9 月 7 日の週。それまで <code>main</code> は古典のまま</td></tr>
+<tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part">ブランチ上で受入済み · ホスト 1 台</span></td><td>2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）のネイティブ実行。市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
+<tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill part">一部完了</span></td><td>2026-09-07: 9 つのワークスペースすべてが lock 固定の検査を通過。zkfmi-crypto、zkPI、DeKYX、DeCCP は <code>main</code> に統合済み。DeFMI、QOMM、OCLOB、Aethel は、DeFMI が QOMM の 6 crate を、QOMM が DeFMI の 3 crate を使う循環があるため不変の rev では固定できず、隣接した checkout としてのみビルドできる。この循環を断つのが<a href="architecture.html#repos">全体構成ページ</a>の crate 統合である。</td></tr>
 <tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
 <tr><td>独立した運営者、WAN、HSM、FIPS 認証、性能比較、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録はそれぞれを未実施と記載している</td></tr>
 </tbody></table></div>
@@ -75,7 +75,7 @@ section: docs
   <li>ホスト 1 台、管理者 1 人。独立した運営者、WAN、物理 HSM はない。</li>
   <li>バックエンドの FIPS 認証も外部監査もない。</li>
   <li>性能比較はまだない。計画の処理量と遅延の目標（基準値の ≥95%、p95 のオーバーヘッド目標 5 ms）は未計測で、7 プロセスのネットワーク障害テストは 7 ノード WAN の根拠ではない。</li>
-  <li>リリース rev の固定は未了。統合ブランチはプレリリースの rev で基盤を参照している。8 リポジトリにわたる最終の不変 rev、lock の再生成、ゲートの再実行が <code>main</code> への統合の前に来る。</li>
+  <li>リリース rev の固定は一部完了。4 リポジトリは受入済みの状態で <code>main</code> にある。DeFMI、QOMM、OCLOB、Aethel は、DeFMI ⇄ QOMM の依存の循環を不変の git rev として表せないため統合ブランチに残る。ブランチは一つのルートの下の隣接した checkout としてビルドし、リモートのゲートもそのように動く。</li>
   <li>P5 の証明器は本家の alpha 版（Miden 0.32）に依存し、意図的に狭い命題を証明する。</li>
 </ul>
 
