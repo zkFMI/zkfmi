@@ -41,7 +41,22 @@ section: docs
 <tr><td>ML-DSA-87</td><td class="num">2,592 B</td><td class="num">4,627 B</td></tr>
 <tr><td>SLH-DSA-SHA2-128s</td><td class="num">32 B</td><td class="num">7,856 B</td></tr>
 </tbody></table></div>
-<p>3-of-7 の承認に必要な ML-DSA-65 署名 3 本で 9,927 B になる。古典スタックで計測した決済パッケージの大きさは、口座レールの実行で 57,971 B、64 ビットのレールでの Bulletproofs で 3,424 B である。これに対して、追加の署名は支配的な項ではない。ただし、計画にある暫定の目標 16 KB と上限 32 KB は、すでにそれを超えるパッケージ定義を前提に書かれている。定義を確定した後に再設定する。ポリシー更新の経路では、ML-DSA-65 のバイト数は Ed25519 の約 15× になる。実際のマーケットメイカーが使う頻度でも、毎秒 3 メガバイト未満である。比較を計測するまで、このサイトでは耐量子方式の所要時間を主張しない。</p>
+<p>3-of-7 の承認に必要な ML-DSA-65 署名 3 本で 9,927 B になる。古典スタックで計測した決済パッケージの大きさは、口座レールの実行で 57,971 B、64 ビットのレールでの Bulletproofs で 3,424 B である。これに対して、追加の署名は支配的な項ではない。ただし、計画にある暫定の目標 16 KB と上限 32 KB は、すでにそれを超えるパッケージ定義を前提に書かれている。定義を確定した後に再設定する。ポリシー更新の経路では、ML-DSA-65 のバイト数は Ed25519 の約 15× になる。実際のマーケットメイカーが使う頻度でも、毎秒 3 メガバイト未満である。所要時間は次の節で計測値を示す。</p>
+
+<h2 id="timing">所要時間はどれだけ増えるか</h2>
+<p>2026-09-07 に、ビルドホストの x86-64 の 1 コアで計測した。スタックが実際に使う署名・検証・KEM の trait を通し、ウォームアップの後に操作ごとに 300 回測り、メッセージは 256 バイトである。ベンチは zkfmi-crypto の <code>examples/pqc_bench.rs</code>。実行前に書いた予測、実行の受領証、予測が外れた箇所の検討は <code>docs/PQC_PERFORMANCE_2026-09-07.md</code> にある。値は中央値で、実行は 1 回である。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>操作</th><th class="num">Ed25519 / X25519</th><th class="num">ML-DSA-65 / ML-KEM-768</th><th class="num">ハイブリッド</th><th class="num">ハイブリッド : 古典</th></tr></thead>
+<tbody>
+<tr><td>署名鍵の生成</td><td class="num">12.2 µs</td><td class="num">221.9 µs</td><td class="num">238.1 µs</td><td class="num">19.5×</td></tr>
+<tr><td>署名</td><td class="num">13.6 µs</td><td class="num">340.2 µs</td><td class="num">359.3 µs</td><td class="num">26.4×</td></tr>
+<tr><td>検証</td><td class="num">38.4 µs</td><td class="num">126.8 µs</td><td class="num">173.7 µs</td><td class="num">4.5×</td></tr>
+<tr><td>KEM 鍵の生成</td><td class="num">11.9 µs</td><td class="num">38.6 µs</td><td class="num">51.0 µs</td><td class="num">4.3×</td></tr>
+<tr><td>カプセル化（encapsulate）</td><td class="num">48.9 µs</td><td class="num">37.0 µs</td><td class="num">88.1 µs</td><td class="num">1.8×</td></tr>
+<tr><td>開封（decapsulate）</td><td class="num">37.0 µs</td><td class="num">40.4 µs</td><td class="num">79.6 µs</td><td class="num">2.2×</td></tr>
+</tbody></table></div>
+<p>ハイブリッド署名は、1 コアで作るのに 0.36 ms、確かめるのに 0.17 ms かかる。決済 1 件の端から端までは数十ミリ秒から数秒の単位で計測されているので、この移行は遅延には現れない。現れるのはバイト数である。署名付きの対象はどれも、署名 1 本あたり 3,309 B、埋め込む公開鍵 1 つあたり 1,952 B 大きくなる。1 コアあたりの検証処理量は、毎秒約 26,000 件から約 5,800 件に下がる。カプセル化と開封は受取人向け封筒のすべてが通る経路だが、2 倍にはならない。ML-DSA-65 の署名には長い裾がある。中央値 340 µs に対して p90 は 951 µs で、これは標準が定める棄却サンプリングによる。ハイブリッドの各行は、二つの構成要素の和に 5 µs 以内で一致する。ベンチが出した大きさは、上の表とすべての行で一致した。</p>
+
 
 <h2 id="phases">計画と、各フェーズの現在地</h2>
 <div class="table-wrap"><table>

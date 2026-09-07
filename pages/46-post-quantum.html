@@ -41,7 +41,22 @@ section: docs
 <tr><td>ML-DSA-87</td><td class="num">2,592 B</td><td class="num">4,627 B</td></tr>
 <tr><td>SLH-DSA-SHA2-128s</td><td class="num">32 B</td><td class="num">7,856 B</td></tr>
 </tbody></table></div>
-<p>Three ML-DSA-65 signatures for a 3-of-7 approval are 9,927 B. Against the settlement package sizes measured on the classical stack (57,971 B in the account-rail runs, 3,424 B with Bulletproofs at 64-bit rails), the extra signatures are not the dominant term, but the plan's provisional 16 KB target and 32 KB ceiling were written against a package definition that already exceeds them; they are to be re-set after the definition is fixed. On the policy-update path, ML-DSA-65 is about 15× the bytes of Ed25519, under three megabytes a second at the rates a real market maker uses. No post-quantum timing is claimed on this site until the comparison is measured.</p>
+<p>Three ML-DSA-65 signatures for a 3-of-7 approval are 9,927 B. Against the settlement package sizes measured on the classical stack (57,971 B in the account-rail runs, 3,424 B with Bulletproofs at 64-bit rails), the extra signatures are not the dominant term, but the plan's provisional 16 KB target and 32 KB ceiling were written against a package definition that already exceeds them; they are to be re-set after the definition is fixed. On the policy-update path, ML-DSA-65 is about 15× the bytes of Ed25519, under three megabytes a second at the rates a real market maker uses. Timing is measured in the next section.</p>
+
+<h2 id="timing">What the time costs</h2>
+<p>Measured on 2026-09-07 on one x86-64 core of the build host, through the same signer, verifier and KEM traits the stack uses, 300 samples per operation after warm-up, 256-byte message. The bench is <code>examples/pqc_bench.rs</code> in zkfmi-crypto; the prediction written before the run, the run receipt and the review of where the prediction missed are in <code>docs/PQC_PERFORMANCE_2026-09-07.md</code>. Medians; one run.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>operation</th><th class="num">Ed25519 / X25519</th><th class="num">ML-DSA-65 / ML-KEM-768</th><th class="num">hybrid</th><th class="num">hybrid : classical</th></tr></thead>
+<tbody>
+<tr><td>signature keygen</td><td class="num">12.2 µs</td><td class="num">221.9 µs</td><td class="num">238.1 µs</td><td class="num">19.5×</td></tr>
+<tr><td>sign</td><td class="num">13.6 µs</td><td class="num">340.2 µs</td><td class="num">359.3 µs</td><td class="num">26.4×</td></tr>
+<tr><td>verify</td><td class="num">38.4 µs</td><td class="num">126.8 µs</td><td class="num">173.7 µs</td><td class="num">4.5×</td></tr>
+<tr><td>KEM keygen</td><td class="num">11.9 µs</td><td class="num">38.6 µs</td><td class="num">51.0 µs</td><td class="num">4.3×</td></tr>
+<tr><td>encapsulate</td><td class="num">48.9 µs</td><td class="num">37.0 µs</td><td class="num">88.1 µs</td><td class="num">1.8×</td></tr>
+<tr><td>decapsulate</td><td class="num">37.0 µs</td><td class="num">40.4 µs</td><td class="num">79.6 µs</td><td class="num">2.2×</td></tr>
+</tbody></table></div>
+<p>A hybrid signature takes 0.36 ms to make and 0.17 ms to check on one core. A settlement end to end is measured in tens of milliseconds to seconds, so the migration does not show in latency. It shows in bytes: each signed object grows by 3,309 B per signature and 1,952 B per embedded public key. Single-core verification throughput falls from about 26,000 to about 5,800 per second. Encapsulation and decapsulation, which are on the path of every recipient envelope, less than double. ML-DSA-65 signing has a long tail: p90 is 951 µs against the 340 µs median, from the rejection sampling the standard specifies. Every hybrid row is the sum of its two components to within 5 µs. The sizes the bench produced matched the table above in every row.</p>
+
 
 <h2 id="phases">The plan, and where each phase stands</h2>
 <div class="table-wrap"><table>
