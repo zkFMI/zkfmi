@@ -48,11 +48,13 @@ NAV_DOCS = [
         ("DeKYX — eligibility", "docs/dekyx.html"),
         ("DeCCP — clearing", "docs/deccp.html"),
     ]),
-    ("Venues and upstreams", [
+    ("Venues", [
         ("QOMM — oblivious RFQ", "docs/qomm.html"),
         ("OCLOB — oblivious order book", "docs/oclob.html"),
+    ]),
+    ("Applications", [
         ("Aethel — receivables", "docs/aethel.html"),
-        ("Use cases beyond RFQ", "docs/use-cases.html"),
+        ("Applications beyond venues", "docs/use-cases.html"),
     ]),
     ("Deep dives (RFQ venue)", [
         ("Binding computed to committed", "docs/binding.html"),

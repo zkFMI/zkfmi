@@ -61,6 +61,9 @@ section: docs
   <dt>DeKYX</dt><dd>Decentralized know your X.</dd>
   <dt>DeCCP</dt><dd>Decentralized central counterparty.</dd>
   <dt>Aethel</dt><dd>Programmable payment-stream receivables.</dd>
+  <dt>instruction source</dt><dd>Anything that decides a transfer and issues a zkPI. Two kinds: venues and applications. The settlement layer does not distinguish them.</dd>
+  <dt>venue</dt><dd>An instruction source that decides by matching many parties' orders or quotes. QOMM and OCLOB. What is specific to a venue is pricing or matching in MPC and a proof of best execution.</dd>
+  <dt>application</dt><dd>An instruction source that decides by its own business rules: a fund administrator, a collateral engine, a bank's checks, Aethel.</dd>
   <dt>handle</dt><dd>A public point <code>a·G</code> naming a participant at one venue, derived per venue from one seed.</dd>
   <dt>host-a / host-b / host-c</dt><dd>Labels for the machines measurements ran on; the mapping to real machines is not published.</dd>
 </dl>

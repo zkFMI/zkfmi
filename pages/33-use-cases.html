@@ -1,11 +1,11 @@
 ---
-title: Use cases beyond RFQ
+title: Applications beyond venues
 description: zkPI and DeFMI are not QOMM parts. Any system that decides a transfer can issue the instruction. Fund subscription and redemption, collateral and margin, two-currency PvP, issuance and coupons, receivables, environmental certificates, insurance payouts, in feasibility order, with prior art named.
 path: docs/use-cases.html
 section: docs
 ---
-<h1>Use cases beyond RFQ</h1>
-<p class="lede">QOMM is one upstream system: one that decides a price and issues an instruction. Any other business system that decides who may move what, under which conditions, can put that decision on a zkPI and let DeFMI settle it without reading the inputs. No secret quoting, no MPC pricing, no maker and taker required.</p>
+<h1>Applications beyond venues</h1>
+<p class="lede">QOMM is one instruction source: a venue that decides a price and issues an instruction. Any other business system that decides who may move what, under which conditions, can put that decision on a zkPI and let DeFMI settle it without reading the inputs. No secret quoting, no MPC pricing, no maker and taker required.</p>
 <p class="src">source: defmi/doc/ja/DEFMI_ZKPI_USE_CASES.md (survey dated 2026-08-30)</p>
 
 <h2 id="when">When the shape fits</h2>
@@ -51,7 +51,7 @@ flowchart LR
   <li><strong>Independent parties with a stablecoin cash leg.</strong> Seller and buyer share nothing, so internal approval is not a trust basis. Each party's module binds its own KYB and signing authority, its own pre-reserved asset or USDC, the stablecoin's chain, contract, issuer, freeze and finality conditions at trade time, and one transaction id, amount and expiry across both legs. The stablecoin ledger is a swappable cash rail with its own failure state machine (reorg, expiry, issuer freeze), not a configuration change to intra-group settlement.</li>
 </ul>
 
-<h2 id="common">Six problems every upstream has to solve</h2>
+<h2 id="common">Six problems every instruction source has to solve</h2>
 <ol>
   <li>Whose decision counts: which keys, which quorum, which governance.</li>
   <li>Making the proved condition and the settled object the same thing.</li>
@@ -62,7 +62,7 @@ flowchart LR
 </ol>
 
 <h2 id="novelty">What may be claimed</h2>
-<p>DvP on DLT, tokenised deposits and securities, pre-payment compliance checks, ZK compliance proofs and automated collateral or subscription are each individually not new. The combination to test is: separation of business decision from settlement across different upstreams issuing one instruction type; settlement that does not reconstruct the source data; one-time rights that cannot be reused across instructions; cash, deposits, securities, units, collateral and certificates under one instruction boundary; distributed operation that still preserves issuer, registrar and clearing authority in the proof; and selective after-the-fact verification. "World first" is not claimed; the claim, if any, is the integrated construction and its security definition once the feature-by-feature comparison is finished.</p>
+<p>DvP on DLT, tokenised deposits and securities, pre-payment compliance checks, ZK compliance proofs and automated collateral or subscription are each individually not new. The combination to test is: separation of business decision from settlement across different instruction sources issuing one instruction type; settlement that does not reconstruct the source data; one-time rights that cannot be reused across instructions; cash, deposits, securities, units, collateral and certificates under one instruction boundary; distributed operation that still preserves issuer, registrar and clearing authority in the proof; and selective after-the-fact verification. "World first" is not claimed; the claim, if any, is the integrated construction and its security definition once the feature-by-feature comparison is finished.</p>
 
 <h2 id="order">Implementation order</h2>
 <ol>
@@ -71,6 +71,6 @@ flowchart LR
   <li><strong>Two-currency PvP.</strong> Two issuers and two reservations in one zkPI; issuer outage, expiry, restart and resend tests; ISO 20022 mapping in an external adapter so DeFMI's types are not fixed to one bank's message.</li>
   <li><strong>External ledger connection.</strong> Mock fund, collateral and bank ledgers as independent processes; signed reservations and confirmed receipts; an explicit list of which faults break atomicity.</li>
 </ol>
-<p>What exists today: typed zkPI, signature and proof verification, one-time identifiers, a note ledger that does not publish account names, same-ledger DvP and PvP, issuer authority, pre-reservation and reconciliation. All callable from a non-QOMM upstream. What does not exist: connections to a real fund administrator, CCP, bank, CSD or registrar; external KYC; physical HSMs; seven-site operation; legal finality; third-party audit.</p>
+<p>What exists today: typed zkPI, signature and proof verification, one-time identifiers, a note ledger that does not publish account names, same-ledger DvP and PvP, issuer authority, pre-reservation and reconciliation. All callable from an application other than QOMM. What does not exist: connections to a real fund administrator, CCP, bank, CSD or registrar; external KYC; physical HSMs; seven-site operation; legal finality; third-party audit.</p>
 
 <div class="next"><a href="aethel.html">← Aethel</a><a href="binding.html">Binding computed to committed →</a></div>

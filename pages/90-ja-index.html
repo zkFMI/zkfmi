@@ -19,7 +19,7 @@ section: ja
 <section class="block">
   <div class="wrap">
     <h2>何をするか: 判断はどこで、指図は一つ、決済は読まずに</h2>
-    <p>移転を決めるのが見積市場でも、板でも、ファンド管理者でも、担保エンジンでも、銀行の審査でも、その判断は一つの封印された指図（zkPI）に載ります。決済層（DeFMI）は指図の証明だけを検証して両脚を同時に動かし、何が決まったかは知りません。このサイトで例に使うのは見積依頼（RFQ）で、勝った価格は commitment のまま venue を出て、最小値であることの証明が参照し、定足数が署名し、指図が運び、台帳の積の証明が消費します。<strong>一つの値、四つの証明、一度も開かない。</strong> ファンドの申込・解約や担保差入れ、二通貨決済も、上流が違うだけで同じ経路を通ります。</p>
+    <p>移転を決めるのが市場（見積や板）でも、業務システム（ファンド管理者、担保エンジン、銀行の審査）でも、その判断は一つの封印された指図（zkPI）に載ります。決済層（DeFMI）は指図の証明だけを検証して両脚を同時に動かし、何が決まったかは知りません。このサイトで例に使うのは見積依頼（RFQ）で、勝った価格は commitment のまま venue を出て、最小値であることの証明が参照し、定足数が署名し、指図が運び、台帳の積の証明が消費します。<strong>一つの値、四つの証明、一度も開かない。</strong> ファンドの申込・解約や担保差入れ、二通貨決済も、指図を出す側が違うだけで同じ経路を通ります。</p>
     <div class="three">
       <div class="col h">
         <h3>決済が読まないもの</h3>
@@ -40,7 +40,7 @@ section: ja
 <section class="block">
   <div class="wrap">
     <h2>構成要素</h2>
-    <p class="intro">核は指図（zkPI）と台帳（DeFMI）で、その脇に資格（DeKYX）と清算（DeCCP）。市場やその他の業務システムは上流として載り、入れ替え可能です。QOMM は最初に作った市場で、このサイトの作業例に使っています。</p>
+    <p class="intro">核は指図（zkPI）と台帳（DeFMI）で、その脇に資格（DeKYX）と清算（DeCCP）。指図を出す側（市場と、ファンド管理者などの業務システム）はその上に載り、入れ替え可能です。QOMM は最初に作った市場で、このサイトの作業例に使っています。</p>
     <div class="grid">
       <a class="card proved" href="../docs/zkpi.html"><div class="tag">指図</div><h3>zkPI</h3><p>ゼロ知識証明付き決済指図。金額・価格・資産の commitment、nullifier、期限、FROST 定足数署名、閾値範囲証明 2 本。wire 上 9,726 バイト。</p></a>
       <a class="card proved" href="../docs/defmi.html"><div class="tag">決済</div><h3>DeFMI</h3><p>分散型金融市場基盤。commitment 残高上の DvP/PvP、ring 署名付き note、asset tag、ネッティング、デフォルト・ウォーターフォール、正本台帳との照合。専用の非 EVM Avalanche L1 として動作。</p></a>
@@ -48,8 +48,8 @@ section: ja
       <a class="card checked" href="../docs/deccp.html"><div class="tag">清算</div><h3>DeCCP</h3><p>分散型清算機関。閾値統治の清算簿、gross-gross から net-net、証拠金、秘匿保証枠、決定的な損失ウォーターフォール。DeFMI 受領証があるときだけ状態を進める。</p></a>
       <a class="card hidden" href="../docs/qomm.html"><div class="tag">市場</div><h3>QOMM</h3><p>問い合わせを見ないマーケットメイキング。16 社の値付け規則を、誰も見ない依頼に MP-SPDZ の中で適用。最良見積を最小値として証明し、開かずに決済。公開値には差分プライバシー。</p></a>
       <a class="card hidden" href="../docs/oclob.html"><div class="tag">市場</div><h3>OCLOB</h3><p>注文内容を見せない連続指値板。法人側で 7 分割し各ノードへ暗号化配送。5-of-7 委員会が照合前に受付順を確定。MPC 内で価格・時間優先。公開板は価格帯別合計だけ。</p></a>
-      <a class="card checked" href="../docs/aethel.html"><div class="tag">上流</div><h3>Aethel</h3><p>支払ストリームの債権化。署名された支払ストリームを金融可能な債権にし、独立した提供者が審査・保証・資金・サービシングを供給。zkPI を発行して決済。</p></a>
-      <a class="card" href="../docs/use-cases.html"><div class="tag">市場以外の上流</div><h3>他の上流</h3><p>ファンド申込・解約、担保・証拠金、二通貨 PvP、発行・利払、売掛債権、環境証書。判断する主体なら誰でも指図を出せる。</p></a>
+      <a class="card checked" href="../docs/aethel.html"><div class="tag">業務システム</div><h3>Aethel</h3><p>支払ストリームの債権化。署名された支払ストリームを金融可能な債権にし、独立した提供者が審査・保証・資金・サービシングを供給。zkPI を発行して決済。</p></a>
+      <a class="card" href="../docs/use-cases.html"><div class="tag">業務システム</div><h3>他の業務システム</h3><p>ファンド申込・解約、担保・証拠金、二通貨 PvP、発行・利払、売掛債権、環境証書。判断する主体なら誰でも指図を出せる。</p></a>
     </div>
   </div>
 </section>

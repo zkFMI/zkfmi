@@ -8,9 +8,10 @@ section: docs
 <p class="lede">zkFMI separates three jobs that conventional infrastructure fuses: deciding a trade, instructing its settlement, and settling it. Each job runs in a component that holds only the secrets that job needs. The joints between them are commitments, proofs and signatures, never plaintext.</p>
 
 <h2 id="shape">The shape of the system</h2>
+<p>Three words are used precisely on this site. An <strong>instruction source</strong> is anything that decides a transfer and issues a zkPI. A <strong>venue</strong> is an instruction source that decides by matching many parties' orders or quotes (QOMM, OCLOB). An <strong>application</strong> is an instruction source that decides by its own business rules (a fund administrator, a collateral engine, a bank's checks, Aethel). The settlement layer cannot tell them apart, which is the point.</p>
 <pre class="mermaid">
 flowchart LR
-    subgraph up["upstream: decides"]
+    subgraph up["instruction sources: decide"]
         Q["QOMM<br/>oblivious RFQ"]
         O["OCLOB<br/>oblivious order book"]
         A["Aethel<br/>receivables"]
@@ -50,13 +51,13 @@ flowchart LR
 
 <p>Three properties follow from that shape and are worth holding onto while reading the rest of the site.</p>
 <ul>
-  <li><strong>The settlement layer has no opinion about meaning.</strong> DeFMI checks arithmetic: conservation, non-negativity, the product relation, atomicity, single use. Whether the price was reasonable or the instrument was the right one is the upstream's decision and travels in the quorum signature. Making DeFMI re-derive it would mean handing it the plaintext, which is the one thing the construction exists to avoid.</li>
-  <li><strong>The instruction is the only thing that crosses.</strong> The request, the pricing policies and the losing quotes never leave the upstream. What the venue publishes is a committed instruction, a nullifier, a deadline and a signature.</li>
-  <li><strong>Every upstream is replaceable.</strong> QOMM was built first, but a fund administrator, a collateral engine or a bank's sanctions check can issue the same instruction type. The <a href="use-cases.html">use-cases page</a> orders those by feasibility.</li>
+  <li><strong>The settlement layer has no opinion about meaning.</strong> DeFMI checks arithmetic: conservation, non-negativity, the product relation, atomicity, single use. Whether the price was reasonable or the instrument was the right one is the instruction source's decision and travels in the quorum signature. Making DeFMI re-derive it would mean handing it the plaintext, which is the one thing the construction exists to avoid.</li>
+  <li><strong>The instruction is the only thing that crosses.</strong> The request, the pricing policies and the losing quotes never leave the instruction source. What the venue publishes is a committed instruction, a nullifier, a deadline and a signature.</li>
+  <li><strong>Every instruction source is replaceable.</strong> QOMM was built first, but a fund administrator, a collateral engine or a bank's sanctions check can issue the same instruction type. The <a href="use-cases.html">applications page</a> orders those by feasibility.</li>
 </ul>
 
 <h2 id="flow">One settlement, end to end</h2>
-<p>Two upstreams are traced. The first is the RFQ venue, because it is the most complete path built so far and exercises every proof. The second is a fund administrator, which has no MPC and no auction and reaches the same settlement layer with the same instruction type; the <a href="use-cases.html">use-cases page</a> ranks it as the first product. OCLOB replaces the pricing step of the first with matching; everything from the instruction onward is shared.</p>
+<p>Two instruction sources are traced. The first is the RFQ venue, because it is the most complete path built so far and exercises every proof. The second is a fund administrator, which has no MPC and no auction and reaches the same settlement layer with the same instruction type; the <a href="use-cases.html">applications page</a> ranks it as the first product. OCLOB replaces the pricing step of the first with matching; everything from the instruction onward is shared.</p>
 <h3>Through the RFQ venue</h3>
 <pre class="mermaid">
 sequenceDiagram
