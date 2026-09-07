@@ -47,7 +47,7 @@ flowchart TB
 
 <h3>監査</h3>
 <p>quote proof（<code>qomm-proofs/src/quote_proof.rs</code>）は Baum–Damgård–Orlandi の構成を具体化したものである。入力提供者は Pedersen commitment を公開し、SPDZ のオンライン段階は線形演算なので、監査人は commitment の上でそれを再演できる。監査されるのは「回路が正しく評価された」ことではなく、市場についての言明である。各メイカー i について <code>key_i</code> は commitment 済みの規則を commitment 済みの依頼に適用した値であり、開かれた勝者はそれらのキーの最小値である。最小であることと、その中の一つであることを合わせれば最良執行になる。メイカー 4 社で証明 152 ms、検証 173 ms。8 社で 307 と 350。</p>
-<div class="note warn">quote proof のうち、公開された勝者の値をその commitment に結び付ける段は、差が 0 であることを固定する証明ではなく一般の開封証明を検査している。そのため現状では、公開値と commitment された値が証明だけで束縛されてはいない。2026-09-07 に確認。詳細と修正は<a href="cryptography.html#reconcile">暗号技術の使い方</a>と<a href="status.html#p0">現状ページ</a>にある。</div>
+<div class="note">2026-09-07 まで、公開された勝者の値をその commitment に結び付ける段は一般の開封証明を検査しており、公開値は commitment された値に束縛されていなかった。現在は <code>C_winner − g·value</code> の零関係の開封証明である。詳細は<a href="cryptography.html#reconcile">暗号技術の使い方</a>と<a href="status.html#p0">現状ページ</a>にある。</div>
 <p>ノードの不正は受領証で捕まえる。各ノードは毎スロット一通の受領証を出すので、「応答しなかった」ことを第三者に示せる。7 ノードと 6 スロットにわたる障害注入では、食い違う二重の発言（equivocation）、メイカーの脱落、古い状態、受領証の欠落を、取り逃がしゼロ、正直なノードへの誤った告発ゼロで捕捉し、それぞれ障害の性質に応じて bond を没収した（二重署名はそれ自体で完結した証拠であり最も重い。受領証の欠落は正直なノードにも起こるので最も軽い）。</p>
 
 <h2 id="cost">監査可能にするコスト</h2>

@@ -89,7 +89,7 @@ extract    y = s − s'</code></pre>
 <pre><code>Σ C_i = A_a·(Σ v_i) + h·(Σ r_i)
 residual = Σ C_i − A_a·N          // N is the register's figure</code></pre>
 <p>登録簿が正しければ残差は <code>h</code> の純粋な倍数であり、それを示す 96 バイトの証明は、合計が一致することを言い、それ以外は何も言わない。登録簿の数字、口座、資産、基準日はチャレンジにハッシュされるので、証明を別の attestation に対して再生することはできない。attestation 自体は登録簿の管理者が ed25519 で署名する。集約した盲化因子を誰かが持つ必要はなく、3-of-7 の定足数が応答を組み立てられる。不一致の場所を特定するには開示という代価がかかり、それは設計である。二分探索は <code>2·log₂ n + 1</code> 個の副証明を作り、公開した範囲をすべて報告する。</p>
-<div class="note stop"><strong>所見、2026-09-07 に確認。</strong>ここの検証器は残差の<em>一般の</em>開封証明を検査しており、それが示すのは、<em>何らかの</em> <code>(v, r)</code> について <code>residual = g·v + h·r</code> が成り立つと知っていることである。開封値を持つ者は、どんな <code>N</code> に対してもそのような証明を持つ。このページを準備しながら書いたテストは、合計 6,000 の残高に対して合計 6,500 の照合を受け入れさせた。二つ目のテストは、同じ形をしているビット分解の連結を再証明することで、300 への commitment を 8 ビットの範囲証明に通した。同じ型は、zkPI と閾値 DvP パッケージが運ぶ閾値範囲証明の連結、quote proof の「勝者が公開値に開く」段、規則監査の等価の段にもある。0 に固定した変種は crate に既に存在し、note 支出の収支が使っているのがそれである。修正は、これらの箇所でそれを使い、定足数の連結 nonce が値の成分を持たないようにすることである。詳細、テスト、影響を受ける複製は決済リポジトリの所見注記にあり、<a href="status.html">現状のページ</a>が修正を追跡している。</div>
+<div class="note"><strong>所見、2026-09-07 に確認し同日修正。</strong>その日まで、ここの検証器は残差の<em>一般の</em>開封証明を検査しており、それが示すのは、<em>何らかの</em> <code>(v, r)</code> について <code>residual = g·v + h·r</code> が成り立つと知っていることだった。開封値を持つ者は、どんな <code>N</code> に対してもそのような証明を持つ。このページを準備しながら書いたテストは、合計 6,000 の残高に対して合計 6,500 の照合を受け入れさせた。二つ目のテストは、同じ形をしていたビット分解の連結を再証明することで、300 への commitment を 8 ビットの範囲証明に通した。同じ型は、zkPI と閾値 DvP パッケージが運ぶ閾値範囲証明の連結、quote proof の「勝者が公開値に開く」段、規則監査の等価の段にもあった。5 か所すべてが、note 支出が既に使っていた 0 に固定した開封証明を使うようになり、閾値の組み立てではどのノードの nonce も値の成分を持たないので、組み立てた応答の値の部分は命題が成り立つときにちょうど 0 になる。二つの偽造は、crate の 3 つのコピーすべてで回帰テストになっている。詳細は決済リポジトリの所見注記にある。</div>
 
 <h2 id="viewing">scope 付き閲覧</h2>
 <p>scope の区切りは鍵ではなく<em>アドレス</em>にある。ウォレットは 32 バイトのシードを二つ持ち、scope（銘柄、四半期、委任）ごとに次を導出する。</p>
@@ -203,7 +203,7 @@ c = H_512("DEKYX:ANONYMOUS-PRESENTATION:v1" || credential || context || nullifie
 <tr><td>nullifier は serial から導出され、支出時に公開される</td><td>支出は Triptych の linking tag <code>U·S⁻¹</code> を公開し、<code>g·S</code> は決して公開しない</td><td><code>note_membership.rs</code>、レビュー所見 N2</td></tr>
 <tr><td>決済の証明は残高範囲のビット分解である</td><td>本番の範囲証明はすべて Bulletproof である。ビット分解は計測済みの基準線と閾値形である</td><td>DEFMI.md §2 対 <code>ledger.rs</code>、<code>notes.rs</code>、<code>netting.rs</code></td></tr>
 <tr><td>新しさを合わせたおとりが ring の隙間を閉じる</td><td>実装と計測は済んでいるが、呼ばれるのはベンチマークからだけである。本番経路は DEFMI.md §9 が述べるとおり一様なおとりを使う</td><td><code>notes.rs</code>、<code>benches/rings.rs</code></td></tr>
-<tr><td>照合の証明は commit された残高の和が登録簿の数字に一致することを示す</td><td>検証器は残差の一般の開封を検査しており、偽造した合計が受け入れられた。上の所見を見よ</td><td><code>reconcile.rs</code>、<code>bitrange.rs</code>、<code>threshold_range.rs</code>、<code>quote_proof.rs</code>、<code>rule_audit.rs</code></td></tr>
+<tr><td>照合の証明は commit された残高の和が登録簿の数字に一致することを示す</td><td>検証器は残差の一般の開封を検査しており、偽造した合計が受け入れられた。同日に修正。上の所見を見よ</td><td><code>reconcile.rs</code>、<code>bitrange.rs</code>、<code>threshold_range.rs</code>、<code>quote_proof.rs</code>、<code>rule_audit.rs</code></td></tr>
 </tbody></table></div>
 
 <div class="next"><a href="deccp.html">← DeCCP</a><a href="qomm.html">QOMM →</a></div>
