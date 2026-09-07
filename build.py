@@ -52,6 +52,7 @@ NAV_DOCS = [
         ("DeFMI — settlement layer", "DeFMI — 決済層", "docs/defmi.html"),
         ("DeKYX — eligibility", "DeKYX — 資格", "docs/dekyx.html"),
         ("DeCCP — clearing", "DeCCP — 清算", "docs/deccp.html"),
+        ("Cryptography in use", "暗号技術の使い方", "docs/cryptography.html"),
     ]),
     ("Venues", "市場", [
         ("QOMM — oblivious RFQ", "QOMM — 依頼を見ない見積市場", "docs/qomm.html"),
