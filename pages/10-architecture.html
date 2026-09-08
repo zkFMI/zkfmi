@@ -98,7 +98,7 @@ sequenceDiagram
     V->>V: verify, then issue units and move cash atomically, or neither
     V-->>I: receipt and state root
 </pre>
-<p>Nothing in the settlement layer knows whether the instruction came from an auction or a subscription form. That is the point of the design, and it is why the crate names below are misleading.</p>
+<p>Nothing in the settlement layer knows whether the instruction came from an auction or a subscription form. The shared crate boundaries below preserve that separation.</p>
 
 <h2 id="secrets">Who holds which secret</h2>
 <div class="table-wrap"><table>
@@ -116,20 +116,20 @@ sequenceDiagram
 </tbody></table></div>
 
 <h2 id="repos">Repositories and crates</h2>
-<p>Eight repositories. The first three were generated from one shared research tree, so their layout is regular; since 2026-09-07 each crate has a single owner and the duplicates were deleted. The table names the crates by layer; the package names in today's manifests are listed underneath, a few of them still carrying the prefix of the first venue built on the stack. That prefix is historical, not a dependency. Since 2026-09-07 the dependency graph is acyclic, zkfmi-crypto ← zkpi ← defmi ← qomm, with OCLOB and Aethel consuming all three, so every repository pins the others by immutable revision. The other repositories are standalone workspaces with explicit ports.</p>
+<p>Eight repositories, one owner per crate. Since 2026-09-08, shared proofs and committee services are separate from QOMM-only modules. The table uses the actual package names. Dependencies remain acyclic: zkfmi-crypto ← zkpi ← defmi ← qomm; OCLOB and Aethel also use the shared layers, without depending on QOMM. Repository dependencies are pinned by immutable Git revision.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Repository</th><th>Role</th><th>Principal crates, by layer</th><th>Depends on</th></tr></thead>
 <tbody>
-<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>instruction, proof gadgets, committee transport, MPC engine</td><td><code>zkfmi-zk</code>, <code>zkpi</code>, <code>zkpi-proofs</code>, <code>zkpi-harness</code>, <code>qomm-batch-audit</code>; since 2026-09-07 also the transport, MPC engine, audit receipts, pricing-rule language, simulator and measurement crates (moved from qomm, names unchanged)</td><td>zkfmi-crypto, curve25519-dalek, bulletproofs, frost-ristretto255, MP-SPDZ (external)</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>instruction, shared proofs, committee services, MPC engine</td><td><code>zkfmi-zk</code>, <code>zkpi</code>, <code>zkpi-proofs</code>, <code>zkpi-committee</code>, <code>zkpi-harness</code>, <code>zkfmi-measure</code>, <code>qomm-dsl</code>, <code>qomm-sim</code>, <code>qomm-mpc</code>, <code>qomm-audit</code>; standalone <code>qomm-batch-audit</code></td><td>zkfmi-crypto, curve25519-dalek, bulletproofs, frost-ristretto255, MP-SPDZ (external)</td></tr>
 <tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>settlement ledger and Avalanche VM</td><td><code>defmi</code>, <code>defmi-avalanche-vm</code>, <code>zkpi-defmi-sdk</code>, <code>defmi-harness</code></td><td>zkpi, dekyx</td></tr>
-<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>oblivious RFQ venue</td><td><code>qomm-law</code>, <code>qomm-demo</code>, <code>qomm-harness</code></td><td>zkfmi-crypto, zkpi, defmi, deccp-core, dekyx-core</td></tr>
+<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>oblivious RFQ venue</td><td><code>qomm-law</code>, <code>qomm-proofs</code>, <code>qomm-transport</code>, <code>qomm-demo</code>, <code>qomm-harness</code></td><td>zkfmi-crypto, zkpi, defmi, deccp-core, dekyx-core</td></tr>
 <tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>oblivious order book</td><td><code>oclob-core</code>, <code>oclob-edge</code>, <code>oclob-node</code>, <code>oclob-ordering</code>, <code>oclob-mpc</code>, <code>oclob-settlement</code></td><td>zkfmi-crypto, dekyx, zkPI/DeFMI SDK, MP-SPDZ</td></tr>
 <tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>eligibility credentials</td><td><code>dekyx-core</code></td><td>zkfmi-crypto (ports only otherwise)</td></tr>
 <tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>clearing state machine</td><td><code>deccp-core</code></td><td>zkfmi-crypto (ports only otherwise)</td></tr>
-<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and eleven siblings, including the <code>aethel-deccp</code>, <code>aethel-dekyx</code>, <code>aethel-zkpi</code> and <code>aethel-defmi-host</code> adapters</td><td>zkpi, defmi, qomm, dekyx, deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>receivables</td><td><code>aethel-core</code> and eleven siblings, including the <code>aethel-deccp</code>, <code>aethel-dekyx</code>, <code>aethel-zkpi</code> and <code>aethel-defmi-host</code> adapters</td><td>zkfmi-crypto, zkpi, defmi, dekyx, deccp</td></tr>
 <tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>shared primitives and the post-quantum migration</td><td><code>zkfmi-crypto</code> (single package)</td><td>none</td></tr>
 </tbody></table></div>
-<details><summary>Package names in today's manifests</summary><p>Since 2026-09-07 the layer names above are the package names, with three exceptions. <code>zkpi-proofs</code> is still <code>qomm-proofs</code> and the committee transport is still <code>qomm-transport</code>: both hold a venue half that moves back to qomm when the crates are split, and the split changes module paths, so it is done last. The Avalanche VM package is <code>defmi-avalanche-vm</code> but its binary keeps the name <code>qomm-avalanche-vm</code> that the launch scripts expect. Commands on this site use the names that run today. The plan is in the repositories' crate-layout note.</p></details>
+<p><code>zkpi-proofs</code> retains threshold and quote proofs used by settlement; <code>zkpi-committee</code> retains proof services, authorization, recipient encryption and durable execution. QOMM owns rule, policy, state and liquidity audits plus venue ingress and deployment adapters. The remaining <code>qomm-</code> prefixes in zkPI are historical. The <code>defmi-avalanche-vm</code> package still produces the <code>qomm-avalanche-vm</code> binary expected by the launch scripts.</p>
 
 <h2 id="primitives">Cryptographic primitives, used not rewritten</h2>
 <p>Everything sits on ristretto255. Audited crates supply the curve, the range proofs and the threshold signature; the project's own gadgets are sigma protocols over them.</p>

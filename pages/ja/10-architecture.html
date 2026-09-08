@@ -98,7 +98,7 @@ sequenceDiagram
     V->>V: 検証してから、口数の発行と現金の移動を同時に行う。片方だけは行わない
     V-->>I: 受領証と状態ルート
 </pre>
-<p>決済層のどの部分も、指図がオークションから来たのか申込書から来たのかを知らない。これがこの設計の狙いである。後述の crate 名が誤解を招きやすいのも、同じ理由による。</p>
+<p>決済層のどの部分も、指図がオークションから来たのか申込書から来たのかを知らない。以下の共通 crate の分け方も、この分離を保つ。</p>
 
 <h2 id="secrets">誰がどの秘密を持つか</h2>
 <div class="table-wrap"><table>
@@ -116,20 +116,20 @@ sequenceDiagram
 </tbody></table></div>
 
 <h2 id="repos">リポジトリと crate</h2>
-<p>リポジトリは 8 つある。最初の 3 つは一つの研究用ツリーから生成したので、配置は揃っている。2026-09-07 以降、各 crate の所有者は一つに定まり、重複していたコピーは削除した。下の表では crate を層の名前で示す。現在のマニフェストに書かれているパッケージ名は表の下に示す。その一部は、このスタックで最初に作った市場の名前を接頭辞としていまも持つ。接頭辞は経緯を示すだけで、依存関係を意味しない。2026-09-07 以降、依存関係に循環はない。zkfmi-crypto ← zkpi ← defmi ← qomm の順に依存し、OCLOB と Aethel がその三つを使う。そのため各リポジトリは、他のリポジトリを変更不能な rev（コミット）で固定できる。残りのリポジトリは独立したワークスペースで、外部とのつなぎ目はポート（差し替えできる接続口）として明示している。</p>
+<p>リポジトリは 8 つあり、各 crate の所有者は一つである。2026-09-08 から、共通の証明と委員会サービスを QOMM 専用のモジュールから分離した。表には実際のパッケージ名を示す。依存関係は zkfmi-crypto ← zkpi ← defmi ← qomm の順で、循環しない。OCLOB と Aethel も共通部分を使うが、QOMM には依存しない。リポジトリ間の依存先は変更不能な Git の rev（コミット）で固定する。</p>
 <div class="table-wrap"><table>
 <thead><tr><th>リポジトリ</th><th>役割</th><th>主な crate（層の名前）</th><th>依存先</th></tr></thead>
 <tbody>
-<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図、証明のガジェット、委員会側の通信、MPC エンジン</td><td><code>zkfmi-zk</code>、<code>zkpi</code>、<code>zkpi-proofs</code>、<code>zkpi-harness</code>、<code>qomm-batch-audit</code>。2026-09-07 からは通信、MPC エンジン、監査受領証、値付け規則の言語、シミュレータ、計測の各 crate も含む（qomm から移動、名前は変えていない）</td><td>zkfmi-crypto、curve25519-dalek、bulletproofs、frost-ristretto255、MP-SPDZ（外部）</td></tr>
+<tr><td><a href="https://github.com/zkFMI/zkpi">zkpi</a></td><td>指図、共通の証明、委員会サービス、MPC エンジン</td><td><code>zkfmi-zk</code>、<code>zkpi</code>、<code>zkpi-proofs</code>、<code>zkpi-committee</code>、<code>zkpi-harness</code>、<code>zkfmi-measure</code>、<code>qomm-dsl</code>、<code>qomm-sim</code>、<code>qomm-mpc</code>、<code>qomm-audit</code>。独立した <code>qomm-batch-audit</code> も含む</td><td>zkfmi-crypto、curve25519-dalek、bulletproofs、frost-ristretto255、MP-SPDZ（外部）</td></tr>
 <tr><td><a href="https://github.com/zkFMI/defmi">defmi</a></td><td>決済台帳と Avalanche VM</td><td><code>defmi</code>、<code>defmi-avalanche-vm</code>、<code>zkpi-defmi-sdk</code>、<code>defmi-harness</code></td><td>zkpi、dekyx</td></tr>
-<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-law</code>、<code>qomm-demo</code>、<code>qomm-harness</code></td><td>zkfmi-crypto、zkpi、defmi、deccp-core、dekyx-core</td></tr>
+<tr><td><a href="https://github.com/zkFMI/qomm">qomm</a></td><td>依頼を見ない RFQ 市場</td><td><code>qomm-law</code>、<code>qomm-proofs</code>、<code>qomm-transport</code>、<code>qomm-demo</code>、<code>qomm-harness</code></td><td>zkfmi-crypto、zkpi、defmi、deccp-core、dekyx-core</td></tr>
 <tr><td><a href="https://github.com/zkFMI/oclob">oclob</a></td><td>注文を見ない板</td><td><code>oclob-core</code>、<code>oclob-edge</code>、<code>oclob-node</code>、<code>oclob-ordering</code>、<code>oclob-mpc</code>、<code>oclob-settlement</code></td><td>zkfmi-crypto、dekyx、zkPI/DeFMI SDK、MP-SPDZ</td></tr>
 <tr><td><a href="https://github.com/zkFMI/dekyx">dekyx</a></td><td>資格のクレデンシャル</td><td><code>dekyx-core</code></td><td>zkfmi-crypto（それ以外はポート経由のみ）</td></tr>
 <tr><td><a href="https://github.com/zkFMI/deccp">deccp</a></td><td>清算の状態機械</td><td><code>deccp-core</code></td><td>zkfmi-crypto（それ以外はポート経由のみ）</td></tr>
-<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と、同じ並びの crate 11 個。アダプタ <code>aethel-deccp</code>、<code>aethel-dekyx</code>、<code>aethel-zkpi</code>、<code>aethel-defmi-host</code> を含む</td><td>zkpi、defmi、qomm、dekyx、deccp</td></tr>
+<tr><td><a href="https://github.com/zkFMI/aethel">aethel</a></td><td>債権</td><td><code>aethel-core</code> と、同じ並びの crate 11 個。アダプタ <code>aethel-deccp</code>、<code>aethel-dekyx</code>、<code>aethel-zkpi</code>、<code>aethel-defmi-host</code> を含む</td><td>zkfmi-crypto、zkpi、defmi、dekyx、deccp</td></tr>
 <tr><td><a href="https://github.com/zkFMI/zkfmi-crypto">zkfmi-crypto</a></td><td>共通プリミティブと耐量子化への移行</td><td><code>zkfmi-crypto</code>（単一パッケージ）</td><td>なし</td></tr>
 </tbody></table></div>
-<details><summary>現在のマニフェスト上のパッケージ名</summary><p>2026-09-07 から、上の層の名前はそのままパッケージ名である。例外は三つ。<code>zkpi-proofs</code> はまだ <code>qomm-proofs</code> で、委員会側の通信もまだ <code>qomm-transport</code> である。どちらも市場側の半分を含んでいて、crate を分割するときに qomm へ戻す。分割はモジュールのパスを変えるので、最後に行う。Avalanche VM のパッケージは <code>defmi-avalanche-vm</code> だが、バイナリは起動スクリプトが期待する <code>qomm-avalanche-vm</code> という名前のままである。このサイトのコマンドは、いま動く名前で書いてある。計画は各リポジトリの crate 配置の覚書に書いてある。</p></details>
+<p><code>zkpi-proofs</code> には決済にも使う閾値証明と quote proof を残し、<code>zkpi-committee</code> には証明サービス、承認、受取人向けの暗号化、状態を永続化する実行処理を残す。規則・方針・状態・流動性の監査と、市場の受付・配置用アダプタは QOMM が持つ。zkPI に残る <code>qomm-</code> という接頭辞は歴史的な名前である。<code>defmi-avalanche-vm</code> パッケージが生成するバイナリは、起動スクリプトに合わせて <code>qomm-avalanche-vm</code> のままである。</p>
 
 <h2 id="primitives">暗号プリミティブは書き直さず使う</h2>
 <p>すべて ristretto255 という曲線の上に作る。曲線の演算、範囲証明、閾値署名は監査済みの crate から借りる。このプロジェクトが自分で書いたのは、その上に載せたシグマ・プロトコル（知識の証明の基本形）のガジェット（部品）である。</p>
