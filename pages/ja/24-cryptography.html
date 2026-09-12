@@ -6,6 +6,7 @@ section: docs
 ---
 <h1>暗号技術の使い方</h1>
 <p class="lede">各部品のページは、その部品が何を保証するかを述べる。このページは、それをどう実現しているかを述べる。どの群と生成元を使い、どのトランスクリプト・ラベルを付け、検証器がどの等式を検査し、wire 上を何バイトが流れるか、という水準で書く。ここに書いたことはすべて 2026-09-07 にコードから読み取り、ファイル名を挙げてある。コードと古い設計文書が食い違う箇所ではコードの側を報告し、食い違いは末尾に一覧にした。</p>
+<div class="note">更新: 2026-09-12。非 PQC の note は現在 Triptych 系の所属証明と加法準同型 commitment を使う。資産 ID 秘匿の native 経路を実行し、新規ネットワークのハッシュ・符号ベースの PQC 証明研究も進めている。実用 PQC note と全市場経路の完成は別の未解決課題である。以下の過去の測定は元の方式と環境に属する。 <a href="defmi.html#confidential-assets">note の実行証跡</a> · <a href="post-quantum.html#proof-switch">PQC の現在地</a></div>
 <p class="src">出典: zkpi/rust/zkfmi-zk (pedersen.rs, sigma.rs, range.rs, bitrange.rs, oneofmany.rs, or_dleq.rs, adaptor.rs, shamir.rs。2026-09-07 までは defmi の main にあった) · defmi/rust/defmi (ledger.rs, notes.rs, note_membership.rs, netting.rs, credit.rs, reconcile.rs, viewing.rs, vetting.rs, assets.rs, pvp.rs) · zkpi, qomm-proofs · zkpi, qomm, oclob, dekyx, zkfmi-crypto · 版は Cargo.lock で固定したもの</p>
 
 <div class="note">このページにあるものは、どれも新しいプリミティブではない。スタックは、監査済みか十分に研究された構成を組み合わせている。ristretto255 の算術、Pedersen commitment（値を隠したまま固定する仕組み）、Schnorr 型のシグマ・プロトコル、Bulletproofs、Groth–Kohlweiss と Triptych の one-of-many 証明、FROST、MP-SPDZ 上の Shamir 秘密分散、そして今は ML-DSA と ML-KEM のハイブリッドである。関心があるのは、何が何に束縛されているかである。<a href="security.html">安全性のページ</a>には攻撃者と信頼境界を書いた。このページには等式を書く。</div>
@@ -188,7 +189,7 @@ c = H_512("DEKYX:ANONYMOUS-PRESENTATION:v1" || credential || context || nullifie
 <h2 id="classical">何が古典で、何が監査済みで、何を主張しないか</h2>
 <ul>
   <li>すべての commitment、範囲証明、one-of-many 証明、adaptor signature、定足数署名は、ristretto255 の離散対数に依っている。Pedersen commitment の束縛は<em>計算量的</em>にしか成り立たない。そしてメイカーの値付け規則の commitment は、規則の生涯にわたって置かれたままである。ポジション・ペーパーはこれを、ここで耐量子の方向を採る最も強い論拠として挙げている。量子計算機は要らず、時間だけで足りるからである。</li>
-  <li><a href="post-quantum.html">耐量子のページ</a>のハイブリッドは、署名と鍵交換を覆う。離散対数を破る攻撃者に対して Pedersen commitment を束縛にするものではなく、ゼロ知識の関係は、決定として古典のまま残す。</li>
+  <li><a href="post-quantum.html">耐量子のページ</a>のハイブリッドは、署名と鍵交換を覆う。離散対数を破る攻撃者に対して Pedersen commitment を束縛にするものではなく、既存の関係は古典のままだが、別の PQC 証明経路を研究実装している。</li>
   <li>監査済みの部品は、curve25519-dalek と bulletproofs（Quarkslab 2019）、frost-ristretto255（NCC Group 2023、部分的、v0.6.0）である。未監査なのは、シグマ・プロトコル、Groth–Kohlweiss の実装、Triptych アダプタとその元のライブラリ、note レール、ネッティングと与信の証明、閾値構成、そしてすべてのホストである。二回の内部レビューは<a href="prior-art.html#retracted">先行研究</a>と<a href="security.html">安全性</a>のページに記録してあるが、監査ではない。</li>
   <li>ここにあるものは、何も MPC を証明しない。検証者は提出されたものを検証する。シェアから証明への引き渡しは束縛されているが、証明されてはいない。<a href="binding.html">束縛のページ</a>がその費用を計測している。</li>
 </ul>

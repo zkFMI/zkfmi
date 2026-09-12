@@ -1,14 +1,25 @@
 ---
 title: 耐量子化への移行
-description: zkFMI スタックの耐量子暗号の現在地。共通基盤 zkfmi-crypto（Ed25519 + ML-DSA-65 のハイブリッド署名、X25519 + ML-KEM-768 の鍵交換、正規化した署名入力、用途に束縛した鍵）、P0 から P6 の計画、ホスト 1 台のネイティブ受入を通過し、いまは 8 リポジトリすべての `main` にあるもの、移行がバイト数とミリ秒でいくら掛かるか、古典のまま残るもの。
+description: 耐量子化の現在地。ハイブリッド署名・鍵交換、ハッシュと符号に基づく協調証明の研究実装、新規ネットワークの限定実証、未完成の PQC note・市場決済経路。
 path: docs/post-quantum.html
 section: docs
 ---
 <h1>耐量子化への移行</h1>
-<p class="lede">この移行は、古典方式と耐量子方式を組にして使う（ハイブリッド）。どちらか一方でも検証に通らなければ受理しない（fail-closed）。資金を守る古典の署名と鍵交換のすべてに、耐量子の相方を付ける。両方の検証が通ったときだけ受理する。古典方式しか出せない相手は拒否する。作業は 8 リポジトリすべての <code>main</code> にある。2026-09-06 に、ホスト 1 台でのネイティブ受入を通過した。2026-09-07 には、零関係の開封証明（commitment の値が 0 であることを示す開封）の修正を取り込んだ後にもう一度通過した。同じ 2026-09-07 に、スタック側の crate（Rust のライブラリ単位）を zkPI へ移し、DeFMI と QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の rev（git のリビジョン）で固定した。その結果、8 リポジトリすべての <code>main</code> が受入済みの状態になった。</p>
-<p class="src">出典: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · 2026-09-08（夕方）時点の状況</p>
+<p class="lede">2026-09-12 時点では、署名・鍵交換のハイブリッド実装と、commitment・証明・決済状態まで対象にする PQC 研究を区別する。新規ネットワーク上で限定した証明と状態更新を実行したが、実用 note と市場全体の PQC 化は未完成である。既存台帳の移行は対象にせず、既存環境を保持する。</p>
+<p class="src"><a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/PQC_PROOF_SWITCH_STATUS.md">証明・新規ネットワークの実装記録</a> · <a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">PQC note の実装範囲</a> · 2026-09-12</p>
 
-<h2 id="status">状況の一覧</h2>
+<h2 id="proof-switch">加法準同型の代わりに、秘密の計算関係を証明する</h2>
+<p>PQC note の方針は、秘密の数量と乱数を SHA-512 で commitment にし、その開封関係と決済の計算を証明することである。ハッシュ自体に加法準同型性はない。説明用に <code>C0 = H(v0 || r0)</code>、<code>C1 = H(v1 || r1)</code>、<code>C2 = H(v2 || r2)</code> と書けば、秘密の入力についてこれらの等式、<code>v0 = v1 + v2</code>、数量の範囲を同時に証明する。実際の形式はドメイン、配備方針、資産、所有権も結び付ける。</p>
+<p>DeFMI は公開 commitment と証明を受け取り、正規台帳の入力、支出権限、nullifier の未使用、出力との関係を検証して状態を更新する設計である。単に開封をサーバーへ渡してハッシュを照合する処理では秘匿証明にならない。ハイブリッド署名を付けるだけでも、Pedersen の束縛や note 証明の耐量子化にはならない。</p>
+<h3 id="research-evidence">実行済みの研究と未完成の実用経路</h3>
+<ul>
+<li><strong>実行済み:</strong>ハッシュ・符号・sumcheck に基づく協調証明。7 者の所有者別入力で限定した 4 口座の算術関係を証明し、独立した公開データだけの検証器で確認。暗号化入力の実験では、約定・非約定と復旧を含む 740 の正規 Block/State 遷移を記録した。別の新規ネットワーク実験では、1 ホスト上の 5 検証者で受理と再起動後の状態一致を観測した。</li>
+<li><strong>実装途中:</strong>新しい PQC note の形式、受取人だけが持つ支出鍵、ハイブリッド暗号化による配送とウォレット内の復号。完全な note の秘密計算関係、特に出力暗号化の証明、匿名の所属・支出、予約・約定・返却を結び付ける実用経路は未完成である。</li>
+<li><strong>判定:</strong>実行した研究は <code>smoke_only</code>。独立運営者による保管、実際の QOMM/OCLOB 入力からの全経路、構成全体のゼロ知識性・量子攻撃に対する健全性・具体的安全性パラメータの外部検証は残っている。</li>
+</ul>
+<p class="src"><a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/artifacts/sealed-input-001/receipt.json">暗号化入力の実行証跡</a> · <a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/artifacts/greenfield-live-002/live-receipt.json">新規ネットワークの実行証跡</a></p>
+
+<h2 id="status">ハイブリッド導入時の記録: 2026-09-06〜2026-09-08</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>項目</th><th>状態</th><th>根拠</th></tr></thead>
 <tbody>
@@ -16,7 +27,7 @@ section: docs
 <tr><td>7 リポジトリの暗号使用箇所の棚卸し（P0）</td><td><span class="pill ok">完了</span></td><td>507 ファイル、暗号プリミティブの項目 1,032 件。独立に行った grep と照合し、欠落 0、余剰 0</td></tr>
 <tr><td>QOMM、zkPI、DeFMI、OCLOB、DeKYX、DeCCP、Aethel にわたる P1 から P6 の統合</td><td><span class="pill part"><code>main</code> で受入済み · ホスト 1 台</span></td><td>ネイティブ実行を 2026-09-06（exit 0、15 分 07 秒）と 2026-09-07（零関係の開封証明の修正を取り込んだ後、PASS）に行った。シナリオは市場、finality、lifecycle、P6 復旧。各実行の前後でソースのハッシュが一致</td></tr>
 <tr><td>リリース rev の固定、lock 再生成、ゲート再実行、<code>main</code> への統合</td><td><span class="pill ok">完了 · 2026-09-07</span></td><td>通信、MPC エンジン、監査、DSL、シミュレータ、計測の各 crate を zkPI に移し、DeFMI ⇄ QOMM の依存の循環を断った。各リポジトリは他のリポジトリを不変の git rev で固定し、隣の checkout を重ねる overlay は使わない。9 ワークスペースすべてが lock 固定の検査を通り、固定後の配置でネイティブ受入も通った。8 つの <code>main</code> がすべて受入済みの状態を持つ。<a href="architecture.html#repos">全体構成ページ</a>を参照。</td></tr>
-<tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>現時点では設計上の判断。下記を参照</td></tr>
+<tr><td>ゼロ知識の関係式（commitment、範囲証明、ring、quote proof、FROST）</td><td><span class="pill no">古典</span></td><td>既存経路の分類。別の PQC 証明研究は上記を参照</td></tr>
 <tr><td>性能比較</td><td><span class="pill ok">計測済み · 1 ホスト · 2 回</span></td><td>基本演算は 2026-09-07 に、公開していた OCLOB の画像で端から端までを 2026-09-08 に計測。最初のハイブリッド画像は注文 1 件あたり、板に残る注文で +56 ms、約定する注文で +74 ms（中央値）。エンジン受領証の検査をプロセスごと 1 回にし、7 プロセスを回をまたいで維持したあとは、ハイブリッド画像が従来版より 177 ms と 202 ms 速い。詳細は下</td></tr>
 <tr><td>独立した運営者、WAN、HSM、FIPS 認証、外部監査</td><td><span class="pill no">なし</span></td><td>受入記録は、これらをいずれも未実施と記している</td></tr>
 </tbody></table></div>
@@ -95,9 +106,8 @@ section: docs
 </ul>
 <p>この実行で欠陥が 2 件見つかり、通過前に修正した。一つは、再試行ごとに ML-DSA 署名を作り直していた受領証で、署名済みの受領証を永続化して再送するようにした。もう一つは、部分約定の後に返金の開封値が新しい操作識別子で再認可されていたもので、元の請求コンテキストを保持するようにした。補助ゲートは次のとおり。OCLOB のテスト 125 件、zkPI・DeKYX・DeCCP・P5 の各ワークスペースにわたるテスト 279 件、QOMM のトランスポートとデモのテスト、Aethel のエンドツーエンド。すべて strict clippy 付き。</p>
 
-<h2 id="classical">古典のまま残るもの、その理由</h2>
-<p>この移行が扱うのは署名と鍵交換である。決済層が依拠するゼロ知識の関係式は扱わない。まだ扱えないからである。Pedersen commitment、Bulletproofs の範囲証明、one-of-many ring、quote proof、指図への FROST 閾値署名は、いずれも離散対数の困難さに立っている。議論の全体は<a href="binding.html#pq">束縛のページ</a>にある。要点は次のとおり。commitment の秘匿（hiding）は無条件で、量子計算機を持つ敵にも耐える。束縛（binding）は耐えない。それが最初に効いてくる場所は、メイカーのポリシー commitment である。この commitment は、ポリシーの有効期間中すべての見積に対して開かれる。VOLE-in-the-Head の commitment は実装して計測した。広い体の上で Pedersen の 5.9× から 11× のコストで、しかも一回しか開けない。格子 commitment は Shamir の再構成を壊す。未解決の問いは、ランダムオラクルだけに依拠し、何度でも開ける commitment があるか、である。それが存在するまで、このスタックの耐量子の保証は「誰が署名したか」「誰がチャネルを読めるか」についてのものであり、証明についてのものではない。</p>
-<p>小さな点が二つ、2026-09-08 に片付いた。FROST の身元の自己署名は両方の半分ともノードのハイブリッド公開鍵（発行用）を覆うようになった（身元の本文 v3、名簿と確認のダイジェストにも含む）。DeFMI の閲覧の許可と支出の開示は、ハイブリッド方式で署名する（閲覧ドメイン v3。片方だけ、または入れ替えた署名は拒否）。ノード別の ML-DSA 承認は今も FROST の内側ではなく隣に置いてある。これは計画どおりの設計で、二つは別々に検証する。</p>
+<h2 id="classical">既存の古典経路と新規 PQC 研究の境界</h2>
+<p>既存の Pedersen・Bulletproofs・Triptych・FROST 経路は離散対数に依存し、新しい資産 ID 秘匿の Ristretto 経路も PQC On では拒否する。PQC 研究では SHA-512 と符号ベースの証明を使い、BN254 は算術の体としてだけ使う。楕円曲線 commitment、ペアリングの最終証明、委員会署名を証明の健全性の代わりに使う構成ではない。これでも、実装した構成全体の耐量子安全性が確立したことにはならない。</p>
 
 <h2 id="limits">根拠の限界</h2>
 <ul>

@@ -5,8 +5,16 @@ path: docs/status.html
 section: docs
 ---
 <h1>Status and acceptance</h1>
-<p class="lede">"Built" means the code exists and its tests pass in the locked workspace. "Accepted" means it ran in the repository's release gate on the stated topology. Neither means production, and the stated topology for every multi-node acceptance is one Linux host under one administrator.</p>
-<p class="src">last checked against repository heads of 2026-09-08</p>
+<p class="lede">Implementation, development checks, observed execution and publication/deployment are separate states. Functional evidence connects inputs, the executed path, persisted results, environment and version. The new executions below remain research evidence, not independent-operator operation or production promotion.</p>
+<p class="src">Published source and execution records checked 2026-09-12. Measurements outside the new paths below retain the historical environments and versions named in their records.</p>
+
+<h2 id="latest">Update: 2026-09-12</h2>
+<div class="table-wrap"><table><thead><tr><th>Path</th><th>Observed result</th><th>Remaining boundary</th></tr></thead><tbody>
+<tr><td>Native confidential-asset notes</td><td>Five validators on one host executed issuance, partial fills, refunds, redemption, reuse and decrypted wallet balances after restart. smoke_only.</td><td>Synthetic assets; proof inputs and committee keys in one process. Actual venue and DeKYX approval-service integration remain separate.</td></tr>
+<tr><td>Fresh-network PQC research</td><td>Bounded four-account fill/no-fill proofs, canonical state application and recovery. The sealed-input experiment has 740 Block/State transitions. smoke_only.</td><td>Operational PQC note relations, the complete venue path, independent custody and exact-construction security remain incomplete.</td></tr>
+<tr><td>Published material</td><td>Latest DeFMI, zkfmi-crypto, OCLOB and QOMM changes published on main; Japanese QOMM decks updated.</td><td>Source publication is not production deployment or security certification.</td></tr>
+</tbody></table></div>
+<p><a href="defmi.html#confidential-assets">Confidential-asset evidence</a> · <a href="post-quantum.html#research-evidence">PQC research evidence</a></p>
 
 <h2 id="summary">One-paragraph summary</h2>
 <p>The end-to-end path exists and has been run: a participant splits an order or request, seven MPC processes compute it, a 3-of-7 quorum issues a threshold zkPI, and five AvalancheGo validators running the Rust VM settle both legs atomically, agree on a state root, refuse a replay, and recover one validator after a restart with the same root. That is evidence for native execution and recovery. It is not evidence for independent organisations, a WAN, HSM-held keys, a supervisor's key ceremony, or a legal finality regime, and none of those has been attempted.</p>
@@ -16,7 +24,7 @@ section: docs
 <thead><tr><th>component</th><th>state</th><th>gate that covers it</th><th>what remains</th></tr></thead>
 <tbody>
 <tr><td>zkPI v2 wire, vectors, verifier</td><td><span class="pill ok">built · vectors fixed</span></td><td><code>zkpi-verify --check-vectors</code>; decode/re-encode byte identity</td><td>independent second implementation against the vectors</td></tr>
-<tr><td>DeFMI ledger: accounts, notes, tags, netting, PvP, reconciliation, viewing, vetting</td><td><span class="pill ok">built · measured</span></td><td><code>cargo test --locked --workspace</code>; every table regenerated from JSON</td><td>atomic admit-pledge-limit-pay; production note rail on the L1 (OCLOB still uses commitment accounts)</td></tr>
+<tr><td>DeFMI ledger: accounts, notes, tags, netting, PvP, reconciliation, viewing, vetting</td><td><span class="pill ok">built · measured</span></td><td><code>cargo test --locked --workspace</code>; every table regenerated from JSON</td><td>atomic admit-pledge-limit-pay; connect existing venue callers to the new confidential wrapper; independent operational acceptance</td></tr>
 <tr><td>Bulletproof backend</td><td><span class="pill ok">built · measured on host-a</span></td><td>rust_bench.json</td><td>rerun both backends on one host before promotion</td></tr>
 <tr><td>Avalanche L1, Rust VM, 5 validators</td><td><span class="pill ok">accepted · 1 host</span></td><td>run_avalanche_l1_acceptance; QOMM full path at heights 53–54</td><td>independent hosts and operators, WAN, reorg tests, HSM keys, public-network readiness</td></tr>
 <tr><td>QOMM RFQ, 7-party MP-SPDZ, quote proof, audit slots</td><td><span class="pill ok">built · measured</span></td><td>research_run, placement/sites proxies</td><td>seven-site deployment; input-check and shamir-inputs switches default off in the harness; persistent rate-limiter counters</td></tr>
@@ -26,7 +34,7 @@ section: docs
 <tr><td>DeKYX</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>issuer governance, revocation ops, issuer-unlinkable credentials (BBS+/CL adapter)</td></tr>
 <tr><td>DeCCP</td><td><span class="pill ok">built</span></td><td>test, clippy, fmt, release build</td><td>cross-margining, partial guarantee transitions, legal novation</td></tr>
 <tr><td>Aethel</td><td><span class="pill ok">built · 12 crates</span></td><td>test, clippy, fmt, release build</td><td>legal assignment, perfection, tax, bankruptcy treatment outside code</td></tr>
-<tr><td>Post-quantum migration (P0–P6, <code>zkfmi-crypto</code>)</td><td><span class="pill part">accepted · 1 host · on main in all 8 repositories</span></td><td>native acceptance 2026-09-06 and 2026-09-07: market, finality, lifecycle, P6 recovery; foundation crate gated with NIST ACVP vectors</td><td>ZK relations remain classical; no WAN, HSM, FIPS validation or external audit. Performance was measured on 2026-09-07 (primitives) and 2026-09-08 (deployed images). <a href="post-quantum.html">Details</a></td></tr>
+<tr><td>Hybrid authorization/transport and PQC proof research</td><td><span class="pill part">implemented · research execution</span></td><td>Historical hybrid execution on 2026-09-06 and 2026-09-07, plus the versioned fresh-network and sealed-input evidence above</td><td>Operational PQC notes, complete venue integration, external security validation and independent operators. <a href="post-quantum.html">Details</a></td></tr>
 <tr><td>Enterprise PoC guides (JA)</td><td><span class="pill ok">written</span></td><td>—</td><td>a company-run evaluation on its own hardware</td></tr>
 <tr><td>Formal security definition and proofs</td><td><span class="pill no">not accepted</span></td><td>soundness of input check, naming, hiding proved; MPC assumed; composition argued</td><td>UC treatment; OCLOB security definition</td></tr>
 <tr><td>Third-party audit</td><td><span class="pill no">none</span></td><td>two internal review rounds, findings recorded</td><td>independent cryptographic, Rust, host-VM and integration audit</td></tr>

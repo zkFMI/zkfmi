@@ -5,8 +5,16 @@ path: docs/status.html
 section: docs
 ---
 <h1>現状と受入</h1>
-<p class="lede">「実装済み」とは、コードが存在し、依存関係を固定した workspace でテストが通ることをいう。「受入済み」とは、リポジトリのリリースゲート（公開前の自動検査）が、記載した構成の上で通ったことをいう。どちらも本番を意味しない。複数ノードでの受入はすべて、1 人の管理者が管理する Linux ホスト 1 台の上で行ったものである。</p>
-<p class="src">最終確認: 2026-09-08 時点のリポジトリの最新コミット</p>
+<p class="lede">実装の存在、開発チェック、実際の実行結果、公開・配備を区別する。動作の根拠は、入力、実行した経路、保存された結果、実行環境と版に結び付いた証跡である。以下の新しい実証も研究用途であり、独立組織による運用や本番への昇格を意味しない。</p>
+<p class="src">公開ソースと実行記録の確認: 2026-09-12。下記の新しい経路以外の計測は、各記録に示す過去の環境と版に属する。</p>
+
+<h2 id="latest">2026-09-12 の更新</h2>
+<div class="table-wrap"><table><thead><tr><th>経路</th><th>確認した結果</th><th>残る境界</th></tr></thead><tbody>
+<tr><td>資産 ID 秘匿の native note</td><td>5 検証者・1 ホストで発行から部分約定、返却、償還、再送金、再起動後の復号残高まで実行。smoke_only。</td><td>合成資産、証明入力と委員会鍵は 1 プロセス。実際の市場・DeKYX 承認サービスとの接続は別途。</td></tr>
+<tr><td>新規ネットワークの PQC 研究</td><td>限定した 4 口座の約定・非約定の証明、正規状態への反映と復旧。暗号化入力の実験は 740 Block/State 遷移。smoke_only。</td><td>実用 PQC note の関係と市場全体の接続、独立保管、構成全体の安全性は未完成。</td></tr>
+<tr><td>資料の公開</td><td>DeFMI・zkfmi-crypto・OCLOB・QOMM の最新変更を main に公開。QOMM 日本語資料も更新。</td><td>ソースの公開は、本番配備や安全性の認定ではない。</td></tr>
+</tbody></table></div>
+<p><a href="defmi.html#confidential-assets">資産 ID 秘匿の証跡</a> · <a href="post-quantum.html#research-evidence">PQC 研究の証跡</a></p>
 
 <h2 id="summary">一段落の要約</h2>
 <p>端から端までの経路は存在し、実際に動かした。参加者が注文または依頼を分割する。7 つの MPC プロセスがそれを計算する。3-of-7 の定足数が閾値 zkPI を発行する。Rust VM を動かす 5 台の AvalancheGo 検証者が両脚を原子的に決済し、状態 root（台帳全体の要約ハッシュ）で合意し、リプレイを拒み、再起動した検証者 1 台を同じ root で復旧させる。これはネイティブ実行と復旧ができることの証拠である。独立した組織、WAN、HSM に保管した鍵、監督当局による鍵の生成儀式、法的 finality の制度については証拠にならない。そのどれも、まだ試していない。</p>
@@ -16,7 +24,7 @@ section: docs
 <thead><tr><th>部品</th><th>状態</th><th>対象とするゲート</th><th>残っていること</th></tr></thead>
 <tbody>
 <tr><td>zkPI v2 の wire 形式、テストベクタ、検証器</td><td><span class="pill ok">実装済み · ベクタ固定</span></td><td><code>zkpi-verify --check-vectors</code>。デコードして再エンコードしたバイト列の同一性</td><td>テストベクタに対する、独立した第二の実装</td></tr>
-<tr><td>DeFMI 台帳: 口座、note（金額を隠した残高の単位）、tag、ネッティング、PvP、照合、閲覧、審査証明</td><td><span class="pill ok">実装済み · 計測済み</span></td><td><code>cargo test --locked --workspace</code>。全表を JSON から再生成</td><td>受付・担保差入・限度・支払を一つの原子的操作にまとめる。L1 上の本番用 note レール（OCLOB はまだ commitment 口座を使っている）</td></tr>
+<tr><td>DeFMI 台帳: 口座、note（金額を隠した残高の単位）、tag、ネッティング、PvP、照合、閲覧、審査証明</td><td><span class="pill ok">実装済み · 計測済み</span></td><td><code>cargo test --locked --workspace</code>。全表を JSON から再生成</td><td>受付・担保差入・限度・支払を一つの原子的操作にまとめる。既存の市場呼出しと新しい秘匿 wrapper の接続、独立した運用での確認</td></tr>
 <tr><td>Bulletproof バックエンド</td><td><span class="pill ok">実装済み · host-a で計測済み</span></td><td>rust_bench.json</td><td>昇格の前に、両バックエンドを同じ 1 台のホストで再計測</td></tr>
 <tr><td>Avalanche L1、Rust VM、検証者 5 台</td><td><span class="pill ok">受入済み · ホスト 1 台</span></td><td>run_avalanche_l1_acceptance。高さ 53–54 での QOMM 全経路</td><td>独立したホストと運営者、WAN、reorg（チェーンの巻き戻し）の試験、HSM 鍵、公開ネットワークで動かす準備</td></tr>
 <tr><td>QOMM RFQ、7 者 MP-SPDZ、quote proof、監査スロット</td><td><span class="pill ok">実装済み · 計測済み</span></td><td>research_run。placement/sites の代理計測</td><td>7 拠点への配備。ハーネスでは input-check と shamir-inputs の切替が既定で off。レート制限器のカウンタの永続化</td></tr>
@@ -26,7 +34,7 @@ section: docs
 <tr><td>DeKYX</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>発行者のガバナンス、失効の運用、発行者にも連結できない資格（BBS+/CL アダプタ）</td></tr>
 <tr><td>DeCCP</td><td><span class="pill ok">実装済み</span></td><td>test、clippy、fmt、release ビルド</td><td>クロスマージン、保証の部分的な遷移、法的な更改</td></tr>
 <tr><td>Aethel</td><td><span class="pill ok">実装済み · 12 crate</span></td><td>test、clippy、fmt、release ビルド</td><td>コードの外側の課題: 法的な譲渡、対抗要件の具備、税務、倒産時の扱い</td></tr>
-<tr><td>耐量子化への移行（P0–P6、<code>zkfmi-crypto</code>）</td><td><span class="pill part">受入済み · ホスト 1 台 · 8 リポジトリすべての main に反映</span></td><td>2026-09-06 と 2026-09-07 のネイティブ受入: 市場、finality、lifecycle、P6 復旧。基盤 crate は NIST ACVP ベクタで検査</td><td>ZK の関係式は古典暗号のまま。WAN、HSM、FIPS 認証、外部監査は未実施。性能は 2026-09-07（プリミティブ）と 2026-09-08（配置済みイメージ）に計測した。<a href="post-quantum.html">詳細</a></td></tr>
+<tr><td>耐量子の署名・鍵交換と証明研究</td><td><span class="pill part">実装済み・研究実証</span></td><td>2026-09-06・2026-09-07 のハイブリッド実行記録と、上記の版固定の新規ネットワーク・暗号化入力の証跡</td><td>実用 PQC note と全市場経路、外部安全性検証、独立運営者。<a href="post-quantum.html">詳細</a></td></tr>
 <tr><td>企業向け PoC ガイド（日本語）</td><td><span class="pill ok">執筆済み</span></td><td>—</td><td>企業が自社のハードウェアで行う評価</td></tr>
 <tr><td>形式的な安全性定義と証明</td><td><span class="pill no">未受入</span></td><td>入力検査の健全性、責任者の名指し、秘匿性は証明済み。MPC は仮定。合成は論証のみ</td><td>UC での扱い。OCLOB の安全性定義</td></tr>
 <tr><td>第三者監査</td><td><span class="pill no">なし</span></td><td>内部レビュー 2 回、所見を記録</td><td>独立した暗号・Rust・ホスト VM・統合の監査</td></tr>

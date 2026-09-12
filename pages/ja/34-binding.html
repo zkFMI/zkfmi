@@ -6,6 +6,7 @@ section: docs
 ---
 <h1>計算した値を commit した値に束縛する</h1>
 <p class="lede">メイカー（値付けする側）は、自分の値付け規則を 7 つの計算ノードにシェア（秘密分散の断片）として配る。各ノードは計算の前に、受け取ったシェアを配った側の commitment（値を隠したまま固定する暗号学的な封印）と照らして確かめられる。しかし、ノードがその後 MP-SPDZ に入れる値が、いま確かめたそのシェアであることは、何も強制していない。これがスタックの中央に残る唯一の隙間である。このページで扱うのは、この隙間を閉じることと、その費用を見積もることだけである。</p>
+<div class="note">更新: 2026-09-12。非 PQC の note は現在 Triptych 系の所属証明と加法準同型 commitment を使う。資産 ID 秘匿の native 経路を実行し、新規ネットワークのハッシュ・符号ベースの PQC 証明研究も進めている。実用 PQC note と全市場経路の完成は別の未解決課題である。以下の過去の測定は元の方式と環境に属する。 <a href="defmi.html#confidential-assets">note の実行証跡</a> · <a href="post-quantum.html#proof-switch">PQC の現在地</a></div>
 <p class="src">出典: qomm/BINDING.md · 特記なき限り host-a で計測。各方式は、時間を測る前に平文の答えと照合済み</p>
 
 <h2 id="gap">隙間を正確に述べる</h2>

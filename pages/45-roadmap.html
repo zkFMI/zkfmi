@@ -6,6 +6,7 @@ section: docs
 ---
 <h1>Roadmap</h1>
 <p class="lede">Ordered from the status documents, the use-case survey and the open questions in the position papers. There are no dates, because none has been promised, and the items are grouped by what they depend on rather than by when they might happen.</p>
+<div class="note">Update: 2026-09-12. Current non-PQC notes use Triptych-based membership and additively homomorphic commitments. Native confidential-asset execution and fresh-network hash/code-based PQC proof research have advanced; operational PQC notes and the full venue path remain incomplete. Historical measurements below retain their original constructions and environments. <a href="defmi.html#confidential-assets">Note execution evidence</a> · <a href="post-quantum.html#proof-switch">Current PQC work</a></div>
 
 <h2 id="done">Done and accepted</h2>
 <ul class="timeline">
@@ -20,7 +21,7 @@ section: docs
 <h2 id="next">Next, by dependency</h2>
 <ul class="timeline">
   <li><h4>Threshold settlement authority for OCLOB</h4><p>Replace the single research gateway that opens the participant's fixed-length settlement authority with threshold decryption or joint zkPI generation by the MPC nodes. The P0 item that keeps OCLOB off real assets.</p></li>
-  <li><h4>Note rail on the L1 for OCLOB</h4><p>The L1 acceptance for QOMM runs with zero account records; OCLOB's authoritative state still uses commitment accounts and a reservation root.</p></li>
+  <li><h4>Connect confidential-asset notes to venues</h4><p>The new native path has executed issuance, reservation, partial fills, refunds, claim redemption and recovery after restart. Connect existing QOMM/OCLOB callers to the complete confidential wrapper, then verify actual application inputs and independent approval and custody.</p></li>
   <li><h4>Atomic admit-pledge-limit-pay</h4><p>Grant and admit are separate calls and no state locks pledged collateral. Written requirement, not built.</p></li>
   <li><h4>Persistent state generations</h4><p>Encrypted queues, rate-limiter counters and nullifier ledgers in authenticated storage across restart, so a rollback cannot re-enable a replay and a venue run as two processes does not double every allowance.</p></li>
   <li><h4>Production surface</h4><p>mTLS, per-tenant authorisation, OpenAPI, rate limits, audit logs, external KMS/HSM, key rotation, backup and recovery. Currently demo APIs only.</p></li>
@@ -40,7 +41,7 @@ section: docs
 <h2 id="blocked">Blocked on things outside the code</h2>
 <ul class="timeline">
   <li class="blocked"><h4>Independent operators on a WAN</h4><p>Seven MPC operators, five or more validators, separate administrators, key stores and failure domains. The largest remaining unknown, and the one the risk register says is hardest.</p></li>
-  <li class="blocked"><h4>Proof of the private computation</h4><p>Validators verify everything submitted but do not re-run the MP-SPDZ transcript or prove the share-to-proof handoff. Closing that needs a proof of the whole MPC and a consensus benchmark.</p></li>
+  <li class="blocked"><h4>Operational private note relations and security</h4><p>Bounded four-account collaborative proofs and canonical state updates have research execution evidence. The remaining work binds private note membership, spending authority, output encryption, value and asset conservation, and the complete venue lifecycle into one valid relation, with external security validation of the exact construction.</p></li>
   <li class="blocked"><h4>Legal finality and register connection</h4><p>A book-entry register, a CSD, a central-bank or designated cash leg, and a supervisor's disclosure workflow. In the EU and UK the natural home is non-equity RFQ; in Switzerland the ledger entry can be the right.</p></li>
   <li class="blocked"><h4>Independent audit</h4><p>Cryptographic, Rust state-machine, host-VM and integration audit by a third party. Two internal review rounds are not that.</p></li>
 </ul>

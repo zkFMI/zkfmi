@@ -5,24 +5,42 @@ path: docs/defmi.html
 section: docs
 ---
 <h1>DeFMI: a settlement layer that never reads the trade</h1>
-<p class="lede">Decentralized financial market infrastructure. The term of art is borrowed deliberately: an FMI is what the CPMI-IOSCO principles govern, a payment system, a securities settlement system, a central counterparty. The claim is that this is one, run by no single operator and unable to read what it settles. It is not a stock-only ledger: the chain-neutral state machine registers cash, securities, funds, commodities, carbon units and other governed assets.</p>
-<p class="src">source: defmi/DEFMI.md (generated from measurement JSON; no number typed by hand) · host-c unless stated, rustc 1.97.1, group ed25519. calibration: scalar mult 38.4 ± 4.1 µs, 40-bit range proof 20.88 ms.</p>
+<p class="lede">DeFMI is a research implementation for verifying asset transfers without publishing amounts. It checks note spending authority, value conservation, reservation remainders and atomic delivery of securities and cash. It runs on a dedicated non-EVM Avalanche L1; it is not an independently operated FMI with established legal settlement finality.</p>
+<p class="src">Updated 2026-09-12. Current note and confidential-asset evidence is revision-pinned below. The earlier tables and charts are historical measurements from defmi/DEFMI.md, not performance results for the new path. Original environment: host-c, rustc 1.97.1, ed25519; scalar multiplication 38.4 ± 4.1 µs, 40-bit range proof 20.88 ms.</p>
+
+<h2 id="note-settlement">How notes settle while values stay committed</h2>
+<p><strong>A note is the unit of asset management; a Pedersen commitment hides its quantity.</strong> Non-PQC notes still use additive homomorphism. With quantities expressed under the same generators, <code>C(v;r) = vG + rH</code> gives <code>C(a;r1) + C(b;r2) = C(a+b;r1+r2)</code>. The asset-confidential path also verifies links between asset identities and values.</p>
+<p>For example, consume a note worth 100 and create a recipient note worth 30 plus change worth 70. These are the parties' explanatory values, not public amounts. Validators check public commitments and proofs for conservation, non-negative ranges, ownership and asset consistency. A venue settlement also verifies quantity times price, reduces reservations and atomically creates securities and cash claims. Redeeming a claim produces a note that can be spent again.</p>
+<h3 id="nullifiers">Preventing reuse without naming the spent note</h3>
+<p>Every valid spend of the same input note must carry the same nullifier. The current Triptych-based proof binds ownership, value and <code>serial_point</code> to the same hidden input position. Validators check the proof and reject a previously used serial. A spender cannot choose another serial and produce a valid proof to spend that input again. Newly created output notes have their own spending tags.</p>
+<h3 id="public-and-private">Public records and wallet secrets</h3>
+<div class="table-wrap"><table><thead><tr><th>Purpose</th><th>Public</th><th>Private</th></tr></thead><tbody>
+<tr><td>Quantity</td><td>Commitment and consistency proofs</td><td>Quantity, asset opening and blinding randomness</td></tr>
+<tr><td>Receipt</td><td>One-time destination point and ciphertext</td><td>Decryption key and decrypted opening</td></tr>
+<tr><td>Spend</td><td>Nullifier and spending proof</td><td>Spending key and private proof inputs</td></tr>
+</tbody></table></div>
+<p>Copying a public note does not grant spending authority. Decryption and spending are separate capabilities. Outputs created in one transaction, timing, output count, venue and reservation relationships remain observable. A sender knows what it sent. A cryptographic public format does not guarantee transaction unlinkability or resistance to metadata inference. See <a href="regulation.html#key-custody">self-custody and client-asset management in Japan</a> for the legal distinction.</p>
+<h3 id="confidential-assets">Native confidential asset identities: 2026-09-12</h3>
+<p>A randomized commitment replaces the asset identifier, with a proof linking it to the same asset in a public eligible cohort. Cohorts contain 2–64 assets; recipient-encrypted openings identify even zero-quantity notes. Asset definitions and cohorts remain public, and a facility retains its randomized identity through reservation and settlement.</p>
+<p>Five AvalancheGo validators on one Linux host executed issuance, reservation, partial fills, cancellation and expiry refunds, claim redemption and reuse of a delivered note. Wallet reads after restart recovered seller balances of 57 securities and 600 currency units, buyer balances of 53 and 410, and untouched refunded balances of 25 and 25. All validator state roots agreed.</p>
+<div class="note warn"><strong>Verdict: smoke_only.</strong>Assets were synthetic; proof inputs and committee keys were constructed in one process. The run did not exercise an actual DeKYX approval service, existing QOMM/OCLOB callers connected to this confidential path, independent operators or an external cryptographic review. This Ristretto path is refused in PQC On mode.</div>
+<p class="src"><a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/CONFIDENTIAL_ASSETS_ACCEPTANCE_2026-09-12.md">Execution record and limits</a> · <a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/research/asset-privacy/runs/native-04/outcome.json">Outcome</a> · <a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/research/asset-privacy/runs/native-04/restart-readback.json">Restart readback</a></p>
 
 <h2 id="guarantees">What is guaranteed, and what is not</h2>
 <p>DeFMI can check only what arithmetic settles without opening anything.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Guarantee</th><th>What makes it hold</th></tr></thead>
 <tbody>
-<tr><td>Value is neither created nor destroyed</td><td>the product of the balance commitments equals the product at issue (homomorphism alone)</td></tr>
+<tr><td>Value is neither created nor destroyed</td><td>per-asset commitment conservation, opening-knowledge and range proofs, canonical inputs and issuance authority</td></tr>
 <tr><td>No balance goes negative</td><td>a range proof on the difference</td></tr>
 <tr><td>The two legs move together</td><td>both are checked before either is applied</td></tr>
 <tr><td>One instruction settles once</td><td>nullifier registration</td></tr>
 <tr><td>Cash leg = quantity × price</td><td>a product proof over three commitments</td></tr>
 <tr><td>The securities leg is the instructed quantity</td><td>an equality proof across generators</td></tr>
 </tbody></table></div>
-<p>What DeFMI does not check is whether the price was reasonable or whether that was the right instrument. Those meanings come from the computing nodes' quorum and travel in the instruction's signature. Making the settlement layer re-derive them would mean handing it the plaintext.</p>
+<p>DeFMI verifies asset linkage and consistency with the signed instruction. Economic fairness and legal validity are not consequences of arithmetic alone. Existing venue paths also retain trust in their authorized committee and application rules.</p>
 
-<h2 id="width">Cost depends on the balance width and nothing else</h2>
+<h2 id="width">Historical balance-width benchmarks</h2>
 <p>The linear-backend proof is a bit decomposition of the ledger's balance range, so it should be linear in width. It is: <strong>0.98 ms/bit</strong> to build, <strong>0.80 ms/bit</strong> to settle, <strong>896 B/bit</strong> on the wire. The settlement intercept, <strong>2.1 ms</strong>, is the verification of the zkPI instruction itself. At 40 bits settlement costs 34.0 ms, of which about 6% is the instruction and the rest is the ledger's range proofs.</p>
 <p>The consequence is a listing decision, not a cryptographic one: if settlement needs to be faster, reconsider the balance width. A quantity of securities and an amount of cash are orders of magnitude apart, so give each rail its own width. Securities at 24 bits and cash at 48 settles 24% faster than both at 48 and sends 10,752 B less, with no change to the cryptography.</p>
 
@@ -41,7 +59,7 @@ section: docs
 <p class="src">artifacts: defmi.json, rust_bench.json · optimised backend on host-a (calibration 25.8 µs), baseline on host-c; rerun both on one host before using as promotion evidence</p>
 <p>Per core that is 29.4 to 142.5 settlements per second. Verifications of independent packages share nothing, so they parallelise completely: one node measured <strong>217 settlements/s on 8 workers</strong> (7.40× one worker). A settlement node's capacity is a procurement question.</p>
 
-<h2 id="tags">Hiding which instrument, from the settlement layer too</h2>
+<h2 id="tags">Earlier asset-tag construction and measurements</h2>
 <p>The MPC hides which asset a request is for. Dropping the trade onto a per-instrument rail at settlement would give that back; putting every instrument on one rail makes conservation hold only across instruments, so asset A could be carried out as asset B.</p>
 <p>The construction is an <strong>asset tag</strong>. Holding q units of asset a means holding <code>A_a^q · h^r</code>; each transfer publishes <code>H = A_a · h^y</code> under a fresh y, and every range proof is made against H. What binds the disguise to a real asset is the range proof on the difference: the payer's balance already sits under <code>A_a</code>, so no other tag can open it. Per settlement the addition is 32 B and one sigma proof across generators; the time cost is inside the measurement's 0.2 ms noise floor. The one-out-of-many membership proof (Groth–Kohlweiss) is needed once, when a balance is issued into an account, at 0.58 ms to verify for 4 instruments and 2.24 ms for 64.</p>
 <p>Measured attack arms: carrying a balance out under a registered tag for another asset, and using a point that was never registered, are both rejected with "remainder does not equal balance minus amount". The package is byte-identical whichever of 64 instruments it is.</p>
@@ -71,7 +89,7 @@ section: docs
 <p>Four things it does not do: obligation graphs are per asset, so mixed-instrument novation is refused; positions at different providers are not cross-margined; arithmetic validity says nothing about legal validity; and the house can leave a trade out, though it can no longer invent one, because <code>check_novation</code> requires both counterparties' signatures on every edge of the before graph.</p>
 
 <h2 id="notes">Hiding who paid whom: the note ledger</h2>
-<p>The asset tag hides <em>what</em>. An account ledger still names four handles in the clear at every settlement, and handles that recur draw the counterparty graph. So accounts were replaced by notes. A note is <code>C = g^S · A_a^v · h^r</code> where only the payee can construct S. Spending keeps S hidden and shows with Groth–Kohlweiss that one of the ring holds this S.</p>
+<p>The current note format stores a one-time owner point, value commitment, ephemeral public key and recipient ciphertext separately. Version 2 uses a Triptych-based proof binding ownership and value to the same hidden input, publishing <code>U/S</code> as its nullifier rather than the public owner key. The following tables and charts describe the earlier implementation, not the performance or security of the current proof.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>ring size</th><th class="num">prove (payer)</th><th class="num">verify (node)</th><th class="num">wire</th></tr></thead>
 <tbody>
@@ -81,7 +99,7 @@ section: docs
 <tr><td>512</td><td class="num">40.3 ms</td><td class="num">9.3 ms</td><td class="num">38,816 B</td></tr>
 </tbody></table></div>
 {{chart:ring}}
-<p>The asymmetry is the point. The wire grows 224 B per doubling and verification stays under 10 ms up to a ring of 512; what grows is proving, on the payer's own device. So the payer caps the anonymity set, not the settlement node. A payee scans the pool at 0.063 ms per note, one scalar multiplication, and that is the only cost proportional to the pool. Two payments to the same address cannot be linked.</p>
+<p>The asymmetry is the point. The wire grows 224 B per doubling and verification stays under 10 ms up to a ring of 512; what grows is proving, on the payer's own device. So the payer caps the anonymity set, not the settlement node. A payee scans the pool at 0.063 ms per note, one scalar multiplication, and that is the only cost proportional to the pool. One-time points do not directly name a permanent address; metadata can still link payments.</p>
 <p>In the Rust port the same DvP over two note rails settles in 51.9 ms at a ring of 8 with a <strong>5,476 B</strong> package, against 50,827 B for the retired implementation, the Bulletproofs-against-bit-decomposition effect again. The build column there includes the whole 3-of-7 FROST ceremony, so it is an end-to-end construction cost.</p>
 
 <h3 id="ring-worth">What the ring is actually worth</h3>
@@ -143,7 +161,7 @@ section: docs
 <ul>
   <li>Validators verify the complete submitted proof suite but do not re-run the private MP-SPDZ transcript or prove the share-to-proof handoff. Removing that committee trust needs a proof of the whole private computation and a separate consensus benchmark.</li>
   <li>Admission, pledge, limit and payment are not one atomic event.</li>
-  <li>Whoever sent a note can tell it was spent. Unavoidable in this construction.</li>
+  <li>The current nullifier does not give the sender the spending secret. Timing, candidate sets and reservation metadata can still link activity.</li>
   <li>Adding a second settlement currency is an account-opening decision, not a code change, because a tagged cash leg opens against the currency the account is denominated in.</li>
 </ul>
 

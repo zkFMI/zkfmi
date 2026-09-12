@@ -121,7 +121,7 @@ zkpi-verify &lt; instruction.bin                 # layout only, and it says so</
 <h2 id="not">What zkPI does not do</h2>
 <ul>
   <li>It does not say the price was reasonable or the instrument was right. Those are the quorum's assertions, carried by the signature.</li>
-  <li>It does not hide from the sender that a note was later spent: the sender knows the <code>g^S</code> it built. To a third party the ring size is the limit of what is learned.</li>
+  <li>The current Triptych-based note proof does not publish the sender-known <code>g^S</code> as its nullifier. It uses a linking tag that hides the spending secret. Candidate sets, timing and public transaction metadata can still link activity.</li>
   <li>It does not prove that a node fed the engine the share it was dealt. That gap is the subject of QOMM's binding document and remains the committee trust boundary.</li>
   <li>Version 1 is a migration format, still decoded and re-encoded when tagged, not the product issuance path.</li>
 </ul>

@@ -1,14 +1,25 @@
 ---
 title: Post-quantum migration
-description: Where the zkFMI stack stands on post-quantum cryptography. The shared zkfmi-crypto foundation (hybrid Ed25519 + ML-DSA-65 signatures, X25519 + ML-KEM-768 key exchange, canonical signing inputs, purpose-bound keys), the P0 to P6 plan, what has passed a single-host native acceptance and is now on `main` in all eight repositories, what the migration costs in bytes and milliseconds, and what stays classical.
+description: Current post-quantum work: hybrid signatures and key exchange, hash/code-based collaborative proof research, bounded fresh-network execution, and the incomplete operational PQC note and venue path.
 path: docs/post-quantum.html
 section: docs
 ---
 <h1>Post-quantum migration</h1>
-<p class="lede">The migration is hybrid and fail-closed: every classical signature or key exchange that protects money gains a post-quantum partner, both must verify, and a peer that offers only the classical suite is refused. The work is on <code>main</code> in all eight repositories and passed a single-host native acceptance on 2026-09-06 and again on 2026-09-07 after the zero-relation opening fix was merged in. On 2026-09-07 the dependency cycle between DeFMI and QOMM was broken by moving the stack crates to zkPI, every repository was pinned by immutable revision, and all eight repositories carry the accepted state on <code>main</code>.</p>
-<p class="src">sources: qomm/doc/ja/PQC_MIGRATION_PLAN.md · zkfmi-crypto/README.md, docs/CRYPTO_CONTRACT.md, docs/verification/P1_INTEGRATION_REPORT.md, PQC_INTEGRATION_ACCEPTANCE_2026-09-06.json, PQC_INTEGRATION_ACCEPTANCE_2026-09-07.json, PQC_PERFORMANCE_2026-09-07.md, PQC_E2E_LATENCY_2026-09-08.md · status as of 2026-09-08 (evening)</p>
+<p class="lede">As of 2026-09-12, hybrid signatures and key exchange are distinct from the research effort covering commitments, proofs and settlement state. Bounded proof and state-transition paths have run on fresh networks; operational notes and the complete venue path are not yet post-quantum. Existing ledgers and deployments are preserved; in-place ledger migration is outside the current scope.</p>
+<p class="src"><a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/PQC_PROOF_SWITCH_STATUS.md">Proof and fresh-network implementation record</a> · <a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">PQC note implementation boundary</a> · 2026-09-12</p>
 
-<h2 id="status">Status at a glance</h2>
+<h2 id="proof-switch">Prove the private computation instead of adding commitments</h2>
+<p>The PQC note direction commits private quantities and randomness with SHA-512, then proves the opening relations and settlement arithmetic. The hash is not additively homomorphic. In simplified notation, <code>C0 = H(v0 || r0)</code>, <code>C1 = H(v1 || r1)</code> and <code>C2 = H(v2 || r2)</code> are proved together with <code>v0 = v1 + v2</code> and quantity bounds. The actual format also binds domains, deployment policy, assets and ownership.</p>
+<p>DeFMI is intended to verify public commitments and a proof tied to canonical inputs, spending authority, unused nullifiers and outputs before updating state. Sending an opening to a server for a hash comparison is not a private proof. Adding a hybrid signature does not make Pedersen binding or a note proof post-quantum.</p>
+<h3 id="research-evidence">Executed research and the incomplete operational path</h3>
+<ul>
+<li><strong>Executed:</strong> collaborative proofs using hashes, codes and sumcheck. Seven owner-local inputs proved a bounded four-account arithmetic relation, checked by a separate public-data-only verifier. The sealed-input experiment recorded 740 canonical Block/State transitions including fill, no-fill and recovery. A separate fresh-network experiment observed acceptance and matching state after restart on five validators on one host.</li>
+<li><strong>In progress:</strong> a new PQC note format, a recipient-only spending key, hybrid-encrypted delivery and wallet-local recovery. The complete private note relation, especially correct output encryption, anonymous membership and spend, and the operational reservation/fill/refund path remain incomplete.</li>
+<li><strong>Verdict:</strong> the executed research is <code>smoke_only</code>. Independent custody, the full path from real QOMM/OCLOB inputs, and external validation of the exact construction's zero knowledge, quantum soundness and concrete security parameters remain open.</li>
+</ul>
+<p class="src"><a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/artifacts/sealed-input-001/receipt.json">Sealed-input execution receipt</a> · <a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/artifacts/greenfield-live-002/live-receipt.json">Fresh-network execution receipt</a></p>
+
+<h2 id="status">Historical hybrid rollout: 2026-09-06–2026-09-08</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>item</th><th>state</th><th>evidence</th></tr></thead>
 <tbody>
@@ -16,7 +27,7 @@ section: docs
 <tr><td>Cryptographic inventory of the seven repositories (P0)</td><td><span class="pill ok">complete</span></td><td>507 files, 1,032 primitive entries; independent grep reconciliation with 0 missing and 0 extra</td></tr>
 <tr><td>Integration P1 to P6 across QOMM, zkPI, DeFMI, OCLOB, DeKYX, DeCCP, Aethel</td><td><span class="pill part">accepted on <code>main</code> · 1 host</span></td><td>native runs 2026-09-06 (exit 0, 15 min 07 s) and 2026-09-07 (PASS, after merging the zero-relation opening fix): market, finality, lifecycle, P6 recovery; source hash-identical before and after each run</td></tr>
 <tr><td>Release pinning, lock regeneration, gate rerun, merge to <code>main</code></td><td><span class="pill ok">done · 2026-09-07</span></td><td>the DeFMI ⇄ QOMM cycle was broken by moving the transport, MPC engine, audit, DSL, simulator and measurement crates to zkPI; every repository pins the others by immutable git revision with no sibling overlays; all nine workspaces pass the locked check and the native acceptance passed on the pinned layout; all eight <code>main</code> branches carry the accepted state. See the <a href="architecture.html#repos">architecture page</a>.</td></tr>
-<tr><td>Zero-knowledge relations (commitments, range proofs, rings, quote proof, FROST)</td><td><span class="pill no">classical</span></td><td>by design for now; see below</td></tr>
+<tr><td>Zero-knowledge relations (commitments, range proofs, rings, quote proof, FROST)</td><td><span class="pill no">classical</span></td><td>classification of the existing path; see the separate PQC proof research above</td></tr>
 <tr><td>Performance comparison</td><td><span class="pill ok">measured · 1 host · 2 runs</span></td><td>primitives on 2026-09-07; deployed OCLOB images end to end on 2026-09-08: the first hybrid image cost +56 ms per resting order and +74 ms per filled order at the median; after the engine receipt check moved to once per process and the seven parties were kept alive between rounds, the hybrid image is 177 ms and 202 ms faster than the classical one; see below</td></tr>
 <tr><td>Independent operators, WAN, HSM, FIPS validation, external audit</td><td><span class="pill no">none</span></td><td>the acceptance record lists each as absent</td></tr>
 </tbody></table></div>
@@ -95,9 +106,8 @@ section: docs
 </ul>
 <p>Two defects were found by this run and fixed before it passed: a receipt whose ML-DSA signature was regenerated on every retry (the signed receipt is now persisted and replayed), and a refund opening re-authorised under a new operation identifier after a partial fill (the original claim context is now kept). Supporting gates: 125 OCLOB tests, 279 tests across the zkPI, DeKYX, DeCCP and P5 workspaces, QOMM transport and demo tests, Aethel end-to-end, all with strict clippy.</p>
 
-<h2 id="classical">What stays classical, and why</h2>
-<p>The migration covers signatures and key exchange. It does not, and cannot yet, cover the zero-knowledge relations the settlement layer runs on. Pedersen commitments, Bulletproofs range proofs, the one-of-many rings, the quote proof and the FROST threshold signature on the instruction all rest on the discrete logarithm. The <a href="binding.html#pq">binding page</a> has the full argument: hiding is unconditional and survives a quantum adversary, binding does not, and the maker's policy commitment that is opened against every quote for the life of the policy is the place where that bites first. VOLE-in-the-Head commitments were implemented and measured (5.9× to 11× Pedersen over a wide field, and one-time), lattice commitments break Shamir's reconstruction, and the open question remains a random-oracle-only commitment that opens many times. Until that exists, the post-quantum guarantee on this stack is about who signed and who can read the channel, not about the proofs.</p>
-<p>Two smaller items were closed on 2026-09-08: the FROST identity self-signature, both halves, now covers the node's hybrid publication key (identity body v3, manifest and confirmation digests included), and DeFMI's viewing grants and spend disclosures are signed with the hybrid suite (view domain v3; one half alone, or swapped halves, is refused). Per-node ML-DSA approvals still sit beside FROST rather than inside it; that is the plan's design, the two are verified separately.</p>
+<h2 id="classical">Boundary between the existing classical path and new PQC research</h2>
+<p>The existing Pedersen, Bulletproofs, Triptych and FROST path depends on discrete logarithms; the new Ristretto confidential-asset path also refuses PQC On. The research path uses SHA-512 and code-based proofs, with BN254 only as an arithmetic field. It does not use curve commitments, a pairing-based final proof or committee signatures as a substitute for proof soundness. This does not establish post-quantum security of the exact implemented composition.</p>
 
 <h2 id="limits">Evidence limits</h2>
 <ul>
