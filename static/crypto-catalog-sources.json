@@ -1,0 +1,582 @@
+{
+  "recorded_at": "2026-09-12T05:20:56.371969+00:00",
+  "scope": "Direct cryptographic primitives and compositions used by the eight local source workspaces, plus explicitly separated supported/optional/research paths. Not transitive dependency internals or every historical test.",
+  "source_method": "Current Rust sources and call boundaries inspected, with historical inventory used only as a search index; no fresh crypto or service execution.",
+  "catalog_source_sha256": "722bb03c7850bd462ae9b51bce60769e2aa69f09b5788588a805ac07995e9a73",
+  "sources": {
+    "pedersen": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/pedersen.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "e35204cc73e143d32754081d15303ab3b1d04c2b7cdef278cc4b4d9e531fb129",
+      "current_sha256": "e35204cc73e143d32754081d15303ab3b1d04c2b7cdef278cc4b4d9e531fb129",
+      "snapshot_matches_revision": true
+    },
+    "sigma": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/sigma.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "86d4e95c51c9f907c790007a34c9be5242f536532c8555264d24daa9ab9c06a4",
+      "current_sha256": "86d4e95c51c9f907c790007a34c9be5242f536532c8555264d24daa9ab9c06a4",
+      "snapshot_matches_revision": true
+    },
+    "range": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/range.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "95dde6e206e25e1d3fd3f1a481f2c8eec789c12d68a668b9127f82f86042db4a",
+      "current_sha256": "95dde6e206e25e1d3fd3f1a481f2c8eec789c12d68a668b9127f82f86042db4a",
+      "snapshot_matches_revision": true
+    },
+    "bitrange": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/bitrange.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "93c86d0dfe3d351c3991bfc9238cbe066d84ed7a01ac36215940c83c784ae0ba",
+      "current_sha256": "93c86d0dfe3d351c3991bfc9238cbe066d84ed7a01ac36215940c83c784ae0ba",
+      "snapshot_matches_revision": true
+    },
+    "shamir": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/shamir.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "076458120ee4c45f13d8e264aeafded937bd1d35f8de8c12d531d74c3b75d1ca",
+      "current_sha256": "076458120ee4c45f13d8e264aeafded937bd1d35f8de8c12d531d74c3b75d1ca",
+      "snapshot_matches_revision": true
+    },
+    "or_dleq": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/or_dleq.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "c905ca2650a9367eda4f1681d53ad588a8bd0d29e0817719ea54fa495ce5e6f5",
+      "current_sha256": "c905ca2650a9367eda4f1681d53ad588a8bd0d29e0817719ea54fa495ce5e6f5",
+      "snapshot_matches_revision": true
+    },
+    "oneofmany": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/oneofmany.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "ba221bef1b084ffcedf91462feab75d595c6ed60328646665716724bd1425f18",
+      "current_sha256": "ba221bef1b084ffcedf91462feab75d595c6ed60328646665716724bd1425f18",
+      "snapshot_matches_revision": true
+    },
+    "adaptor": {
+      "repo": "zkpi",
+      "path": "rust/zkfmi-zk/src/adaptor.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "9891f96b6e058add5ad648c85d812f9e530e3abcf6a161d75c400d7baebb5179",
+      "current_sha256": "9891f96b6e058add5ad648c85d812f9e530e3abcf6a161d75c400d7baebb5179",
+      "snapshot_matches_revision": true
+    },
+    "threshold_sigma": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/threshold_sigma.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "71cfca3c1a82b05dbd6c5e26e87e2ee0d3dcfd4f78ab73283668d62cf6ce1192",
+      "current_sha256": "71cfca3c1a82b05dbd6c5e26e87e2ee0d3dcfd4f78ab73283668d62cf6ce1192",
+      "snapshot_matches_revision": true
+    },
+    "threshold_range": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/threshold_range.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "f61c9030f3a2e3c01f3984bd74ce07a21492f6baddaf824e5df1da7836100717",
+      "current_sha256": "f61c9030f3a2e3c01f3984bd74ce07a21492f6baddaf824e5df1da7836100717",
+      "snapshot_matches_revision": true
+    },
+    "threshold_gadgets": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/threshold_gadgets.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "2f6651dbbced71173573a79834b4d783a1a48094daeb33a22438b35923400383",
+      "current_sha256": "2f6651dbbced71173573a79834b4d783a1a48094daeb33a22438b35923400383",
+      "snapshot_matches_revision": true
+    },
+    "quote": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/quote_proof.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "0b16333cc19b5e7dd1b9b2dd6fc129e54304bd56dc6cac2f6a39fb2f2b0e35ce",
+      "current_sha256": "0b16333cc19b5e7dd1b9b2dd6fc129e54304bd56dc6cac2f6a39fb2f2b0e35ce",
+      "snapshot_matches_revision": true
+    },
+    "threshold_quote": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/threshold_quote.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "59f6ab93e9b583433da7c66b223d197437a318cdd0231018d2a40ae0924ab4c9",
+      "current_sha256": "59f6ab93e9b583433da7c66b223d197437a318cdd0231018d2a40ae0924ab4c9",
+      "snapshot_matches_revision": true
+    },
+    "price_limit": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/price_limit.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "09151255803dec5b313b0ca9710acc206f3530c66f78a3c36edd25194321f74e",
+      "current_sha256": "09151255803dec5b313b0ca9710acc206f3530c66f78a3c36edd25194321f74e",
+      "snapshot_matches_revision": true
+    },
+    "kyb": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/kyb.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "b785ec65680a73f99bdba820f89dc1286d88bbb3cfddd9720313aad52a882932",
+      "current_sha256": "b785ec65680a73f99bdba820f89dc1286d88bbb3cfddd9720313aad52a882932",
+      "snapshot_matches_revision": true
+    },
+    "opening_envelope": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-proofs/src/opening_envelope.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "0640d41cb84ab263808b1aa4d552a803833af422aec8fe1856d775ac5ae80076",
+      "current_sha256": "0640d41cb84ab263808b1aa4d552a803833af422aec8fe1856d775ac5ae80076",
+      "snapshot_matches_revision": true
+    },
+    "zkpi": {
+      "repo": "zkpi",
+      "path": "rust/zkpi/src/lib.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "14c2307440162a89393406c4717c74638b64b85c529c7a94ea26d7034db90d7a",
+      "current_sha256": "14c2307440162a89393406c4717c74638b64b85c529c7a94ea26d7034db90d7a",
+      "snapshot_matches_revision": true
+    },
+    "key_management": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-committee/src/key_management.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "fc3ec86129ee0be33c22b9e9bb8a54905c4ea4a829437d67e77cefe00c81f6d0",
+      "current_sha256": "fc3ec86129ee0be33c22b9e9bb8a54905c4ea4a829437d67e77cefe00c81f6d0",
+      "snapshot_matches_revision": true
+    },
+    "selective_disclosure": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-committee/src/selective_disclosure.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "4ae3b261f99f929e59ae318a3f572955b35bb2260d6b136bfc6757e08f0986cf",
+      "current_sha256": "4ae3b261f99f929e59ae318a3f572955b35bb2260d6b136bfc6757e08f0986cf",
+      "snapshot_matches_revision": true
+    },
+    "application_crypto": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-committee/src/application_crypto.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "30e5b80a59e1232d8bfdcfbaf714fb8e8c31c004c241b5413d317c2532ffb716",
+      "current_sha256": "30e5b80a59e1232d8bfdcfbaf714fb8e8c31c004c241b5413d317c2532ffb716",
+      "snapshot_matches_revision": true
+    },
+    "proof_party": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-committee/src/proof_party.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "979054ff6f453b784bfd1ede8486a07b0f26fc967fc725331a0df6244ee1b795",
+      "current_sha256": "e53c5ba374f196f11d6cbb28b0063a392375326040caca961b59c0e8074f5713",
+      "snapshot_matches_revision": true
+    },
+    "frost_cluster": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-committee/src/frost_cluster.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "84a59861493bd32488dc06e9d3cb7cb8212718b42932fa5442497326dcfd46a6",
+      "current_sha256": "84a59861493bd32488dc06e9d3cb7cb8212718b42932fa5442497326dcfd46a6",
+      "snapshot_matches_revision": true
+    },
+    "notes": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/notes.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "3e3925f18cec70e5851d13d9dc3649524a0a7d773e38f790a8e6263b27b7f036",
+      "current_sha256": "3e3925f18cec70e5851d13d9dc3649524a0a7d773e38f790a8e6263b27b7f036",
+      "snapshot_matches_revision": true
+    },
+    "note_membership": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/note_membership.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "75ca4bef34e4907d3c0fa77ee5d128fc8249da5142e77ace425d4d1abee70b5b",
+      "current_sha256": "75ca4bef34e4907d3c0fa77ee5d128fc8249da5142e77ace425d4d1abee70b5b",
+      "snapshot_matches_revision": true
+    },
+    "asset_link": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/asset_link.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "45caaaefc35e6a352d940a7f7b620fc00d59e83f9c8caf4a5a48be5d386159d2",
+      "current_sha256": "45caaaefc35e6a352d940a7f7b620fc00d59e83f9c8caf4a5a48be5d386159d2",
+      "snapshot_matches_revision": true
+    },
+    "confidential_assets": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/confidential_assets.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "c177ce54ff9406bf9c60b98a11356cd443a8188752bcbe9dd2db186817bf71ec",
+      "current_sha256": "c177ce54ff9406bf9c60b98a11356cd443a8188752bcbe9dd2db186817bf71ec",
+      "snapshot_matches_revision": true
+    },
+    "confidential_notes": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/confidential_notes.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "d88486a808d3fc2a767ab2ea9ae8a26018a78198c24466f104b0243497108250",
+      "current_sha256": "d88486a808d3fc2a767ab2ea9ae8a26018a78198c24466f104b0243497108250",
+      "snapshot_matches_revision": true
+    },
+    "viewing": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/viewing.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "1ac4b123e70fba8766e16b27dbb31e03bd4e1884c346879f1a396d1043606f74",
+      "current_sha256": "1ac4b123e70fba8766e16b27dbb31e03bd4e1884c346879f1a396d1043606f74",
+      "snapshot_matches_revision": true
+    },
+    "pvp": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/pvp.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "a097471de82a39a2e6564f6204961307519f6aa724ecefada31a902856b21835",
+      "current_sha256": "a097471de82a39a2e6564f6204961307519f6aa724ecefada31a902856b21835",
+      "snapshot_matches_revision": true
+    },
+    "cross_domain": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/cross_domain.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "6e1ba0bbd6b22b2ef3846cd70adadf8f3af7178aad9eff9691b09a41fc70669b",
+      "current_sha256": "6e1ba0bbd6b22b2ef3846cd70adadf8f3af7178aad9eff9691b09a41fc70669b",
+      "snapshot_matches_revision": true
+    },
+    "cross_domain_finality": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/cross_domain_finality.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "ebd79bca437007cc89234bbb3f4624c56d1459e6c12e7b4c272fcab69e936439",
+      "current_sha256": "ebd79bca437007cc89234bbb3f4624c56d1459e6c12e7b4c272fcab69e936439",
+      "snapshot_matches_revision": true
+    },
+    "reservation": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/application_reservation.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "d7be04dd02389bdae78da15726b3da6f575af911e1065196e01c277c262156fd",
+      "current_sha256": "d7be04dd02389bdae78da15726b3da6f575af911e1065196e01c277c262156fd",
+      "snapshot_matches_revision": true
+    },
+    "settlement": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/application_settlement.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "bc93790fb9cd7bf79fcf1df93f46c53dab305e41c0531dff246fbee6d9455dae",
+      "current_sha256": "ac1bf5a505a2f9ebf862f16bbdae8877ec97a84f63cf8c1ae1ba939d930fcb31",
+      "snapshot_matches_revision": true
+    },
+    "admission": {
+      "repo": "defmi",
+      "path": "rust/zkpi-defmi-sdk/src/admission.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "3eebc4e742284f3f898ee82e78e209009aead96859995a2a90efa96ba3fe4cd6",
+      "current_sha256": "3eebc4e742284f3f898ee82e78e209009aead96859995a2a90efa96ba3fe4cd6",
+      "snapshot_matches_revision": true
+    },
+    "pqc_notes": {
+      "repo": "defmi",
+      "path": "rust/defmi/src/pqc_notes.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "2f9e07c782556a496118c8204a82477771659abb3264aabc6ccbd805eb2a4f98",
+      "current_sha256": "2f9e07c782556a496118c8204a82477771659abb3264aabc6ccbd805eb2a4f98",
+      "snapshot_matches_revision": true
+    },
+    "dekyx": {
+      "repo": "dekyx",
+      "path": "crates/dekyx-core/src/lib.rs",
+      "revision": "9518393a58be731fe25147e77d22926062fca33a",
+      "snapshot_sha256": "c3b8bb6a65983f7e5fba807f17b917af02e9c1e690b8d34a2f46c6e1dd7ecf5a",
+      "current_sha256": "c3b8bb6a65983f7e5fba807f17b917af02e9c1e690b8d34a2f46c6e1dd7ecf5a",
+      "snapshot_matches_revision": true
+    },
+    "deccp": {
+      "repo": "deccp",
+      "path": "crates/deccp-core/src/lib.rs",
+      "revision": "c64c16c25e6398740a52ba0e81505e1869db569f",
+      "snapshot_sha256": "0848e92583f50fa51d3700a30c10bee30a6f478595e9bbd1972d87490faeea12",
+      "current_sha256": "0848e92583f50fa51d3700a30c10bee30a6f478595e9bbd1972d87490faeea12",
+      "snapshot_matches_revision": true
+    },
+    "aethel_provider": {
+      "repo": "aethel",
+      "path": "crates/aethel-provider-sdk/src/provider.rs",
+      "revision": "e7b14c9364c33e845c9e93ee4203ff5b7262e297",
+      "snapshot_sha256": "d168119a5260aeca22e5afb884100b6156fbd430e0294dba5fe0e1db511a7f40",
+      "current_sha256": "d168119a5260aeca22e5afb884100b6156fbd430e0294dba5fe0e1db511a7f40",
+      "snapshot_matches_revision": true
+    },
+    "oclob_readme": {
+      "repo": "oclob",
+      "path": "README.md",
+      "revision": "df0a742e1932a46581be3216c5dde44b239ddbb4",
+      "snapshot_sha256": "981d81f70943f2209fbf2584141eb0cbfdc36d431501baa9f01a19b5a45b713d",
+      "current_sha256": "981d81f70943f2209fbf2584141eb0cbfdc36d431501baa9f01a19b5a45b713d",
+      "snapshot_matches_revision": true
+    },
+    "oclob_edge": {
+      "repo": "oclob",
+      "path": "rust/oclob-edge/src/lib.rs",
+      "revision": "df0a742e1932a46581be3216c5dde44b239ddbb4",
+      "snapshot_sha256": "f0822e27c651b309d3dc2052825d1a5712dbbea27665f2ff05b6e0c0909aae70",
+      "current_sha256": "f0822e27c651b309d3dc2052825d1a5712dbbea27665f2ff05b6e0c0909aae70",
+      "snapshot_matches_revision": true
+    },
+    "oclob_ordering": {
+      "repo": "oclob",
+      "path": "rust/oclob-ordering/src/lib.rs",
+      "revision": "df0a742e1932a46581be3216c5dde44b239ddbb4",
+      "snapshot_sha256": "1fb73ceede78e241d0ab7af9b20da1d1c35037b4a87ba9ab34da718b349a124f",
+      "current_sha256": "1fb73ceede78e241d0ab7af9b20da1d1c35037b4a87ba9ab34da718b349a124f",
+      "snapshot_matches_revision": true
+    },
+    "oclob_auth": {
+      "repo": "oclob",
+      "path": "docs/crypto/application-signatures-v2.md",
+      "revision": "df0a742e1932a46581be3216c5dde44b239ddbb4",
+      "snapshot_sha256": "ec61e663ac5a2c1ffe40b2fe26d1ff35fde4523616e371054e4dec1b6b3c9798",
+      "current_sha256": "ec61e663ac5a2c1ffe40b2fe26d1ff35fde4523616e371054e4dec1b6b3c9798",
+      "snapshot_matches_revision": true
+    },
+    "backend": {
+      "repo": "zkfmi-crypto",
+      "path": "src/backend.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "01795a66398193c04675b57e9f2e2488b356d8918e7a63a4ae7c265e1b10587f",
+      "current_sha256": "01795a66398193c04675b57e9f2e2488b356d8918e7a63a4ae7c265e1b10587f",
+      "snapshot_matches_revision": true
+    },
+    "suite": {
+      "repo": "zkfmi-crypto",
+      "path": "src/suite.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "9a229c855d9e703ba9b66caa1bcf3170700a5f3545e329be151372ed7f8d45bb",
+      "current_sha256": "9a229c855d9e703ba9b66caa1bcf3170700a5f3545e329be151372ed7f8d45bb",
+      "snapshot_matches_revision": true
+    },
+    "signature": {
+      "repo": "zkfmi-crypto",
+      "path": "src/hybrid/signature.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "45d894b983590acbd59fef3359c59cb9902446be7c8b689e61c7907db72d59d3",
+      "current_sha256": "45d894b983590acbd59fef3359c59cb9902446be7c8b689e61c7907db72d59d3",
+      "snapshot_matches_revision": true
+    },
+    "kem": {
+      "repo": "zkfmi-crypto",
+      "path": "src/hybrid/kem.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "7a7520b4a7f824e686b79f2f121033d6ea42429085c35ed8dad3e6a7121e93ec",
+      "current_sha256": "7a7520b4a7f824e686b79f2f121033d6ea42429085c35ed8dad3e6a7121e93ec",
+      "snapshot_matches_revision": true
+    },
+    "sealed": {
+      "repo": "zkfmi-crypto",
+      "path": "src/sealed.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "8161ce30f1d72feb51d3224cacb80db73e9ecbd93365d317d1cb3d617b2c1d76",
+      "current_sha256": "8161ce30f1d72feb51d3224cacb80db73e9ecbd93365d317d1cb3d617b2c1d76",
+      "snapshot_matches_revision": true
+    },
+    "tls": {
+      "repo": "zkfmi-crypto",
+      "path": "src/tls.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "6eeb0b5787b791f249ed75cd489af63493cd435a393e2c2e7ae9c3d2709ee551",
+      "current_sha256": "6eeb0b5787b791f249ed75cd489af63493cd435a393e2c2e7ae9c3d2709ee551",
+      "snapshot_matches_revision": true
+    },
+    "quorum": {
+      "repo": "zkfmi-crypto",
+      "path": "src/quorum.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "98d7e5b5d8a1fc876397264128c6171a475d5f9bb9aa65c1fdf59f584de6a88b",
+      "current_sha256": "98d7e5b5d8a1fc876397264128c6171a475d5f9bb9aa65c1fdf59f584de6a88b",
+      "snapshot_matches_revision": true
+    },
+    "key": {
+      "repo": "zkfmi-crypto",
+      "path": "src/key.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "3d3b6afcb39ba699772f7d129e14fdf1c4d18de1654592d6e7fb44b43c0722d0",
+      "current_sha256": "3d3b6afcb39ba699772f7d129e14fdf1c4d18de1654592d6e7fb44b43c0722d0",
+      "snapshot_matches_revision": true
+    },
+    "canonical": {
+      "repo": "zkfmi-crypto",
+      "path": "src/canonical.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "b77b357f2a6cfda93af3e8b38a3e1802516a5fc09f11b7897a9b987e8017c989",
+      "current_sha256": "b77b357f2a6cfda93af3e8b38a3e1802516a5fc09f11b7897a9b987e8017c989",
+      "snapshot_matches_revision": true
+    },
+    "commitment": {
+      "repo": "zkfmi-crypto",
+      "path": "src/commitment.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "539d82acdd54096e653a2e9e462156af8690c2c1e05fe97dcd14fc8078c0587c",
+      "current_sha256": "539d82acdd54096e653a2e9e462156af8690c2c1e05fe97dcd14fc8078c0587c",
+      "snapshot_matches_revision": true
+    },
+    "contract": {
+      "repo": "zkfmi-crypto",
+      "path": "docs/CRYPTO_CONTRACT.md",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "19cad80780eaca04070445519bb596de101fcdc3a382314f0e100058fc1806b2",
+      "current_sha256": "19cad80780eaca04070445519bb596de101fcdc3a382314f0e100058fc1806b2",
+      "snapshot_matches_revision": true
+    },
+    "pqc_status": {
+      "repo": "zkfmi-crypto",
+      "path": "docs/PQC_PROOF_SWITCH_STATUS.md",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "ecf8271729cc050b5417cab9efacc5c33bdd6d68dea35df125bb39ff37d52130",
+      "current_sha256": "ecf8271729cc050b5417cab9efacc5c33bdd6d68dea35df125bb39ff37d52130",
+      "snapshot_matches_revision": true
+    },
+    "pqc_notes_doc": {
+      "repo": "defmi",
+      "path": "docs/PQC_NOTES_RESEARCH.md",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "26b01974710d23ee06fdcd4b243f7035fe0c0a0ea11563a00b4cfbb36b6ad895",
+      "current_sha256": "26b01974710d23ee06fdcd4b243f7035fe0c0a0ea11563a00b4cfbb36b6ad895",
+      "snapshot_matches_revision": true
+    },
+    "cocode": {
+      "repo": "zkfmi-crypto",
+      "path": "research/cosnark-trial/README.md",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "6feb75a8b6fc37dbeac2ba02e7c9beedad42fe352a406e9445e490e314fec3e6",
+      "current_sha256": "6feb75a8b6fc37dbeac2ba02e7c9beedad42fe352a406e9445e490e314fec3e6",
+      "snapshot_matches_revision": true
+    },
+    "cocode_integration": {
+      "repo": "zkfmi-crypto",
+      "path": "research/cosnark-trial/INTEGRATION.md",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "33fba1d898c5bebdb0ac02ef4066b1abeef895d4c4754d428da2c0fb8d5001c5",
+      "current_sha256": "33fba1d898c5bebdb0ac02ef4066b1abeef895d4c4754d428da2c0fb8d5001c5",
+      "snapshot_matches_revision": true
+    },
+    "pcs": {
+      "repo": "zkfmi-crypto",
+      "path": "research/cosnark-trial/src/pcs.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "be9b78c93225b5540f9798a00db56159a0170b1951220856abf709436dbcf7fa",
+      "current_sha256": "be9b78c93225b5540f9798a00db56159a0170b1951220856abf709436dbcf7fa",
+      "snapshot_matches_revision": true
+    },
+    "cocode_transcript": {
+      "repo": "zkfmi-crypto",
+      "path": "research/cosnark-trial/src/transcript.rs",
+      "revision": "9f95ffc0bb3206517ffadb70223f2ebbcad5e908",
+      "snapshot_sha256": "0592d7460a005d6dde32d930c18c799cf887ed56096af6cee7795c1cdec1efc4",
+      "current_sha256": "0592d7460a005d6dde32d930c18c799cf887ed56096af6cee7795c1cdec1efc4",
+      "snapshot_matches_revision": true
+    },
+    "voleith": {
+      "repo": "zkpi",
+      "path": "rust/zkpi-harness/src/voleith.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "df4bff6c476899a928a14215fe172d4b6b82bcb56d8e8fa7693f28c8a900857a",
+      "current_sha256": "df4bff6c476899a928a14215fe172d4b6b82bcb56d8e8fa7693f28c8a900857a",
+      "snapshot_matches_revision": true
+    },
+    "miden": {
+      "repo": "zkpi",
+      "path": "rust/qomm-batch-audit/src/lib.rs",
+      "revision": "fc9579070484859aff9110a927be79c1ffe22b70",
+      "snapshot_sha256": "916a602e00463527eae11d61cd1abe79ebca5f50eb1e2e0d0e53e8ff0464d5d1",
+      "current_sha256": "916a602e00463527eae11d61cd1abe79ebca5f50eb1e2e0d0e53e8ff0464d5d1",
+      "snapshot_matches_revision": true
+    },
+    "websocket": {
+      "repo": "qomm",
+      "path": "rust/qomm-demo/src/web.rs",
+      "revision": "857279df2eb92693c6822b6340a888df3ff9abf3",
+      "snapshot_sha256": "0bf28218984f5d785e65e72109a1b3ef9144ca71ba76298e9a45fe867e054b1b",
+      "current_sha256": "66a9b363c298dc8de26ece89c15fe513174b9d7c3caaad37b12a9edf5e0eb765",
+      "snapshot_matches_revision": false
+    },
+    "vm_verification": {
+      "repo": "defmi",
+      "path": "rust/defmi-avalanche-vm/src/execution/confidential.rs",
+      "revision": "606224fc48fec93958c271ef899bdc6c306f1a67",
+      "snapshot_sha256": "f70f5ed694ce9a8af52b162959678d64060371512e896e988c3ba38b9e39e543",
+      "current_sha256": "f70f5ed694ce9a8af52b162959678d64060371512e896e988c3ba38b9e39e543",
+      "snapshot_matches_revision": true
+    }
+  },
+  "primary_sources": {
+    "Ristretto": [
+      "RFC 9496",
+      "https://www.rfc-editor.org/rfc/rfc9496.html"
+    ],
+    "FROST": [
+      "RFC 9591",
+      "https://www.rfc-editor.org/rfc/rfc9591.html"
+    ],
+    "Ed25519": [
+      "RFC 8032",
+      "https://www.rfc-editor.org/rfc/rfc8032.html"
+    ],
+    "X25519": [
+      "RFC 7748",
+      "https://www.rfc-editor.org/rfc/rfc7748.html"
+    ],
+    "HKDF": [
+      "RFC 5869",
+      "https://www.rfc-editor.org/info/rfc5869/"
+    ],
+    "ChaCha": [
+      "RFC 8439",
+      "https://www.rfc-editor.org/rfc/rfc8439.html"
+    ],
+    "TLS": [
+      "RFC 8446",
+      "https://www.rfc-editor.org/rfc/rfc8446.html"
+    ],
+    "scrypt": [
+      "RFC 7914",
+      "https://www.rfc-editor.org/rfc/rfc7914.html"
+    ],
+    "MLKEM": [
+      "FIPS 203",
+      "https://csrc.nist.gov/pubs/fips/203/final"
+    ],
+    "MLDSA": [
+      "FIPS 204",
+      "https://csrc.nist.gov/pubs/fips/204/final"
+    ],
+    "AES": [
+      "SP 800-38D",
+      "https://csrc.nist.gov/pubs/sp/800/38/d/final"
+    ],
+    "Bulletproofs": [
+      "Bulletproofs, 2017/1066",
+      "https://eprint.iacr.org/2017/1066"
+    ],
+    "Triptych": [
+      "Triptych, 2020/018",
+      "https://eprint.iacr.org/2020/018"
+    ],
+    "GrothKohlweiss": [
+      "Groth--Kohlweiss, 2014/764",
+      "https://eprint.iacr.org/2014/764"
+    ],
+    "Merlin": [
+      "Merlin transcripts",
+      "https://merlin.cool/"
+    ],
+    "MPC": [
+      "MP-SPDZ documentation",
+      "https://mp-spdz.readthedocs.io/en/latest/readme.html"
+    ],
+    "coCode": [
+      "coCode, 2026/729",
+      "https://eprint.iacr.org/2026/729"
+    ]
+  }
+}

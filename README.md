@@ -34,7 +34,7 @@ python3 build.py
 ```
 
 No dependencies beyond the Python standard library. Mermaid diagrams render
-client-side from cdnjs (pinned 11.15.0); everything else is inline.
+client-side from cdnjs (pinned 11.15.0). Technical equations use KaTeX 0.18.7 from jsDelivr with SRI; the original formula remains readable if the CDN is unavailable. The build itself needs only the standard library.
 
 ## Preview
 

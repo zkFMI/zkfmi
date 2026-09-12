@@ -278,3 +278,11 @@ svg.chart .cg { stroke: var(--line); stroke-width: 1; }
 body.ja { font-feature-settings: "palt"; }
 body.ja .hero h1 { letter-spacing: 0; line-height: 1.25; }
 @media print { .hdr, .side, .toc, .foot, .search-modal { display: none !important; } .doclayout { display: block; } body { background: #fff; color: #000; } }
+
+/* Long technical relations retain readable text and locally scrollable math. */
+.technical-equation{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:1rem 0}
+.technical-equation .katex-display{margin:.5rem 0;text-align:left}
+.technical-relations{display:grid;grid-template-columns:9rem minmax(0,1fr);gap:.7rem 1.2rem;margin:1.5rem 0 2rem}
+.technical-relations dt{font-weight:650;color:var(--text)}
+.technical-relations dd{margin:0;line-height:1.8;overflow-wrap:anywhere}
+@media(max-width:700px){.technical-relations{grid-template-columns:1fr;gap:.3rem}.technical-relations dd{margin-bottom:.9rem}}

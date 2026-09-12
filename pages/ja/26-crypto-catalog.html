@@ -1,0 +1,401 @@
+---
+title: 用途別の暗号技術カタログ
+description: 技術編 slide_tech と同じ37項目を、用途・構成・生成と検証・前提と限界の順で読む。式は命題を説明する模式式であり、wireの定義ではない。現行、個別用途、任意機能、比較用、研究経路を区別する。
+path: docs/crypto-catalog.html
+section: docs
+---
+<h1>用途別の暗号技術カタログ</h1><p class="lede">技術編 slide_tech と同じ37項目を、用途・構成・生成と検証・前提と限界の順で読む。式は命題を説明する模式式であり、wireの定義ではない。現行、個別用途、任意機能、比較用、研究経路を区別する。</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.css" integrity="sha384-JctiRyLzXCrSoOOzFlSoWLdyzQl7OrrRnhyeBmzB6ZWtcjccUyc8lCQJqIbs3uQX" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.js" integrity="sha384-+7Keh381hSkXmXqnjC0JBM/kzsN6TFj+wMKychSLjTvJ8/0ElMde2uKl8i6p6Buj" crossorigin="anonymous"></script>
+<script defer src="/technical-math.js"></script>
+
+<div class="note">出典は2026-09-12の技術編のソース調査。暗号実験の新規実行結果ではない。下記の実装リンクは調査時の基準コミットであり、作業中の差分を含む項目は出典JSONで識別する。共有optimistic方式は別ページに記載する。 <a href="optimistic.html">Optimistic</a> · <a href="/crypto-catalog-sources.json">Source JSON / SHA-256</a></div>
+<h2 id="A1">A1 · Ristretto255とPedersenコミットメント</h2><p class="src">現行の曲線ベース処理</p><div class="technical-equation" data-math="C(v;r)=vG+rH,\qquad C(v_1;r_1)+C(v_2;r_2)=C(v_1+v_2;r_1+r_2)"><code>C(v;r)=vG+rH,\qquad C(v_1;r_1)+C(v_2;r_2)=C(v_1+v_2;r_1+r_2)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>価格・数量・残高を公開せず、同じ値を後続の証明と決済で参照する。</dd>
+<dt>構成・関係</dt><dd>素数位数群Ristretto255の点を使用。値用の基点Gと乱数用の基点Hを固定し、加減算を金額の保存則へ利用する。</dd>
+<dt>生成・検証</dt><dd>参加者またはMPCノードが拘束値を生成し、zkPI検証器と各DeFMI VMが証明中の同じ点を検証する。</dd>
+<dt>前提・限界</dt><dd>一様な乱数による秘匿性と、離散対数仮定による拘束性は別。復号鍵のある暗号文ではなく、金額の範囲も別途証明する。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/pedersen.rs">pedersen</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc9496.html">RFC 9496</a>
+</p>
+<h2 id="A2">A2 · Schnorr型の知識証明とゼロ値証明</h2><p class="src">現行</p><div class="technical-equation" data-math="z_vG+z_rH=T+cC,\qquad D=rH\;\Longrightarrow\;z_rH=T+cD"><code>z_vG+z_rH=T+cC,\qquad D=rH\;\Longrightarrow\;z_rH=T+cD</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>コミットメントの開き方を知ること、または保存則の残差がゼロであることを証明する。</dd>
+<dt>構成・関係</dt><dd>初期応答Tを乱数から生成し、公開文からchallenge cを導出。秘密値と乱数への応答を、公開の群等式で照合する。</dd>
+<dt>生成・検証</dt><dd>単独証明は所有者が作成。共同証明は各ノードの応答を補間し、通常の公開検証器で同じ関係を検証する。</dd>
+<dt>前提・限界</dt><dd>一般の開示知識は「値がゼロ」を意味しない。残差には専用のzero-opening関係と用途分離したchallengeを使う。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_sigma.rs">threshold_sigma</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="A3">A3 · 積・同値・異なる基点を結ぶ証明</h2><p class="src">現行</p><div class="technical-equation" data-math="C_c=bC_a+(r_c-br_a)H,\qquad C_1=vG_1+r_1H,\ C_2=vG_2+r_2H"><code>C_c=bC_a+(r_c-br_a)H,\qquad C_1=vG_1+r_1H,\ C_2=vG_2+r_2H</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>数量×価格＝資金額、予約と約定で同じ金額、秘匿資産の基点と通常の基点で同じ値、という関係を検証する。</dd>
+<dt>構成・関係</dt><dd>積証明ではC_bを開く秘密bと、C_aからC_cを作る秘密bを共有する。同値証明では2つの式の値に対する応答を共有する。</dd>
+<dt>生成・検証</dt><dd>zkfmi-zkのProductProof・CrossGeneratorProofを生成し、zkPI・ノート決済・各VMが公開の等式を確認する。</dd>
+<dt>前提・限界</dt><dd>独立に2つの証明を作るだけでは同じ値の保証にならない。複数の検証式を固定係数で相殺して受理しない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="A4">A4 · Bulletproofs：金額の範囲と非負性</h2><p class="src">現行・単独証明の範囲経路</p><div class="technical-equation" data-math="C=vG+rH,\quad 0\le v&lt;2^\ell,\qquad \ell\in\{8,16,32,64\}"><code>C=vG+rH,\quad 0\le v&lt;2^\ell,\qquad \ell\in\{8,16,32,64\}</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>負の金額や、有限体の剰余を利用した不正な残高を排除する。出力ノート・残額・指値との差などに利用する。</dd>
+<dt>構成・関係</dt><dd>ビット制約を内積argumentへ集約する。複数の金額範囲をまとめて証明でき、証明サイズはビット数に対し対数的に増える。</dd>
+<dt>生成・検証</dt><dd>bulletproofs crateのRangeProofを使用。所有者が証明し、VMが拘束値・範囲幅・transcriptを固定して検証する。</dd>
+<dt>前提・限界</dt><dd>単独の範囲証明から価格最良性・所有権・資産の一致は分からない。対応しない範囲幅と共同証明には別の実装を使う。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/range.rs">range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/price_limit.rs">price_limit</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://eprint.iacr.org/2017/1066">Bulletproofs, 2017/1066</a>
+</p>
+<h2 id="A5">A5 · ビット分解と共同生成の範囲証明</h2><p class="src">現行・Bulletproofsとは別の証明形式</p><div class="technical-equation" data-math="v=\sum_{j=0}^{\ell-1}2^jb_j,\qquad b_j(b_j-1)=0,\qquad C-\sum_j2^jC_j=\rho H"><code>v=\sum_{j=0}^{\ell-1}2^jb_j,\qquad b_j(b_j-1)=0,\qquad C-\sum_j2^jC_j=\rho H</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>任意の対応ビット幅、および値を1人へ復元しない共同証明で、同じ非負範囲の命題を扱う。</dd>
+<dt>構成・関係</dt><dd>単独bitrangeは各ビットの0/1をOR証明。threshold_rangeはb²=bの積証明を共同生成し、重み付き和をゼロ値証明で元の値へ拘束する。</dd>
+<dt>生成・検証</dt><dd>MPCは値・乱数・ビット等を分散したまま出力し、各証明ノードが寄与する。検証者は各ビットと最終linkを確認する。</dd>
+<dt>前提・限界</dt><dd>「共同Bulletproofs」と総称しない。範囲を証明しても、どの注文・どの資産の値かという文脈の拘束が別に必要。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/bitrange.rs">bitrange</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_range.rs">threshold_range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a>
+</p>
+<h2 id="B1">B1 · ワンタイム宛先と受領者向け開示</h2><p class="src">現行ノート</p><div class="technical-equation" data-math="R=eG,\quad h=H_s(eV)=H_s(vR),\quad P=B+hG"><code>R=eG,\quad h=H_s(eV)=H_s(vR),\quad P=B+hG</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>同じウォレットの長期支出鍵を毎回公開せずにノートを受け取り、受取人だけが金額と乱数を復元する。</dd>
+<dt>構成・関係</dt><dd>公開view鍵V=vGとspend鍵B=bGから一回用公開鍵Pを生成。金額・乱数等のpayloadは別のハイブリッドKEM鍵で認証暗号化する。</dd>
+<dt>生成・検証</dt><dd>送信者は公開アドレスで宛先を作成。受取人はvRからノートを発見し、KEM鍵で開封後、金額コミットメントとの一致を確認する。</dd>
+<dt>前提・限界</dt><dd>宛先導出のDHはRistretto上。後述するX25519配送鍵とは別。ハイブリッド暗号化だけで所有権証明全体がPQCになるわけではない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/viewing.rs">viewing</a>
+</p>
+<h2 id="B2">B2 · Triptych：匿名支出と二重使用の検出</h2><p class="src">現行ノート・固定した参照コア</p><div class="technical-equation" data-math="\exists i,x,\rho:\quad P_i=xG,\quad C_i-C_{\rm pseudo}=\rho H,\quad I=x^{-1}U"><code>\exists i,x,\rho:\quad P_i=xG,\quad C_i-C_{\rm pseudo}=\rho H,\quad I=x^{-1}U</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>どの入力ノートかをリング内に隠しつつ、所有権と金額を同じ入力へ拘束し、再支出をリンク値で検出する。</dd>
+<dt>構成・関係</dt><dd>Tari Triptychのparallel/RingCT APIを使用。同じ秘密位置iのowner列とvalue列を証明し、リンク値Iを公開する。</dd>
+<dt>生成・検証</dt><dd>所有者がリングと公開文から証明を作成。VMは証明全文、候補の使用可否、出力範囲、保存則、使用済みIを検証する。</dd>
+<dt>前提・限界</dt><dd>証明サイズはリング規模に対し対数的だが、匿名性は候補集合・メタデータにも依存する。参照元は実験的実装であり独立監査済みとはしない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/note_membership.rs">note_membership</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://eprint.iacr.org/2020/018">Triptych, 2020/018</a>
+</p>
+<h2 id="B3">B3 · OR-DLEQとGroth--Kohlweiss所属証明</h2><p class="src">個別用途・Triptych支出コアと区別</p><div class="technical-equation" data-math="\bigvee_i\{X_i=xG\ \land\ N=xG_{\rm scope}\},\qquad \sum_i c_i=c"><code>\bigvee_i\{X_i=xG\ \land\ N=xG_{\rm scope}\},\qquad \sum_i c_i=c</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>資格の登録集合に属する主体が、範囲を限定したnullifierを正しく作ったことを、主体を選んで公開せずに示す。</dd>
+<dt>構成・関係</dt><dd>OR-DLEQは他の枝をシミュレートし、実際の枝とchallengeの総和を合わせる。Groth--Kohlweissはゼロへ開く拘束値の所属を対数サイズで表す。</dd>
+<dt>生成・検証</dt><dd>zkpi-proofsのcohort資格とzkfmi-zkの所属部品で利用。現行ノートの所有権・金額の結合は前ページのTriptychが担当する。</dd>
+<dt>前提・限界</dt><dd>OR証明のサイズ・検証は集合規模に比例。同一scopeのnullifierはリンク可能。cohortを狭めると匿名集合も小さくなる。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/or_dleq.rs">or_dleq</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/oneofmany.rs">oneofmany</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/kyb.rs">kyb</a> ·
+<a href="https://eprint.iacr.org/2014/764">Groth--Kohlweiss, 2014/764</a>
+</p>
+<h2 id="B4">B4 · 資産秘匿と、銘柄の差替えを防ぐ結合</h2><p class="src">個別のasset-confidential版</p><div class="technical-equation" data-math="T=A_i+\gamma H,\qquad C_{\rm asset}=\alpha_iG+\rho H"><code>T=A_i+\gamma H,\qquad C_{\rm asset}=\alpha_iG+\rho H</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>資産IDの代わりに乱数化した資産基点Tを使い、その資産が登録済みで、zkPIの秘匿資産欄と同じ銘柄であることを示す。</dd>
+<dt>構成・関係</dt><dd>CDS型OR合成で同じ登録位置iに対する2つのSchnorr関係を同時に証明。金額はTを基点に拘束し、必要箇所は基点間同値証明で照合する。</dd>
+<dt>生成・検証</dt><dd>confidential_assets / confidential_notesの専用形式で生成・検証する。公開資産版のAssetLinkProofは公開IDに対する残差の知識証明を使う。</dd>
+<dt>前提・限界</dt><dd>固定基点・公開asset IDを使う従来のapplication形式と混同しない。個別コードの存在から、全会場の資産秘匿接続完了を主張しない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/confidential_assets.rs">confidential_assets</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/confidential_notes.rs">confidential_notes</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/asset_link.rs">asset_link</a>
+</p>
+<h2 id="C1">C1 · Shamir秘密分散とLagrange補間</h2><p class="src">現行の7者構成</p><div class="technical-equation" data-math="f(X)=s+a_1X+\cdots+a_tX^t,\quad s_i=f(i),\quad s=\sum_{i\in Q}\lambda_i s_i"><code>f(X)=s+a_1X+\cdots+a_tX^t,\quad s_i=f(i),\quad s=\sum_{i\in Q}\lambda_i s_i</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>数量・価格・在庫・証明用乱数を各ノードへ分散し、単独ノードへ平文を渡さずに扱う。</dd>
+<dt>構成・関係</dt><dd>次数t=2なら2個以下のshareから秘密sは決まらず、3個で補間できる。和・公開定数倍は各share上で計算できる。</dd>
+<dt>生成・検証</dt><dd>法人が入力を分散し、7計算ノードは自分のshareを使用。公開してよい出力だけを復元し、秘密のwitnessは共同証明へ渡す。</dd>
+<dt>前提・限界</dt><dd>情報理論的な秘匿性はshare数と乱数の前提付き。分散だけでは改変、誤った入力、通信の盗聴、出力からの推測を防げない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/shamir.rs">shamir</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://mp-spdz.readthedocs.io/en/latest/readme.html">MP-SPDZ documentation</a>
+</p>
+<h2 id="C2">C2 · VSSと不整合shareの検出</h2><p class="src">現行の入力・証明寄与</p><div class="technical-equation" data-math="A_j=a_jG+b_jH,\qquad s_iG+r_iH=\sum_{j=0}^{t}i^jA_j"><code>A_j=a_jG+b_jH,\qquad s_iG+r_iH=\sum_{j=0}^{t}i^jA_j</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>配布されたshareが同じ秘密多項式に対応するかを確かめ、ノードごとに異なる入力を配る行為を検出する。</dd>
+<dt>構成・関係</dt><dd>値と乱数の係数コミットメントでshareを検証する。共同証明ではnonce寄与を先に拘束し、他者の開示後の差替えを防ぐ。</dd>
+<dt>生成・検証</dt><dd>受信ノードが自分のshareを検証する。Shamir部品にはReed--Solomonとして扱うBerlekamp--Welch復号もあり、不整合点を特定する。</dd>
+<dt>前提・限界</dt><dd>有効な別の秘密値を投入する行為はVSSだけでは分からない。注文の認可・金額拘束値との一致が必要。積の次数増加で訂正可能数も変わる。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/shamir.rs">shamir</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-edge/src/lib.rs">oclob_edge</a>
+</p>
+<h2 id="C3">C3 · MP-SPDZ：悪意ある参加者への対処</h2><p class="src">現行native MPC</p><div class="technical-equation" data-math="[a]+[b]=[a+b],\qquad [a]\,[b]\ \xrightarrow{\text{対話・次数削減}}\ [ab]"><code>[a]+[b]=[a+b],\qquad [a]\,[b]\ \xrightarrow{\text{対話・次数削減}}\ [ab]</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>非公開の入力から、価格・時間優先の照合や見積比較を共同で実行する。</dd>
+<dt>構成・関係</dt><dd>公式malicious-shamir-partyを使用。秘密の乗算はローカルの積だけで終わらず、対話と次数削減・整合確認を含む。比較・ビット分解も回路に含める。</dd>
+<dt>生成・検証</dt><dd>法人ノードが配布した入力を各MPCプロセスが読み、公開板の集計値や当事者向け結果、証明用shareを生成する。</dd>
+<dt>前提・限界</dt><dd>7者・最大2不正の前提と、3/7署名・5/7順序認証の閾値は別。平文照合への代替は認めず、停止時はアプリの再送・回復処理が必要。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/proof_party.rs">proof_party</a> ·
+<a href="https://mp-spdz.readthedocs.io/en/latest/readme.html">MP-SPDZ documentation</a>
+</p>
+<h2 id="C4">C4 · 秘密を集めず、公開検証できる証明を作る</h2><p class="src">現行の共同Sigma証明</p><div class="technical-equation" data-math="z_i=k_i+c w_i,\quad z=\sum_i\lambda_i z_i,\quad T=\sum_i\lambda_i T_i"><code>z_i=k_i+c w_i,\quad z=\sum_i\lambda_i z_i,\quad T=\sum_i\lambda_i T_i</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>MPC出力や乱数を1人へ復元せず、一般の検証者が確認できるopening・積・範囲の証明を組み立てる。</dd>
+<dt>構成・関係</dt><dd>各ノードは自分のwitness shareから応答する。共通challengeと係数拘束を確認し、補間で通常形式の証明へまとめる。積に必要な中間値もMPCが供給する。</dd>
+<dt>生成・検証</dt><dd>コーディネーターは公開寄与の組立てを担当。DeFMI VMは委員会の成功通知だけでなく、組み立てられた証明の関係を検証する。</dd>
+<dt>前提・限界</dt><dd>共同生成した事実と、正しい業務関係を証明した事実は別。ソース・実行結果・文脈を同じ登録済みジョブへ拘束する必要がある。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_sigma.rs">threshold_sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_range.rs">threshold_range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_quote.rs">threshold_quote</a>
+</p>
+<h2 id="C5">C5 · 見積・指値・約定で証明する命題</h2><p class="src">アプリ別の証明範囲</p><div class="technical-equation" data-math="\text{notional}=q p,\qquad\text{limit}-p\ge0,\qquad k_i-k_w\ge0"><code>\text{notional}=q p,\qquad\text{limit}-p\ge0,\qquad k_i-k_w\ge0</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>金銭関係、指値の遵守、最良の見積という異なる命題を、同じ「ZK」の一語で扱わず明示する。</dd>
+<dt>構成・関係</dt><dd>quote_proofは登録した価格計算の積・線形・資格gateと最小keyを組み合わせる。price_limitは売買方向に応じた差の非負性を証明する。</dd>
+<dt>生成・検証</dt><dd>QOMMの公開文には対象maker集合・規則・winnerを固定する。OCLOBの決済側は積、残額、予約、署名と実行要約の結合を検証する。</dd>
+<dt>前提・限界</dt><dd>QOMMの見積証明が存在しても、OCLOBの全価格・時間優先規則がVMで独立に証明されることにはならない。適用した検証器と公開文が基準。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/quote_proof.rs">quote</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_quote.rs">threshold_quote</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/price_limit.rs">price_limit</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a>
+</p>
+<h2 id="D1">D1 · Ed25519 + ML-DSA-65のハイブリッド署名</h2><p class="src">現行のアプリ認証</p><div class="technical-equation" data-math="\mathrm{Accept}=\mathrm{Verify}_{\rm Ed25519}(m,\sigma_E)\ \land\ \mathrm{Verify}_{\rm MLDSA65}(m,\sigma_P)"><code>\mathrm{Accept}=\mathrm{Verify}_{\rm Ed25519}(m,\sigma_E)\ \land\ \mathrm{Verify}_{\rm MLDSA65}(m,\sigma_P)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>注文・事前許可・発行・統治・結果通知を、登録された当事者の鍵へ結び付ける。</dd>
+<dt>構成・関係</dt><dd>Ed25519はEdwards群の署名、ML-DSA-65はmodule latticeに基づく署名。各成分を独立鍵で生成し、用途・suite・版を両方へ拘束する。</dd>
+<dt>生成・検証</dt><dd>QOMM/OCLOB、DeKYX発行者、DeCCP、Aethel等の認証境界が共通実装を利用。受信者は鍵の登録・世代・期限・失効も確認する。</dd>
+<dt>前提・限界</dt><dd>片方の成功では受理しない。署名は許可と送信主体を示すが、署名対象の秘密計算が正しいという数学的証明にはならない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/hybrid/signature.rs">signature</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/application_crypto.rs">application_crypto</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/docs/crypto/application-signatures-v2.md">oclob_auth</a> ·
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://github.com/zkFMI/deccp/blob/c64c16c25e6398740a52ba0e81505e1869db569f/crates/deccp-core/src/lib.rs">deccp</a> ·
+<a href="https://github.com/zkFMI/aethel/blob/e7b14c9364c33e845c9e93ee4203ff5b7262e297/crates/aethel-provider-sdk/src/provider.rs">aethel_provider</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8032.html">RFC 8032</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="D2">D2 · FROST：委員会の閾値Schnorr署名</h2><p class="src">現行・Ristretto255 / SHA-512</p><div class="technical-equation" data-math="R=\sum_i(D_i+\rho_iE_i),\quad z_i=d_i+\rho_ie_i+c\lambda_i s_i,\quad zG=R+cY"><code>R=\sum_i(D_i+\rho_iE_i),\quad z_i=d_i+\rho_ie_i+c\lambda_i s_i,\quad zG=R+cY</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>単独ノードに決済署名鍵を集めず、例えば7者中3者の協力で一つの検証可能な署名を生成する。</dd>
+<dt>構成・関係</dt><dd>round 1でnonce拘束、round 2で署名shareを作成。binding factorと参加者集合を拘束し、share検証後に集約する。</dd>
+<dt>生成・検証</dt><dd>frost-ristretto255を利用。DKGは公開・個別メッセージを通じて鍵shareを生成する。trusted-dealer生成関数はfixtureとして区別されている。</dd>
+<dt>前提・限界</dt><dd>nonceの再使用は鍵漏洩につながる。3者の結託による認可と、7者MPCの正しさは別の前提。FROST自体はPQCではない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi/src/lib.rs">zkpi</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/frost_cluster.rs">frost_cluster</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc9591.html">RFC 9591</a>
+</p>
+<h2 id="D3">D3 · 順序認証・ML-DSA承認・FROSTの違い</h2><p class="src">現行の用途別quorum</p><div class="technical-equation" data-math="\text{順序認証}:5/7,\qquad\text{決済FROST}:3/7,\qquad\text{PQC承認}:\#\mathrm{valid}\ge q"><code>\text{順序認証}:5/7,\qquad\text{決済FROST}:3/7,\qquad\text{PQC承認}:\#\mathrm{valid}\ge q</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>「何者の同意か」だけでなく、受付順・決済指図・PQC認可のどれに同意したかを区別する。</dd>
+<dt>構成・関係</dt><dd>ML-DSA quorumは登録された各ノードの独立署名を集め、重複せず必要数があるかを検証する。1本へ集約するFROSTとは異なる形式。</dd>
+<dt>生成・検証</dt><dd>順序ノードは順序証明、決済委員会は確定した指図、PQC承認者は同じ台帳・用途・設定・実行要約に結び付いた承認文を検証する。</dd>
+<dt>前提・限界</dt><dd>ML-DSAの個別署名群を「閾値ML-DSA署名」とは呼ばない。外側のPQC承認を付けても、内側のPedersenや範囲証明の仮定は変わらない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-ordering/src/lib.rs">oclob_ordering</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/quorum.rs">quorum</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a>
+</p>
+<h2 id="D4">D4 · DeKYX：署名付き属性とMerkle選択開示</h2><p class="src">現行の資格証明</p><div class="technical-equation" data-math="\mathrm{root}=\mathrm{Merkle}(H(q_1),\ldots,H(q_n)),\quad \mathrm{VerifyPath}(q_i,\pi_i,\mathrm{root})=1"><code>\mathrm{root}=\mathrm{Merkle}(H(q_1),\ldots,H(q_n)),\quad \mathrm{VerifyPath}(q_i,\pi_i,\mathrm{root})=1</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>法人の全属性をアプリへ渡さず、対象業務に必要な資格だけを確認する。</dd>
+<dt>構成・関係</dt><dd>発行者は主体の拘束値、適用scope、資格root等へハイブリッド署名。提示者は必要な属性と認証pathを示し、署名済みrootへの所属を証明する。</dd>
+<dt>生成・検証</dt><dd>DeKYX検証器は発行者登録・鍵epoch・署名・最新の失効リスト・期限を確認し、アプリへ検証済み資格結果を返す。</dd>
+<dt>前提・限界</dt><dd>選んだ属性は検証者へ開示される。現在の方式をBBS+やCL署名と説明しない。発行時の記録との完全な非連結性は保証しない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="D5">D5 · DeKYX：保有者の知識とscope nullifier</h2><p class="src">現行の提示・二重利用対策</p><div class="technical-equation" data-math="C=xG+rH,\quad N=xG_s,\quad z_xG+z_rH=A+cC,\quad z_xG_s=B+cN"><code>C=xG+rH,\quad N=xG_s,\quad z_xG+z_rH=A+cC,\quad z_xG_s=B+cN</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>提示者が資格の主体秘密を知り、同じscopeでは同じ主体として数えられることを、実名を示さず確認する。</dd>
+<dt>構成・関係</dt><dd>2つの関係で同じ秘密xの応答を共有するSchnorr型証明。challengeへaudience・action・request・nonce・expiryを入れる。</dd>
+<dt>生成・検証</dt><dd>保有者は独立したML-DSA鍵でも提示全体を署名。検証器は証明と署名を確認し、nullifierとcontextの組を消費する。</dd>
+<dt>前提・限界</dt><dd>同一scope内は意図的にリンク可能。保存した使用済み記録の巻戻しは再利用を許すため、永続化と回復時の認証も必要。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a>
+</p>
+<h2 id="E1">E1 · X25519 + ML-KEM-768とHKDF</h2><p class="src">現行のハイブリッド配送</p><div class="technical-equation" data-math="K=\mathrm{HKDF\!\!-​SHA256}(ss_X\Vert ss_K\Vert ct_X\Vert ct_K\Vert\mathrm{suite})"><code>K=\mathrm{HKDF\!\!-​SHA256}(ss_X\Vert ss_K\Vert ct_X\Vert ct_K\Vert\mathrm{suite})</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>指定した受領者だけと共有する鍵を生成し、注文share・結果・ノートの秘密payloadを暗号化する。</dd>
+<dt>構成・関係</dt><dd>X25519のDH共有値とML-KEM-768のencapsulation共有値を、固定順序・domain・suiteと共にHKDFへ入力し、32 byteの鍵を導出する。</dd>
+<dt>生成・検証</dt><dd>送信者は受領者の登録済み複合公開鍵を使用。受領者はX25519秘密鍵とML-KEM秘密鍵の両方で同じ鍵を導出する。</dd>
+<dt>前提・限界</dt><dd>KEM自体は送信者を認証しない。公開鍵の登録、外側の署名、AEAD、配送文脈が必要。不正長・非寄与X25519を拒否し、従来方式へ戻さない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/hybrid/kem.rs">kem</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/backend.rs">backend</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc7748.html">RFC 7748</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/203/final">FIPS 203</a> ·
+<a href="https://www.rfc-editor.org/info/rfc5869/">RFC 5869</a>
+</p>
+<h2 id="E2">E2 · AES-256-GCMとChaCha20-Poly1305</h2><p class="src">用途別に併用するAEAD</p><div class="technical-equation" data-math="(ct,tag)=\mathrm{AEAD.Enc}(K,nonce,plaintext,AAD)"><code>(ct,tag)=\mathrm{AEAD.Enc}(K,nonce,plaintext,AAD)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>機密性に加えて、暗号文・宛先文脈・ヘッダーの改変を復号時に拒否する。</dd>
+<dt>構成・関係</dt><dd>共通SealedMessageと鍵保存はAES-256-GCM。勝者向け開示やOCLOBの配送部品ではChaCha20-Poly1305も使用し、KEM後の鍵でpayloadを保護する。</dd>
+<dt>生成・検証</dt><dd>送信者は用途・版・受領者・操作文脈をAAD等に固定。受領者はtagの確認後に平文を解釈し、拘束値と業務条件も照合する。</dd>
+<dt>前提・限界</dt><dd>同一鍵でnonceを再利用しない。tagが正しくても、平文が約定数量と一致するとは限らず、その一致は証明または受領後の検証が担当する。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/selective_disclosure.rs">selective_disclosure</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-edge/src/lib.rs">oclob_edge</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">SP 800-38D</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8439.html">RFC 8439</a>
+</p>
+<h2 id="E3">E3 · 注文・許可証・openingを誰に届けるか</h2><p class="src">現行の受領者限定開示</p><div class="technical-equation" data-math="\mathrm{Enc}_{pk_i}(s_i),\qquad (v,r)=\sum_{i\in Q}\lambda_i(v_i,r_i)"><code>\mathrm{Enc}_{pk_i}(s_i),\qquad (v,r)=\sum_{i\in Q}\lambda_i(v_i,r_i)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>コーディネーターが配送を担当しても、全注文や支出許可、受領する金額の秘密を読み取れないようにする。</dd>
+<dt>構成・関係</dt><dd>注文は7つの検証可能shareを各ノード向けに暗号化。決済許可は注文別の鍵を3/7に分散し、有効結果の保存後に専用接続へshareを解放する。</dd>
+<dt>生成・検証</dt><dd>受領するopeningは各証明ノードが自分のshareだけを受取人へ暗号化。受取人が閾値分を復号・補間し、金額コミットメントと照合する。</dd>
+<dt>前提・限界</dt><dd>全暗号文を集めることと秘密鍵shareを集めることは違う。固定長payloadは長さの漏洩を減らすが、時刻・配送先・頻度は別の観測情報。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/opening_envelope.rs">opening_envelope</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/selective_disclosure.rs">selective_disclosure</a>
+</p>
+<h2 id="E4">E4 · TLS 1.3・mTLS・ML-DSA証明書</h2><p class="src">現行の指定transport policy</p><div class="technical-equation" data-math="\text{TLS 1.3}\ +\ \text{X25519MLKEM768}\ +\ \text{ML-DSA-65 certificate authentication}"><code>\text{TLS 1.3}\ +\ \text{X25519MLKEM768}\ +\ \text{ML-DSA-65 certificate authentication}</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>法人API、ノード間通信、MPCプロセスの通信を、盗聴と許可していない相手から保護する。</dd>
+<dt>構成・関係</dt><dd>TLS policyはハイブリッド鍵交換groupとML-DSA認証を要求。アプリのmTLS ACLは許可された証明書fingerprintを固定して照合する。</dd>
+<dt>生成・検証</dt><dd>OpenSSLを使うtransport層がhandshakeを担当。接続後も、注文や決済指図のアプリ署名・用途・期限・再利用を別に検証する。</dd>
+<dt>前提・限界</dt><dd>TLSが保護するのは通信区間。終端プロセスの平文、保存後のpayload、外側の管理者権限まで自動的に秘匿するものではない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/tls.rs">tls</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="E5">E5 · scrypt・暗号化鍵保存・用途別の鍵</h2><p class="src">現行の鍵ライフサイクル</p><div class="technical-equation" data-math="K_{store}=\mathrm{scrypt}(password,salt),\qquad ct=\mathrm{AES256GCM}_{K_{store}}(keys)"><code>K_{store}=\mathrm{scrypt}(password,salt),\qquad ct=\mathrm{AES256GCM}_{K_{store}}(keys)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>保存中の秘密鍵を平文ファイルにせず、署名・配送・閲覧・支出の鍵と更新権限を分ける。</dd>
+<dt>構成・関係</dt><dd>scryptはN=2^15、r=8、p=1で32 byteの鍵を導出。保存は16 byte salt、12 byte nonce、AAD付きAES-GCM。秘密値はzeroize対象の型で扱う。</dd>
+<dt>生成・検証</dt><dd>共通KeyRecordは参加者・用途・suite・鍵世代・有効期間・失効を管理。署名鍵のrotationは旧鍵の承認と新鍵の受領署名を両方要求する。</dd>
+<dt>前提・限界</dt><dd>弱いpasswordの総当たりや侵害済み実行環境は別のリスク。zeroizeはHSMや完全なメモリ秘匿を意味せず、物理鍵管理の実証とも区別する。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/key.rs">key</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc7914.html">RFC 7914</a> ·
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">SP 800-38D</a>
+</p>
+<h2 id="F1">F1 · SHA-256・SHA-512・HMAC・Merkle</h2><p class="src">現行の用途別ハッシュ</p><div class="technical-equation" data-math="d=H(\mathrm{domain}\Vert\mathrm{version}\Vert\mathrm{lengths}\Vert\mathrm{payload}),\quad tag=\mathrm{HMAC}_{K}(context)"><code>d=H(\mathrm{domain}\Vert\mathrm{version}\Vert\mathrm{lengths}\Vert\mathrm{payload}),\quad tag=\mathrm{HMAC}_{K}(context)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>指図・証明・鍵・設定・状態を一意の公開文へ拘束し、別の対象への差替えや曖昧な符号化を防ぐ。</dd>
+<dt>構成・関係</dt><dd>SHA-256は操作・状態要約、Merkle葉や認証文。SHA-512は群・scalarへの導出と研究用拘束。HMAC-SHA256は秘密鍵付き識別子と導出に使う。</dd>
+<dt>生成・検証</dt><dd>SDKのadmission tagは発行者秘密と予約scopeへ拘束する。Merkle pathは要素のrootへの所属を確認し、入力順・長さ・domainを固定する。</dd>
+<dt>前提・限界</dt><dd>ハッシュは機密性や正しさの証明ではない。小さい候補集合は推測照合できる。Merkle rootや連鎖hashだけでは合意確定を独立に証明できない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/canonical.rs">canonical</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/zkpi-defmi-sdk/src/admission.rs">admission</a> ·
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://www.rfc-editor.org/info/rfc5869/">RFC 5869</a>
+</p>
+<h2 id="F2">F2 · Fiat--Shamir・Merlin・STROBE</h2><p class="src">現行の非対話化と複合証明</p><div class="technical-equation" data-math="c=\mathrm{Challenge}(\mathrm{domain},\mathrm{statement},T_1,\ldots,T_k)"><code>c=\mathrm{Challenge}(\mathrm{domain},\mathrm{statement},T_1,\ldots,T_k)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>検証者がその場で乱数challengeを送らなくても、公開文と初期応答に拘束された証明を保存・配送・検証できるようにする。</dd>
+<dt>構成・関係</dt><dd>MerlinはSTROBEを使い、ラベル付きメッセージと長さをtranscriptへ追加する。複数証明の順序や関係を同じ文脈へ固定する。</dd>
+<dt>生成・検証</dt><dd>証明者・検証者は同じ順序でchallengeを再計算。Schnorr・積・範囲等の証明が参照する公開値や用途を一致させる。</dd>
+<dt>前提・限界</dt><dd>nonceやwitness乱数を公開transcriptだけから生成しない。Fiat--Shamirを使うだけで、任意の合成や量子安全性が自動的に証明されるわけではない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/pedersen.rs">pedersen</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/range.rs">range</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="F3">F3 · 乱数・一意性・検証のバッチ化</h2><p class="src">現行の暗号補助処理</p><div class="technical-equation" data-math="\sum_i\alpha_i E_i=0\quad(\alpha_i:\text{検証対象に適切に拘束した係数})"><code>\sum_i\alpha_i E_i=0\quad(\alpha_i:\text{検証対象に適切に拘束した係数})</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>鍵・秘匿乱数・署名nonce・検証係数を用途に応じて生成し、二重使用と証明式の相殺を防ぐ。</dd>
+<dt>構成・関係</dt><dd>秘密側はOS CSPRNG / rand_coreを利用。群式の一括検証は乱数係数付き多重scalar乗算を使う。決定的VM検証には文脈からseed化したChaCha20Rng経路がある。</dd>
+<dt>生成・検証</dt><dd>nullifier・操作番号・注文nonceは用途別に台帳やdurable queueで消費する。同一の送信は、保存済みの同じ署名・暗号文で再送する。</dd>
+<dt>前提・限界</dt><dd>ChaCha20RngはAEADではない。乱数を使った検証も、全式を適切に拘束する必要がある。使用済み状態の永続性が失われると暗号だけで再送を防げない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi-avalanche-vm/src/execution/confidential.rs">vm_verification</a>
+</p>
+<h2 id="F4">F4 · 閲覧鍵と支出鍵を分けた監査開示</h2><p class="src">個別用途・非合意の開示制御</p><div class="technical-equation" data-math="v_s=H_s(\text{view},seed_v,scope),\qquad b_s=H_s(\text{spend},seed_b,scope)"><code>v_s=H_s(\text{view},seed_v,scope),\qquad b_s=H_s(\text{spend},seed_b,scope)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>特定の資産・期間・委任範囲の履歴を監査者へ開示し、同時に支出権限を渡さない。</dd>
+<dt>構成・関係</dt><dd>scopeごとに別のアドレスとview/spend scalarを導出。ハイブリッドopening鍵もmaster seedから独立domainで導出し、閲覧能力に含める。</dd>
+<dt>生成・検証</dt><dd>ウォレット所有者が範囲付きview capabilityと開示情報を渡す。監査者は開封したノートと公開拘束値を確認する。</dd>
+<dt>前提・限界</dt><dd>渡した鍵から既に知った情報を取り消せない。ViewingGrant / SpendDisclosureは合意による支出認可ではなく、全実行認可のPQC移行とは別扱い。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/viewing.rs">viewing</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a>
+</p>
+<h2 id="G1">G1 · Adaptor署名：条件付きの台帳間PvP</h2><p class="src">個別のcross-ledger処理</p><div class="technical-equation" data-math="Y=yG,\quad s^{\prime}=r+cx,\quad s=s^{\prime}+y,\quad y=s-s^{\prime}"><code>Y=yG,\quad s^{\prime}=r+cx,\quad s=s^{\prime}+y,\quad y=s-s^{\prime}</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>2つの独立台帳の支払いを条件付きで連動させ、一方の署名完成から相手が必要な秘密を取得できるようにする。</dd>
+<dt>構成・関係</dt><dd>事前署名を秘密yで完成すると通常のSchnorr署名になる。事前署名を持つ相手は差分からyを抽出し、もう一方の処理を完成させる。</dd>
+<dt>生成・検証</dt><dd>zkfmi-zk adaptorとDeFMI pvpが担当。公開台帳に共通hash-preimageを載せる方式と異なる公開情報の構成になる。</dd>
+<dt>前提・限界</dt><dd>Escrow・期限・返却・確定確認が必要。同一VMの一括DvPと同じ原子性モデルではなく、外部台帳の実接続や強い匿名性は別途検証する。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/adaptor.rs">adaptor</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pvp.rs">pvp</a>
+</p>
+<h2 id="G2">G2 · 宛先に拘束した確定受領証</h2><p class="src">個別のDeFMI間連携</p><div class="technical-equation" data-math="d=H(\mathrm{source},\mathrm{destination},\mathrm{leg},R_{before},R_{after},\mathrm{sequence})"><code>d=H(\mathrm{source},\mathrm{destination},\mathrm{leg},R_{before},R_{after},\mathrm{sequence})</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>別の台帳へ、別の決済や別の順序の受領証を流用できないようにする。</dd>
+<dt>構成・関係</dt><dd>各台帳では別のleg識別子を使い、対応は宛先・送信元・状態・順序へ拘束した受領証で扱う。認可署名と正本からのreadbackを照合する。</dd>
+<dt>生成・検証</dt><dd>cross_domain / cross_domain_finalityの検証器と認可主体が担当。DeCCPも確定受領証を提案・清算周期・損失配分へ拘束してから状態を更新する。</dd>
+<dt>前提・限界</dt><dd>署名付き受領証は、その署名主体と情報取得先への信頼を含む。全合意を独立検証するlight clientの証拠とは区別する。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/cross_domain.rs">cross_domain</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/cross_domain_finality.rs">cross_domain_finality</a> ·
+<a href="https://github.com/zkFMI/deccp/blob/c64c16c25e6398740a52ba0e81505e1869db569f/crates/deccp-core/src/lib.rs">deccp</a>
+</p>
+<h2 id="G3">G3 · Miden STARK：公開状態の連続性を監査</h2><p class="src">任意有効化のpublic-audit用途</p><div class="technical-equation" data-math="R^{after}_i=R^{before}_{i+1},\qquad i=0,\ldots,n-2"><code>R^{after}_i=R^{before}_{i+1},\qquad i=0,\ldots,n-2</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>確定済みとして渡された公開記録について、状態rootの連続性とzkPI・受領証要約の対応を、固定プログラムで検証する。</dd>
+<dt>構成・関係</dt><dd>Miden VM 0.32.0のSTARKで固定した8枠の公開batch relationを証明。実装はBlake3-256 hash suiteと正規のproof表現を検査する。</dd>
+<dt>生成・検証</dt><dd>qomm-batch-auditのproverが証明を作り、公開監査verifierが独立に取得した期待statementへ照合する。</dd>
+<dt>前提・限界</dt><dd>このSTARKは署名・合意確定・秘密残高・範囲・価格最良性を再検証しない。秘密決済のZKバックエンドや、PQC全経路の証明として使わない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/qomm-batch-audit/src/lib.rs">miden</a>
+</p>
+<h2 id="H1">H1 · SHA-512のsalt付き拘束と新しいノート</h2><p class="src">隔離したpqc-notes-research</p><div class="technical-equation" data-math="C=\mathrm{SHA512}(domain\Vert context\Vert salt_{64}\Vert opening)"><code>C=\mathrm{SHA512}(domain\Vert context\Vert salt_{64}\Vert opening)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>離散対数の拘束性に依存する金額表現を、そのままPQCと呼ばず、別形式のopening・所有権・一意性を設計する。</dd>
+<dt>構成・関係</dt><dd>HashCommitmentは64 byteのsaltと用途分離したSHA-512を使う。新ノートは受取人だけのspending secretと、送信者が知るopeningを分ける。</dd>
+<dt>生成・検証</dt><dd>wallet/wire処理はハイブリッドKEM・AEADを再利用。支出nullifierには支出秘密を必要とし、送信者の配送成功だけでは支出権限を与えない。</dd>
+<dt>前提・限界</dt><dd>hash拘束は加法準同型ではなく、開き方のZK証明も内蔵しない。構文検証は所属・保存則・受領暗号文の正しさを証明せず、新形式の全決済受入れは別の未完了条件。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/commitment.rs">commitment</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pqc_notes.rs">pqc_notes</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">pqc_notes_doc</a>
+</p>
+<h2 id="H2">H2 · Spartan型R1CSとマスク付きsumcheck</h2><p class="src">独自に適応した研究経路</p><div class="technical-equation" data-math="(Az)\circ(Bz)=Cz,\qquad \sum_{x\in\{0,1\}^m}g(x)=0"><code>(Az)\circ(Bz)=Cz,\qquad \sum_{x\in\{0,1\}^m}g(x)=0</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>分散した秘密witnessが金銭関係を満たすことを、曲線上のコミットメントに頼らない公開証明へつなぐ。</dd>
+<dt>構成・関係</dt><dd>R1CSの制約を多項式の和に変換。各roundの低次数多項式をchallengeで縮約し、最後の評価をPCSのopeningと照合する。秘匿用maskも同時に拘束する。</dd>
+<dt>生成・検証</dt><dd>7つのowner-local workerとMP-SPDZが共同計算する。公開statementとproofだけを読む独立verifierが、最終関係を検証する。</dd>
+<dt>前提・限界</dt><dd>BN254のscalar体を算術に使うが、この研究PCSはpairingを使わない。原論文の全性能・安全性主張は適応実装へ自動的に移らない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/README.md">cocode</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/INTEGRATION.md">cocode_integration</a> ·
+<a href="https://eprint.iacr.org/2026/729">coCode, 2026/729</a>
+</p>
+<h2 id="H3">H3 · 符号ベースPCS・Merkle・folding</h2><p class="src">coCode参照の研究実装</p><div class="technical-equation" data-math="\mathrm{RS}(\mathrm{message}+\mathrm{mask})\ \to\ \mathrm{MerkleRoot},\qquad F_r=(1-r)E+rO"><code>\mathrm{RS}(\mathrm{message}+\mathrm{mask})\ \to\ \mathrm{MerkleRoot},\qquad F_r=(1-r)E+rO</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>秘密の多項式へ拘束し、指定位置の評価と符号語・次数の整合を、全witnessを公開せずに確認する。</dd>
+<dt>構成・関係</dt><dd>Reed--Solomon符号化、tensor構成、fold、Merkle認証query、FFTによる次数確認を組み合わせる。leaf saltとSHA-512 domainで公開queryを拘束する。</dd>
+<dt>生成・検証</dt><dd>各workerは自分の分散入力を符号化。元のrough-012は1回fold後のマスク済み終端を公開し、後続の大規模回路向けには別の適応がある。</dd>
+<dt>前提・限界</dt><dd>query再利用は追加漏洩の原因となるためowner別に予算を消費する。マスク・非対話化・量子健全性の合成と具体的security parameterは独立評価が未完了。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/src/pcs.rs">pcs</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/src/transcript.rs">cocode_transcript</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/README.md">cocode</a> ·
+<a href="https://eprint.iacr.org/2026/729">coCode, 2026/729</a>
+</p>
+<h2 id="H4">H4 · 暗号文が正しいことを秘密のまま証明</h2><p class="src">回路化の研究・全ノート受入れは未完了</p><div class="technical-equation" data-math="ct=\mathrm{Encapsulate\!+\!AEAD}(pk,opening;\omega),\qquad C=\mathrm{Commit}(opening)"><code>ct=\mathrm{Encapsulate\!+\!AEAD}(pk,opening;\omega),\qquad C=\mathrm{Commit}(opening)</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>送信した暗号文の中身が、受取人・金額・資産・出力拘束値と一致することを、送信者の乱数を公開せずに証明する。</dd>
+<dt>構成・関係</dt><dd>送信者のKEM/AEAD乱数をprivate witnessとして保持。SHA-512、X25519、ML-KEM、AES-GCM等の回路とノート関係を結合する研究。</dd>
+<dt>生成・検証</dt><dd>private-proof-witnessとPQCノートwalletが乱数保持を担当。HyCC/Bristolや参照暗号コアの回路化は証明関係を実装するための依存作業。</dd>
+<dt>前提・限界</dt><dd>暗号ライブラリの既知解一致、1 byteの回路配線、4口座の研究証明から、匿名ノートの発行・予約・約定・回収の全関係を実証済みとは言えない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pqc_notes.rs">pqc_notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/PQC_PROOF_SWITCH_STATUS.md">pqc_status</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">pqc_notes_doc</a>
+</p>
+<h2 id="H5">H5 · VOLE-in-the-HeadとSHAKE128</h2><p class="src">測定harnessの比較方式</p><div class="technical-equation" data-math="\mathbf q=\mathbf t+\Delta\mathbf u\qquad\text{（VOLE相関の模式式）}"><code>\mathbf q=\mathbf t+\Delta\mathbf u\qquad\text{（VOLE相関の模式式）}</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>曲線ベースの線形関係証明に対する別方式として、有限体とhash/XOFに基づく証明を比較する。</dd>
+<dt>構成・関係</dt><dd>zkpi-harnessのvoleithは素数体、seed展開、相関値への拘束、challengeに応じた開示を利用。SHAKE128とSHA-512を使う。</dd>
+<dt>生成・検証</dt><dd>run_voleith測定portでprover/verifierを実行する構成。現行金融取引の既定の決済検証器とは別の比較実装。</dd>
+<dt>前提・限界</dt><dd>コードのpost_quantumメタデータは暗号認定ではない。パラメーター・証明関係・安全性の分析と本番経路への接続を別に確認する必要がある。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-harness/src/voleith.rs">voleith</a>
+</p>
+<h2 id="I1">I1 · 暗号を組み合わせても、保証は足し算ではない</h2><p class="src">全経路の読み方</p><div class="technical-equation" data-math="\text{受理}=\text{認可}\land\text{証明関係}\land\text{現状態}\land\text{一意性}"><code>\text{受理}=\text{認可}\land\text{証明関係}\land\text{現状態}\land\text{一意性}</code></div><dl class="technical-relations">
+<dt>用途</dt><dd>どの暗号が何を保証し、その外側にどのアプリ・台帳・運用上の前提が残るかを確認する。</dd>
+<dt>構成・関係</dt><dd>秘密分散は単独ノードの入力秘匿、ZKは宣言した命題、署名は権限、AEADは配送、台帳は一度の状態更新を担当する。</dd>
+<dt>生成・検証</dt><dd>公開文・出力・宛先・予約・委員会・proof全文・状態版を同じ取引へ拘束する。各VMで検証する関係と、委員会に依存する市場判断を分ける。</dd>
+<dt>前提・限界</dt><dd>TLSやハイブリッド署名の採用を、内側の曲線証明のPQC化・業務全体の匿名性・法的確定性の完了に置き換えない。</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_reservation.rs">reservation</a>
+</p>
+<h2 id="scope">実装名と保証を取り違えない</h2>
+<p>BBS+ / CL署名はDeKYXの将来候補への言及。ML-DSA-44 / SLH-DSAはsuite識別子の予約と、実装済みbackendを区別する。SHA-1はQOMM WebSocket handshakeの用途に限る。BN254 scalar体の利用はpairingやGroth16の利用を意味しない。</p>

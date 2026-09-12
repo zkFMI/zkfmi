@@ -77,3 +77,5 @@ flowchart LR
 <p>「秘匿した注文を MPC で照合する DEX」は新しくない。Rialto、P2DEX、Renegade は明確な先行例である。TEE ベース（Tesseract）、commit してから開く方式、バッチ方式、分散した公開 CLOB の設計も存在する。OCLOB は暗号部品の新規性を主張しない。差になりうるのは、次のものを一つの状態機械に組み合わせたことである。バッチではなく連続の処理。可変数量、部分約定と複数約定、GTC、IOC、取消、期限を秘密状態のまま扱うこと。内容を開く前に 5-of-7 で到着順を確定し、それを時間優先に結び付けること。価格帯別の合計板を連続して公開すること。匿名の法人資格、法人全体での予約、閾値 zkPI、照合後の署名を要しない原子的 DvP。P2DEX の UC 安全性と、不正なサーバに対する補償は OCLOB より先を行っており、未解決の課題として挙げている。TEE は意図して信頼境界に入れていない。</p>
 
 <div class="next"><a href="qomm.html">← QOMM</a><a href="aethel.html">Aethel: 支払ストリームの債権化 →</a></div>
+
+<h2 id="technical-guide">技術スライドから実装へ</h2><p><a href="crypto-catalog.html">37項目の暗号技術カタログ</a>で用途・数式・証明者・制約を確認し、<a href="settlement-lifecycle.html">予約から決済・回収まで</a>で状態遷移をたどれます。<a href="optimistic.html">暫定結果とchallenge</a>は、両デモの検証方式とnative決済の境界を説明します。</p>

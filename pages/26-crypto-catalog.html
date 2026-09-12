@@ -1,0 +1,401 @@
+---
+title: Cryptography by purpose
+description: The same 37 topics as the technical slide deck, organized by purpose, construction, proof actors and limitations. Equations explain relations rather than define wire encodings. Current, application-specific, optional, comparison and research paths are separate.
+path: docs/crypto-catalog.html
+section: docs
+---
+<h1>Cryptography by purpose</h1><p class="lede">The same 37 topics as the technical slide deck, organized by purpose, construction, proof actors and limitations. Equations explain relations rather than define wire encodings. Current, application-specific, optional, comparison and research paths are separate.</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.css" integrity="sha384-JctiRyLzXCrSoOOzFlSoWLdyzQl7OrrRnhyeBmzB6ZWtcjccUyc8lCQJqIbs3uQX" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.js" integrity="sha384-+7Keh381hSkXmXqnjC0JBM/kzsN6TFj+wMKychSLjTvJ8/0ElMde2uKl8i6p6Buj" crossorigin="anonymous"></script>
+<script defer src="/technical-math.js"></script>
+
+<div class="note">This is the technical deck’s source survey dated 2026-09-12, not a new cryptographic experiment. Implementation links identify baseline revisions; the source JSON flags snapshots containing working changes. The shared optimistic protocol is documented separately. <a href="optimistic.html">Optimistic</a> · <a href="/crypto-catalog-sources.json">Source JSON / SHA-256</a></div>
+<h2 id="A1">A1 · Ristretto255 and Pedersen commitments</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="C(v;r)=vG+rH,\qquad C(v_1;r_1)+C(v_2;r_2)=C(v_1+v_2;r_1+r_2)"><code>C(v;r)=vG+rH,\qquad C(v_1;r_1)+C(v_2;r_2)=C(v_1+v_2;r_1+r_2)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Bind hidden prices, quantities and balances to subsequent proofs.</dd>
+<dt>Construction</dt><dd>Use fixed value and blinding generators in a prime-order group; addition expresses conservation.</dd>
+<dt>Who proves and verifies</dt><dd>Participants or MPC nodes construct commitments; zkPI and the VM verify the same points.</dd>
+<dt>Assumptions and limits</dt><dd>Hiding and binding are separate properties. A commitment is not decryptable encryption and does not prove a range.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/pedersen.rs">pedersen</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc9496.html">RFC 9496</a>
+</p>
+<h2 id="A2">A2 · Schnorr knowledge and zero-value proofs</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="z_vG+z_rH=T+cC,\qquad D=rH\;\Longrightarrow\;z_rH=T+cD"><code>z_vG+z_rH=T+cC,\qquad D=rH\;\Longrightarrow\;z_rH=T+cD</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Prove knowledge of an opening or that a conservation residual has value zero.</dd>
+<dt>Construction</dt><dd>Derive a challenge from the public statement and check the corresponding group equations.</dd>
+<dt>Who proves and verifies</dt><dd>An owner proves alone or nodes interpolate responses for the public verifier.</dd>
+<dt>Assumptions and limits</dt><dd>Knowledge of some opening does not imply zero. The residual needs a dedicated zero-opening relation and domain.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_sigma.rs">threshold_sigma</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="A3">A3 · Product, equality and cross-generator proofs</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="C_c=bC_a+(r_c-br_a)H,\qquad C_1=vG_1+r_1H,\ C_2=vG_2+r_2H"><code>C_c=bC_a+(r_c-br_a)H,\qquad C_1=vG_1+r_1H,\ C_2=vG_2+r_2H</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Bind quantity times price to payment and the same amount across representations.</dd>
+<dt>Construction</dt><dd>Share the relevant witness response between the product equations or two generator relations.</dd>
+<dt>Who proves and verifies</dt><dd>zkfmi-zk proof constructors feed zkPI and note settlement verification.</dd>
+<dt>Assumptions and limits</dt><dd>Two independent proofs do not establish witness equality. Fixed-coefficient aggregation must not allow errors to cancel.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="A4">A4 · Bulletproofs and nonnegative amounts</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="C=vG+rH,\quad 0\le v&lt;2^\ell,\qquad \ell\in\{8,16,32,64\}"><code>C=vG+rH,\quad 0\le v&lt;2^\ell,\qquad \ell\in\{8,16,32,64\}</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Exclude negative values and modular wraparound in amounts and residuals.</dd>
+<dt>Construction</dt><dd>Aggregate bit constraints into an inner-product argument for supported widths.</dd>
+<dt>Who proves and verifies</dt><dd>The owner uses RangeProof; the VM fixes commitments, range width and transcript.</dd>
+<dt>Assumptions and limits</dt><dd>Range alone proves neither ownership, asset identity nor best price. The collaborative format is a separate implementation.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/range.rs">range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/price_limit.rs">price_limit</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://eprint.iacr.org/2017/1066">Bulletproofs, 2017/1066</a>
+</p>
+<h2 id="A5">A5 · Bit decomposition and collaborative ranges</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="v=\sum_{j=0}^{\ell-1}2^jb_j,\qquad b_j(b_j-1)=0,\qquad C-\sum_j2^jC_j=\rho H"><code>v=\sum_{j=0}^{\ell-1}2^jb_j,\qquad b_j(b_j-1)=0,\qquad C-\sum_j2^jC_j=\rho H</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Prove ranges when no node owns the complete value.</dd>
+<dt>Construction</dt><dd>Commit to bits, prove Booleanity and link their weighted sum to the original commitment.</dd>
+<dt>Who proves and verifies</dt><dd>Nodes jointly generate the bit and linkage relations; public verifiers check them.</dd>
+<dt>Assumptions and limits</dt><dd>This is a distinct proof format from the single-prover Bulletproofs route, with different cost and assumptions.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/bitrange.rs">bitrange</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_range.rs">threshold_range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a>
+</p>
+<h2 id="B1">B1 · One-time destinations and recipient disclosure</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="R=eG,\quad h=H_s(eV)=H_s(vR),\quad P=B+hG"><code>R=eG,\quad h=H_s(eV)=H_s(vR),\quad P=B+hG</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Deliver a note without publishing a reusable recipient address.</dd>
+<dt>Construction</dt><dd>Derive a shared scalar from ephemeral Diffie–Hellman and offset the recipient key.</dd>
+<dt>Who proves and verifies</dt><dd>Senders construct outputs; recipients scan and derive their one-time spending key.</dd>
+<dt>Assumptions and limits</dt><dd>Scanning and spending authority differ. Metadata and later spends can still create links.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/viewing.rs">viewing</a>
+</p>
+<h2 id="B2">B2 · Triptych and anonymous spends</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\exists i,x,\rho:\quad P_i=xG,\quad C_i-C_{\rm pseudo}=\rho H,\quad I=x^{-1}U"><code>\exists i,x,\rho:\quad P_i=xG,\quad C_i-C_{\rm pseudo}=\rho H,\quad I=x^{-1}U</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Prove ownership of an input in a set and detect repeated spending.</dd>
+<dt>Construction</dt><dd>Bind ownership and amount to the same hidden index, with a linkability tag.</dd>
+<dt>Who proves and verifies</dt><dd>The note proof adapter uses a pinned upstream Triptych core; the VM checks its bound statement.</dd>
+<dt>Assumptions and limits</dt><dd>Anonymity depends on the candidate set and metadata. The experimental reference does not replace an independent audit.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/note_membership.rs">note_membership</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://eprint.iacr.org/2020/018">Triptych, 2020/018</a>
+</p>
+<h2 id="B3">B3 · OR-DLEQ and Groth–Kohlweiss membership</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="\bigvee_i\{X_i=xG\ \land\ N=xG_{\rm scope}\},\qquad \sum_i c_i=c"><code>\bigvee_i\{X_i=xG\ \land\ N=xG_{\rm scope}\},\qquad \sum_i c_i=c</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Prove selected membership and scope-linked knowledge in their particular application paths.</dd>
+<dt>Construction</dt><dd>Compose discrete-log equality relations or a one-of-many membership argument.</dd>
+<dt>Who proves and verifies</dt><dd>Application proof constructors and their corresponding public verifiers share the statement.</dd>
+<dt>Assumptions and limits</dt><dd>These uses are separate from the current Triptych note-spend core. Names in the repository do not imply universal deployment.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/or_dleq.rs">or_dleq</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/oneofmany.rs">oneofmany</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/kyb.rs">kyb</a> ·
+<a href="https://eprint.iacr.org/2014/764">Groth--Kohlweiss, 2014/764</a>
+</p>
+<h2 id="B4">B4 · Confidential assets and substitution resistance</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="T=A_i+\gamma H,\qquad C_{\rm asset}=\alpha_iG+\rho H"><code>T=A_i+\gamma H,\qquad C_{\rm asset}=\alpha_iG+\rho H</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Hide an asset selection while binding the correct asset and monetary relations.</dd>
+<dt>Construction</dt><dd>Link asset tags, committed identifiers and amount representations across the proof.</dd>
+<dt>Who proves and verifies</dt><dd>The asset-confidential note variant constructs and verifies these additional relations.</dd>
+<dt>Assumptions and limits</dt><dd>Asset confidentiality belongs to a specific version. Public-asset routes do not acquire it automatically.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/confidential_assets.rs">confidential_assets</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/confidential_notes.rs">confidential_notes</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/asset_link.rs">asset_link</a>
+</p>
+<h2 id="C1">C1 · Shamir sharing and Lagrange interpolation</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="f(X)=s+a_1X+\cdots+a_tX^t,\quad s_i=f(i),\quad s=\sum_{i\in Q}\lambda_i s_i"><code>f(X)=s+a_1X+\cdots+a_tX^t,\quad s_i=f(i),\quad s=\sum_{i\in Q}\lambda_i s_i</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Distribute a witness without giving each participant its complete value.</dd>
+<dt>Construction</dt><dd>Evaluate a random polynomial and interpolate authorized subsets.</dd>
+<dt>Who proves and verifies</dt><dd>The configured seven-party MPC and proof participants hold their own shares.</dd>
+<dt>Assumptions and limits</dt><dd>A reconstruction threshold alone is not malicious security or availability. Collusion and protocol assumptions still apply.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/shamir.rs">shamir</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://mp-spdz.readthedocs.io/en/latest/readme.html">MP-SPDZ documentation</a>
+</p>
+<h2 id="C2">C2 · VSS and inconsistent-share detection</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="A_j=a_jG+b_jH,\qquad s_iG+r_iH=\sum_{j=0}^{t}i^jA_j"><code>A_j=a_jG+b_jH,\qquad s_iG+r_iH=\sum_{j=0}^{t}i^jA_j</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Detect contributions inconsistent with the committed sharing polynomial.</dd>
+<dt>Construction</dt><dd>Check a received share against coefficient commitments.</dd>
+<dt>Who proves and verifies</dt><dd>Recipients validate inputs and proof contributions before using them.</dd>
+<dt>Assumptions and limits</dt><dd>Detection is not automatic recovery or guaranteed completion; the remaining participants must satisfy protocol conditions.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/shamir.rs">shamir</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-edge/src/lib.rs">oclob_edge</a>
+</p>
+<h2 id="C3">C3 · MP-SPDZ and malicious participants</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="[a]+[b]=[a+b],\qquad [a]\,[b]\ \xrightarrow{\text{対話・次数削減}}\ [ab]"><code>[a]+[b]=[a+b],\qquad [a]\,[b]\ \xrightarrow{\text{対話・次数削減}}\ [ab]</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Compute market relations over secret inputs.</dd>
+<dt>Construction</dt><dd>Use the configured malicious Shamir engine, including interactive multiplication and degree reduction.</dd>
+<dt>Who proves and verifies</dt><dd>Seven native processes run the pinned MP-SPDZ program.</dd>
+<dt>Assumptions and limits</dt><dd>A single-host run does not demonstrate seven independent operators, WAN performance or resistance to arbitrary denial of service.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/proof_party.rs">proof_party</a> ·
+<a href="https://mp-spdz.readthedocs.io/en/latest/readme.html">MP-SPDZ documentation</a>
+</p>
+<h2 id="C4">C4 · Collaborative public proofs</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="z_i=k_i+c w_i,\quad z=\sum_i\lambda_i z_i,\quad T=\sum_i\lambda_i T_i"><code>z_i=k_i+c w_i,\quad z=\sum_i\lambda_i z_i,\quad T=\sum_i\lambda_i T_i</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Produce a publicly verifiable relation without collecting the complete witness.</dd>
+<dt>Construction</dt><dd>Combine witness-dependent responses with consistent challenges and interpolation coefficients.</dd>
+<dt>Who proves and verifies</dt><dd>Nodes contribute shares and the ordinary public verifier checks the assembled Sigma relation.</dd>
+<dt>Assumptions and limits</dt><dd>Correct aggregation must bind every contribution and the execution context; a collection of signatures is not this proof.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_sigma.rs">threshold_sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_gadgets.rs">threshold_gadgets</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_range.rs">threshold_range</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_quote.rs">threshold_quote</a>
+</p>
+<h2 id="C5">C5 · Quote, limit and fill relations</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\text{notional}=q p,\qquad\text{limit}-p\ge0,\qquad k_i-k_w\ge0"><code>\text{notional}=q p,\qquad\text{limit}-p\ge0,\qquad k_i-k_w\ge0</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Express the exact application claim: notional, limit and eligible price comparison.</dd>
+<dt>Construction</dt><dd>Bind quantity, price and ordered comparison values into separate relations.</dd>
+<dt>Who proves and verifies</dt><dd>Application-specific QOMM and OCLOB adapters generate and verify their supported statements.</dd>
+<dt>Assumptions and limits</dt><dd>A financial relation is not a proof of every market rule. The OCLOB transition attestation boundary is stated separately.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/quote_proof.rs">quote</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/threshold_quote.rs">threshold_quote</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/price_limit.rs">price_limit</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a>
+</p>
+<h2 id="D1">D1 · Hybrid Ed25519 and ML-DSA-65 signatures</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\mathrm{Accept}=\mathrm{Verify}_{\rm Ed25519}(m,\sigma_E)\ \land\ \mathrm{Verify}_{\rm MLDSA65}(m,\sigma_P)"><code>\mathrm{Accept}=\mathrm{Verify}_{\rm Ed25519}(m,\sigma_E)\ \land\ \mathrm{Verify}_{\rm MLDSA65}(m,\sigma_P)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Authenticate an application message under both signature schemes.</dd>
+<dt>Construction</dt><dd>Accept only when both verifications succeed for the bound suite and message.</dd>
+<dt>Who proves and verifies</dt><dd>Application signers produce the hybrid encoding; recipients verify both components.</dd>
+<dt>Assumptions and limits</dt><dd>Authentication does not make the curve-based monetary proof post-quantum. Neither half is an optional fallback.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/hybrid/signature.rs">signature</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/application_crypto.rs">application_crypto</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/docs/crypto/application-signatures-v2.md">oclob_auth</a> ·
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://github.com/zkFMI/deccp/blob/c64c16c25e6398740a52ba0e81505e1869db569f/crates/deccp-core/src/lib.rs">deccp</a> ·
+<a href="https://github.com/zkFMI/aethel/blob/e7b14c9364c33e845c9e93ee4203ff5b7262e297/crates/aethel-provider-sdk/src/provider.rs">aethel_provider</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8032.html">RFC 8032</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="D2">D2 · FROST threshold Schnorr signatures</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="R=\sum_i(D_i+\rho_iE_i),\quad z_i=d_i+\rho_ie_i+c\lambda_i s_i,\quad zG=R+cY"><code>R=\sum_i(D_i+\rho_iE_i),\quad z_i=d_i+\rho_ie_i+c\lambda_i s_i,\quad zG=R+cY</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Authorize a committee instruction without reconstructing its signing secret.</dd>
+<dt>Construction</dt><dd>Bind nonce commitments, signing shares, participant set and message.</dd>
+<dt>Who proves and verifies</dt><dd>The configured committee signs; the verifier checks the aggregate Schnorr signature.</dd>
+<dt>Assumptions and limits</dt><dd>Nonce discipline, participant agreement and the chosen curve assumptions remain essential. This is not ML-DSA threshold signing.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi/src/lib.rs">zkpi</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/frost_cluster.rs">frost_cluster</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc9591.html">RFC 9591</a>
+</p>
+<h2 id="D3">D3 · Ordering, PQ approvals and settlement quorum</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\text{順序認証}:5/7,\qquad\text{決済FROST}:3/7,\qquad\text{PQC承認}:\#\mathrm{valid}\ge q"><code>\text{順序認証}:5/7,\qquad\text{決済FROST}:3/7,\qquad\text{PQC承認}:\#\mathrm{valid}\ge q</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Keep different authorization purposes explicit.</dd>
+<dt>Construction</dt><dd>Ordering uses 5/7; settlement FROST uses 3/7; PQ approval checks the configured valid-signature count.</dd>
+<dt>Who proves and verifies</dt><dd>Each application boundary checks its own committee and threshold.</dd>
+<dt>Assumptions and limits</dt><dd>Equal node names or similar counts do not make these protocols interchangeable.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-ordering/src/lib.rs">oclob_ordering</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/quorum.rs">quorum</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a>
+</p>
+<h2 id="D4">D4 · DeKYX signed attributes and selective disclosure</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\mathrm{root}=\mathrm{Merkle}(H(q_1),\ldots,H(q_n)),\quad \mathrm{VerifyPath}(q_i,\pi_i,\mathrm{root})=1"><code>\mathrm{root}=\mathrm{Merkle}(H(q_1),\ldots,H(q_n)),\quad \mathrm{VerifyPath}(q_i,\pi_i,\mathrm{root})=1</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Present authorized attributes without revealing the complete credential contents.</dd>
+<dt>Construction</dt><dd>Authenticate a Merkle root and verify selected attribute paths.</dd>
+<dt>Who proves and verifies</dt><dd>Issuers sign credentials; holders present; eligibility verifiers check issuer, scope and disclosed claims.</dd>
+<dt>Assumptions and limits</dt><dd>Issuer trust and revocation remain application conditions. BBS+ and CL references are not the implemented credential format.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="D5">D5 · DeKYX holder knowledge and scope nullifiers</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="C=xG+rH,\quad N=xG_s,\quad z_xG+z_rH=A+cC,\quad z_xG_s=B+cN"><code>C=xG+rH,\quad N=xG_s,\quad z_xG+z_rH=A+cC,\quad z_xG_s=B+cN</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Bind a presentation to the holder and detect prohibited reuse within a scope.</dd>
+<dt>Construction</dt><dd>Use linked knowledge relations and a scope-specific nullifier.</dd>
+<dt>Who proves and verifies</dt><dd>The holder produces the presentation; the admission verifier checks the same witness and context.</dd>
+<dt>Assumptions and limits</dt><dd>Scope choice controls linkability. A nullifier is not a universal identity or an assertion of every eligibility condition.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a>
+</p>
+<h2 id="E1">E1 · Hybrid key delivery and HKDF</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="K=\mathrm{HKDF\!\!-​SHA256}(ss_X\Vert ss_K\Vert ct_X\Vert ct_K\Vert\mathrm{suite})"><code>K=\mathrm{HKDF\!\!-​SHA256}(ss_X\Vert ss_K\Vert ct_X\Vert ct_K\Vert\mathrm{suite})</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Derive a delivery key from classical and PQ shared secrets.</dd>
+<dt>Construction</dt><dd>Combine X25519 and ML-KEM-768 secrets, ciphertexts and suite context through HKDF.</dd>
+<dt>Who proves and verifies</dt><dd>Sender and intended recipient derive the same transport key.</dd>
+<dt>Assumptions and limits</dt><dd>KEM success does not prove the semantic correctness of the encrypted opening; authentication and context binding are still required.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/hybrid/kem.rs">kem</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/backend.rs">backend</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc7748.html">RFC 7748</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/203/final">FIPS 203</a> ·
+<a href="https://www.rfc-editor.org/info/rfc5869/">RFC 5869</a>
+</p>
+<h2 id="E2">E2 · AES-256-GCM and ChaCha20-Poly1305</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="(ct,tag)=\mathrm{AEAD.Enc}(K,nonce,plaintext,AAD)"><code>(ct,tag)=\mathrm{AEAD.Enc}(K,nonce,plaintext,AAD)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Protect stored keys and delivered private payloads.</dd>
+<dt>Construction</dt><dd>Authenticate ciphertext together with the nonce and associated context data.</dd>
+<dt>Who proves and verifies</dt><dd>The selected storage or delivery component encrypts and the recipient rejects invalid tags.</dd>
+<dt>Assumptions and limits</dt><dd>Nonce reuse and wrong associated data break the intended contract. AEAD is not a zero-knowledge proof of its plaintext.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/selective_disclosure.rs">selective_disclosure</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/rust/oclob-edge/src/lib.rs">oclob_edge</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">SP 800-38D</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8439.html">RFC 8439</a>
+</p>
+<h2 id="E3">E3 · Orders, permits and opening delivery</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\mathrm{Enc}_{pk_i}(s_i),\qquad (v,r)=\sum_{i\in Q}\lambda_i(v_i,r_i)"><code>\mathrm{Enc}_{pk_i}(s_i),\qquad (v,r)=\sum_{i\in Q}\lambda_i(v_i,r_i)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Restrict each share or recovered opening to its intended recipient.</dd>
+<dt>Construction</dt><dd>Encrypt shares to node keys and reconstruct only for an authorized output recipient.</dd>
+<dt>Who proves and verifies</dt><dd>Participants distribute inputs; the designated recipient combines sufficient opening shares.</dd>
+<dt>Assumptions and limits</dt><dd>Recipients can learn their authorized plaintext. This does not imply that every process in a research coordinator is input-blind.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-proofs/src/opening_envelope.rs">opening_envelope</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/selective_disclosure.rs">selective_disclosure</a>
+</p>
+<h2 id="E4">E4 · TLS 1.3, mTLS and PQ certificates</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\text{TLS 1.3}\ +\ \text{X25519MLKEM768}\ +\ \text{ML-DSA-65 certificate authentication}"><code>\text{TLS 1.3}\ +\ \text{X25519MLKEM768}\ +\ \text{ML-DSA-65 certificate authentication}</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Authenticate endpoints and protect specified transport paths.</dd>
+<dt>Construction</dt><dd>Use the selected TLS policy, hybrid key exchange and certificate authentication.</dd>
+<dt>Who proves and verifies</dt><dd>Clients and servers enforce the configured suite and peer identity.</dd>
+<dt>Assumptions and limits</dt><dd>Application signatures and monetary proofs have separate policies. A TLS configuration claim requires the actual negotiated path.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/tls.rs">tls</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a> ·
+<a href="https://github.com/zkFMI/oclob/blob/df0a742e1932a46581be3216c5dde44b239ddbb4/README.md">oclob_readme</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446</a> ·
+<a href="https://csrc.nist.gov/pubs/fips/204/final">FIPS 204</a>
+</p>
+<h2 id="E5">E5 · scrypt, encrypted keys and key separation</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="K_{store}=\mathrm{scrypt}(password,salt),\qquad ct=\mathrm{AES256GCM}_{K_{store}}(keys)"><code>K_{store}=\mathrm{scrypt}(password,salt),\qquad ct=\mathrm{AES256GCM}_{K_{store}}(keys)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Protect persisted keys and separate their operational purposes.</dd>
+<dt>Construction</dt><dd>Derive a storage key from password and salt, then apply authenticated encryption.</dd>
+<dt>Who proves and verifies</dt><dd>The key store loads only authenticated data under the intended password and context.</dd>
+<dt>Assumptions and limits</dt><dd>Password strength, access control, backup and recovery remain necessary. Encryption at rest is not threshold custody.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/key.rs">key</a> ·
+<a href="https://www.rfc-editor.org/rfc/rfc7914.html">RFC 7914</a> ·
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">SP 800-38D</a>
+</p>
+<h2 id="F1">F1 · Hashes, HMAC and Merkle commitments</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="d=H(\mathrm{domain}\Vert\mathrm{version}\Vert\mathrm{lengths}\Vert\mathrm{payload}),\quad tag=\mathrm{HMAC}_{K}(context)"><code>d=H(\mathrm{domain}\Vert\mathrm{version}\Vert\mathrm{lengths}\Vert\mathrm{payload}),\quad tag=\mathrm{HMAC}_{K}(context)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Bind structured context and authenticate application records.</dd>
+<dt>Construction</dt><dd>Domain-separate canonical encodings, versions, lengths and payloads.</dd>
+<dt>Who proves and verifies</dt><dd>Each producer and verifier must serialize the same statement.</dd>
+<dt>Assumptions and limits</dt><dd>A digest authenticates a reference; it does not establish the referenced computation or real-world asset.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/canonical.rs">canonical</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/zkpi-defmi-sdk/src/admission.rs">admission</a> ·
+<a href="https://github.com/zkFMI/dekyx/blob/9518393a58be731fe25147e77d22926062fca33a/crates/dekyx-core/src/lib.rs">dekyx</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://www.rfc-editor.org/info/rfc5869/">RFC 5869</a>
+</p>
+<h2 id="F2">F2 · Fiat–Shamir, Merlin and STROBE</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="c=\mathrm{Challenge}(\mathrm{domain},\mathrm{statement},T_1,\ldots,T_k)"><code>c=\mathrm{Challenge}(\mathrm{domain},\mathrm{statement},T_1,\ldots,T_k)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Turn interactive proof relations into reproducible noninteractive challenges.</dd>
+<dt>Construction</dt><dd>Absorb domains, public statements and commitments before deriving challenges.</dd>
+<dt>Who proves and verifies</dt><dd>Provers and verifiers run the same transcript state machine.</dd>
+<dt>Assumptions and limits</dt><dd>Omitting or reordering a field can permit cross-context reuse. Transcript labels are part of the protocol contract.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/pedersen.rs">pedersen</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/range.rs">range</a> ·
+<a href="https://merlin.cool/">Merlin transcripts</a>
+</p>
+<h2 id="F3">F3 · Randomness, uniqueness and batched verification</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\sum_i\alpha_i E_i=0\quad(\alpha_i:\text{検証対象に適切に拘束した係数})"><code>\sum_i\alpha_i E_i=0\quad(\alpha_i:\text{検証対象に適切に拘束した係数})</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Generate fresh randomness and verify multiple equations efficiently.</dd>
+<dt>Construction</dt><dd>Bind aggregation coefficients to the intended verification targets and use proper randomness sources.</dd>
+<dt>Who proves and verifies</dt><dd>Proof, signing and verification components each enforce their own uniqueness rules.</dd>
+<dt>Assumptions and limits</dt><dd>Batching is not permission to cancel arbitrary invalid equations. Nonce and operation uniqueness are distinct obligations.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/sigma.rs">sigma</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-committee/src/key_management.rs">key_management</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi-avalanche-vm/src/execution/confidential.rs">vm_verification</a>
+</p>
+<h2 id="F4">F4 · Audit viewing and spending separation</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="v_s=H_s(\text{view},seed_v,scope),\qquad b_s=H_s(\text{spend},seed_b,scope)"><code>v_s=H_s(\text{view},seed_v,scope),\qquad b_s=H_s(\text{spend},seed_b,scope)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Allow scoped inspection without handing over spending authority.</dd>
+<dt>Construction</dt><dd>Derive different scoped viewing and spending secrets.</dd>
+<dt>Who proves and verifies</dt><dd>Authorized viewers inspect only their granted scope; owners retain spend control.</dd>
+<dt>Assumptions and limits</dt><dd>This is a disclosure-control boundary, not a consensus proof or a guarantee against metadata inference.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/viewing.rs">viewing</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/notes.rs">notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a>
+</p>
+<h2 id="G1">G1 · Adaptor signatures and cross-ledger PvP</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="Y=yG,\quad s^{\prime}=r+cx,\quad s=s^{\prime}+y,\quad y=s-s^{\prime}"><code>Y=yG,\quad s^{\prime}=r+cx,\quad s=s^{\prime}+y,\quad y=s-s^{\prime}</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Link two individually specified settlement legs through a condition.</dd>
+<dt>Construction</dt><dd>Complete an adaptor signature with a secret that can be extracted from the completed pair.</dd>
+<dt>Who proves and verifies</dt><dd>Participants enforce the agreed signing and settlement sequence.</dd>
+<dt>Assumptions and limits</dt><dd>Timeouts, finality and the two ledgers' failure assumptions remain necessary; this is not arbitrary multi-ledger atomicity.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkfmi-zk/src/adaptor.rs">adaptor</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pvp.rs">pvp</a>
+</p>
+<h2 id="G2">G2 · Destination-bound finality receipts</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="d=H(\mathrm{source},\mathrm{destination},\mathrm{leg},R_{before},R_{after},\mathrm{sequence})"><code>d=H(\mathrm{source},\mathrm{destination},\mathrm{leg},R_{before},R_{after},\mathrm{sequence})</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Bind a source result to its intended destination and leg.</dd>
+<dt>Construction</dt><dd>Sign source, destination, leg, state transition and sequence together.</dd>
+<dt>Who proves and verifies</dt><dd>A receipt authority issues; the destination adapter verifies the exact context.</dd>
+<dt>Assumptions and limits</dt><dd>The signer and its data source remain trusted. A signed receipt is not a light-client consensus proof.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/cross_domain.rs">cross_domain</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/cross_domain_finality.rs">cross_domain_finality</a> ·
+<a href="https://github.com/zkFMI/deccp/blob/c64c16c25e6398740a52ba0e81505e1869db569f/crates/deccp-core/src/lib.rs">deccp</a>
+</p>
+<h2 id="G3">G3 · Miden STARK public audit</h2><p class="src">Application-specific / optional</p><div class="technical-equation" data-math="R^{after}_i=R^{before}_{i+1},\qquad i=0,\ldots,n-2"><code>R^{after}_i=R^{before}_{i+1},\qquad i=0,\ldots,n-2</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Check continuity and correspondence among supplied public records.</dd>
+<dt>Construction</dt><dd>Prove the fixed eight-slot public batch relation with the selected Miden program.</dd>
+<dt>Who proves and verifies</dt><dd>The prover produces a STARK; a verifier compares independently obtained expected statements.</dd>
+<dt>Assumptions and limits</dt><dd>This does not reverify signatures, consensus finality, hidden balances, ranges or best price. It is an optional audit path.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/qomm-batch-audit/src/lib.rs">miden</a>
+</p>
+<h2 id="H1">H1 · Salted hash commitments and research notes</h2><p class="src">Research or comparison path</p><div class="technical-equation" data-math="C=\mathrm{SHA512}(domain\Vert context\Vert salt_{64}\Vert opening)"><code>C=\mathrm{SHA512}(domain\Vert context\Vert salt_{64}\Vert opening)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Study a note representation without relying on discrete-log binding.</dd>
+<dt>Construction</dt><dd>Domain-separate SHA-512 with a 64-byte salt and distinguish recipient spending secrets from sender-known openings.</dd>
+<dt>Who proves and verifies</dt><dd>The research wallet and wire layer reuse hybrid KEM and AEAD.</dd>
+<dt>Assumptions and limits</dt><dd>Hash commitments are not additively homomorphic and do not contain their own opening proof. Full note acceptance remains a separate gate.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/commitment.rs">commitment</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pqc_notes.rs">pqc_notes</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">pqc_notes_doc</a>
+</p>
+<h2 id="H2">H2 · Spartan-style R1CS and masked sumcheck</h2><p class="src">Research or comparison path</p><div class="technical-equation" data-math="(Az)\circ(Bz)=Cz,\qquad \sum_{x\in\{0,1\}^m}g(x)=0"><code>(Az)\circ(Bz)=Cz,\qquad \sum_{x\in\{0,1\}^m}g(x)=0</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Connect distributed witnesses to a public proof of financial relations.</dd>
+<dt>Construction</dt><dd>Reduce constraints through sumcheck and bind the final evaluation to a polynomial opening with masks.</dd>
+<dt>Who proves and verifies</dt><dd>Owner-local workers and MPC produce evidence for an independent public verifier.</dd>
+<dt>Assumptions and limits</dt><dd>This is an adapted research implementation. BN254 scalar arithmetic does not mean pairing use or inherited security of the entire adaptation.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/README.md">cocode</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/INTEGRATION.md">cocode_integration</a> ·
+<a href="https://eprint.iacr.org/2026/729">coCode, 2026/729</a>
+</p>
+<h2 id="H3">H3 · Code-based PCS, Merkle and folding</h2><p class="src">Research or comparison path</p><div class="technical-equation" data-math="\mathrm{RS}(\mathrm{message}+\mathrm{mask})\ \to\ \mathrm{MerkleRoot},\qquad F_r=(1-r)E+rO"><code>\mathrm{RS}(\mathrm{message}+\mathrm{mask})\ \to\ \mathrm{MerkleRoot},\qquad F_r=(1-r)E+rO</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Commit to and open encoded polynomial evaluations in the research proof.</dd>
+<dt>Construction</dt><dd>Combine coded masked messages, Merkle commitments and challenge-based folding.</dd>
+<dt>Who proves and verifies</dt><dd>The collaborative research prover and public verifier enforce the declared relation.</dd>
+<dt>Assumptions and limits</dt><dd>Code parameters, hiding, query soundness and adaptation details require their own analysis; do not promote from a component result.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/src/pcs.rs">pcs</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/src/transcript.rs">cocode_transcript</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/research/cosnark-trial/README.md">cocode</a> ·
+<a href="https://eprint.iacr.org/2026/729">coCode, 2026/729</a>
+</p>
+<h2 id="H4">H4 · Proving ciphertext correctness</h2><p class="src">Research or comparison path</p><div class="technical-equation" data-math="ct=\mathrm{Encapsulate\!+\!AEAD}(pk,opening;\omega),\qquad C=\mathrm{Commit}(opening)"><code>ct=\mathrm{Encapsulate\!+\!AEAD}(pk,opening;\omega),\qquad C=\mathrm{Commit}(opening)</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Prove that delivery ciphertext and commitment encode the same opening.</dd>
+<dt>Construction</dt><dd>Constrain encapsulation and authenticated encryption inside the declared circuit.</dd>
+<dt>Who proves and verifies</dt><dd>Research prover and verifier bind recipient key, randomness and opening.</dd>
+<dt>Assumptions and limits</dt><dd>Circuit feasibility is distinct from complete live note settlement. Delivery success alone proves no plaintext equality.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/pqc_notes.rs">pqc_notes</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/src/sealed.rs">sealed</a> ·
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/PQC_PROOF_SWITCH_STATUS.md">pqc_status</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/docs/PQC_NOTES_RESEARCH.md">pqc_notes_doc</a>
+</p>
+<h2 id="H5">H5 · VOLE-in-the-Head and SHAKE128</h2><p class="src">Research or comparison path</p><div class="technical-equation" data-math="\mathbf q=\mathbf t+\Delta\mathbf u\qquad\text{（VOLE相関の模式式）}"><code>\mathbf q=\mathbf t+\Delta\mathbf u\qquad\text{（VOLE相関の模式式）}</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Measure an alternative proof construction in the comparison harness.</dd>
+<dt>Construction</dt><dd>Check the declared VOLE correlation and associated transcript expansion.</dd>
+<dt>Who proves and verifies</dt><dd>The measurement harness generates and verifies its comparison evidence.</dd>
+<dt>Assumptions and limits</dt><dd>This is a measured comparison route, not the deployed financial-note proof.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkpi/blob/fc9579070484859aff9110a927be79c1ffe22b70/rust/zkpi-harness/src/voleith.rs">voleith</a>
+</p>
+<h2 id="I1">I1 · Composition and end-to-end acceptance</h2><p class="src">Current composition; scope below</p><div class="technical-equation" data-math="\text{受理}=\text{認可}\land\text{証明関係}\land\text{現状態}\land\text{一意性}"><code>\text{受理}=\text{認可}\land\text{証明関係}\land\text{現状態}\land\text{一意性}</code></div><dl class="technical-relations">
+<dt>Purpose</dt><dd>Accept an authorized, correct and unique transition against current canonical state.</dd>
+<dt>Construction</dt><dd>Combine authorization, proof relation, state and uniqueness as simultaneous gates.</dd>
+<dt>Who proves and verifies</dt><dd>Participant, application, MPC and VM each verify their assigned boundary.</dd>
+<dt>Assumptions and limits</dt><dd>Guarantees do not add automatically. Real assets, legal finality, operations and independent review remain separate acceptance questions.</dd>
+</dl><p class="src">
+<a href="https://github.com/zkFMI/zkfmi-crypto/blob/9f95ffc0bb3206517ffadb70223f2ebbcad5e908/docs/CRYPTO_CONTRACT.md">contract</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_settlement.rs">settlement</a> ·
+<a href="https://github.com/zkFMI/defmi/blob/606224fc48fec93958c271ef899bdc6c306f1a67/rust/defmi/src/application_reservation.rs">reservation</a>
+</p>
+<h2 id="scope">Names do not establish implementation</h2>
+<p>BBS+ and CL signatures are future DeKYX options. Reserved ML-DSA-44 and SLH-DSA suite identifiers are not implemented providers. QOMM uses SHA-1 for its WebSocket handshake, not financial authorization. BN254 scalar arithmetic does not imply pairing or Groth16 use.</p>

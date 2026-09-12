@@ -53,6 +53,9 @@ NAV_DOCS = [
         ("DeKYX — eligibility", "DeKYX — 資格", "docs/dekyx.html"),
         ("DeCCP — clearing", "DeCCP — 清算", "docs/deccp.html"),
         ("Cryptography in use", "暗号技術の使い方", "docs/cryptography.html"),
+        ("Cryptography by purpose", "用途別の暗号技術", "docs/crypto-catalog.html"),
+        ("Settlement lifecycle", "予約から決済・回収まで", "docs/settlement-lifecycle.html"),
+        ("Optimistic assurance", "暫定結果とchallenge", "docs/optimistic.html"),
     ]),
     ("Venues", "市場", [
         ("QOMM — oblivious RFQ", "QOMM — 依頼を見ない見積市場", "docs/qomm.html"),

@@ -1,0 +1,34 @@
+{
+  "task_id": "optimistic-browser-20260912",
+  "recorded_at": "2026-09-12T14:31:30.193610+00:00",
+  "status": "in_progress",
+  "request": "slide_tech level technical documentation plus demo integration, verify then commit/push",
+  "changes": [
+    "37-topic cryptographic catalogue in en/ja",
+    "settlement lifecycle and optimistic assurance in en/ja",
+    "navigation and math rendering"
+  ],
+  "verification": {
+    "environment": "local isolated publication candidate, http://localhost:18817",
+    "desktop": {
+      "viewport": 1981,
+      "document_width": 1981,
+      "katex": 37,
+      "observed": "language switch to English, lifecycle and catalogue links rendered intended pages"
+    },
+    "narrow": {
+      "viewport": 390,
+      "document_width": 390,
+      "katex": 37,
+      "observed": "Japanese catalogue readable; search challenge returns new optimistic document and anchors"
+    },
+    "screenshots": {
+      "site-owned-catalog-desktop.png": "38b2dedbcf091b1344e49220aab5f7432fee7d9d63744280dd9f7ea3b04f9803",
+      "site-owned-catalog-narrow.png": "11c29c7170a062ef96fc140eb4c01c64ce0c472c1fe777f00035d8836fd3e7e8"
+    }
+  },
+  "remaining": [
+    "commit and push only owned source",
+    "verify served Pages artifact"
+  ]
+}
